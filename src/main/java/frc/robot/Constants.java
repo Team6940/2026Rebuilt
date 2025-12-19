@@ -34,4 +34,27 @@ public final class Constants {
     /** Replaying from a log file. */
     REPLAY
   }
+
+  public static final class MotorIDs {
+
+    /*   Chassis   */
+    // Pigeon IMU
+    public static final int kPigeonId = 0; // TODO CHANGE TO REAL VALUE
+    // Front Left
+    public static final int kFrontLeftDriveMotorId = 3;
+    public static final int kFrontLeftSteerMotorId = 4;
+    public static final int kFrontLeftEncoderId = 10;
+    // Front Right
+    public static final int kFrontRightDriveMotorId = 1;
+    public static final int kFrontRightSteerMotorId = 2;
+    public static final int kFrontRightEncoderId = 9;
+    // Back Left
+    public static final int kBackLeftDriveMotorId = 5;
+    public static final int kBackLeftSteerMotorId = 6;
+    public static final int kBackLeftEncoderId = 11;
+    // Back Right
+    public static final int kBackRightDriveMotorId = 7;
+    public static final int kBackRightSteerMotorId = 8;
+    public static final int kBackRightEncoderId = 12;
+  }
 }
