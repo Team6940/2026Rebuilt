@@ -16,7 +16,6 @@ package frc.robot;
 import com.pathplanner.lib.auto.AutoBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -32,7 +31,6 @@ import frc.robot.subsystems.drive.GyroIOSim;
 import frc.robot.subsystems.drive.ModuleIO;
 import frc.robot.subsystems.drive.ModuleIOTalonFXReal;
 import frc.robot.subsystems.drive.ModuleIOTalonFXSim;
-import frc.robot.util.MathUtils;
 import org.ironmaple.simulation.SimulatedArena;
 import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
 import org.littletonrobotics.junction.Logger;
@@ -133,23 +131,12 @@ public class RobotContainer {
 
     // Default command, normal field-relative drive
     drive.setDefaultCommand(
-        DriveCommands.joystickDrive(
-            drive,
-            () -> {
-              Translation2d v =
-                  DriveCommands.getLinearVelocityFromJoysticks(
-                      -controller.getLeftY(), -controller.getLeftX());
-              v = MathUtils.slewTranslation(v);
-              return v.getX();
-            },
-            () -> {
-              Translation2d v =
-                  DriveCommands.getLinearVelocityFromJoysticks(
-                      -controller.getLeftY(), -controller.getLeftX());
-              v = MathUtils.slewTranslation(v);
-              return v.getY();
-            },
-            () -> Math.copySign(Math.pow(-controller.getRightX(), 2), -controller.getRightX())));
+        drive.run(
+            () ->
+                drive.driveFieldCentric(
+                    () -> -controller.getLeftY(),
+                    () -> -controller.getLeftX(),
+                    () -> -controller.getRightY())));
 
     // Lock to 0° when A button is held
     controller

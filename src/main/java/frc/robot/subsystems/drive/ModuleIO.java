@@ -21,6 +21,7 @@ public interface ModuleIO {
   class ModuleIOInputs {
     public boolean driveConnected = false;
     public double drivePositionRad = 0.0;
+    public double driveVelocity = 0.0;
     public double driveVelocityRadPerSec = 0.0;
     public double driveAppliedVolts = 0.0;
     public double driveCurrentAmps = 0.0;

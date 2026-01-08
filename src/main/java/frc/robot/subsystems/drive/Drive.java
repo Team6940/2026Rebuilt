@@ -13,7 +13,11 @@
 
 package frc.robot.subsystems.drive;
 
-import static edu.wpi.first.units.Units.*;
+import static edu.wpi.first.units.Units.KilogramSquareMeters;
+import static edu.wpi.first.units.Units.Kilograms;
+import static edu.wpi.first.units.Units.Meters;
+import static edu.wpi.first.units.Units.MetersPerSecond;
+import static edu.wpi.first.units.Units.Volts;
 
 import com.ctre.phoenix6.CANBus;
 import com.pathplanner.lib.auto.AutoBuilder;
@@ -21,15 +25,18 @@ import com.pathplanner.lib.config.ModuleConfig;
 import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
+import com.pathplanner.lib.path.PathPlannerPath;
 import com.pathplanner.lib.pathfinding.Pathfinding;
 import com.pathplanner.lib.util.PathPlannerLogging;
 import edu.wpi.first.hal.FRCNetComm.tInstances;
 import edu.wpi.first.hal.FRCNetComm.tResourceType;
 import edu.wpi.first.hal.HAL;
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Twist2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
@@ -52,6 +59,7 @@ import frc.robot.generated.TunerConstants;
 import frc.robot.util.LocalADStarAK;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.DoubleSupplier;
 import org.ironmaple.simulation.drivesims.COTS;
 import org.ironmaple.simulation.drivesims.configs.DriveTrainSimulationConfig;
 import org.ironmaple.simulation.drivesims.configs.SwerveModuleSimulationConfig;
@@ -240,6 +248,21 @@ public class Drive extends SubsystemBase {
     gyroDisconnectedAlert.set(!gyroInputs.connected && Constants.currentMode != Mode.SIM);
   }
 
+  public static Translation2d getLinearVelocityFromJoysticks(double x, double y) {
+    // Apply deadband
+    double linearMagnitude =
+        MathUtil.applyDeadband(Math.hypot(x, y), Constants.DriveConstants.DEADBAND);
+    Rotation2d linearDirection = new Rotation2d(Math.atan2(y, x));
+
+    // Square magnitude for more precise control
+    linearMagnitude = linearMagnitude * linearMagnitude;
+
+    // Return new linear velocity
+    return new Pose2d(new Translation2d(), linearDirection)
+        .transformBy(new Transform2d(linearMagnitude, 0.0, new Rotation2d()))
+        .getTranslation();
+  }
+
   /**
    * Runs the drive at the desired velocity.
    *
@@ -262,6 +285,41 @@ public class Drive extends SubsystemBase {
 
     // Log optimized setpoints (runSetpoint mutates each state)
     Logger.recordOutput("SwerveStates/SetpointsOptimized", setpointStates);
+  }
+
+  public void runFieldRelativeVelocity(ChassisSpeeds speeds) {
+    boolean isFlipped =
+        DriverStation.getAlliance().isPresent()
+            && DriverStation.getAlliance().get() == Alliance.Red;
+    ChassisSpeeds fieldRelativeVelocity =
+        ChassisSpeeds.fromFieldRelativeSpeeds(
+            speeds,
+            isFlipped ? this.getRotation().plus(new Rotation2d(Math.PI)) : this.getRotation());
+    runVelocity(fieldRelativeVelocity);
+  }
+
+  public void driveFieldCentric(
+      DoubleSupplier xSupplier, DoubleSupplier ySupplier, DoubleSupplier omegaSupplier) {
+    // Get linear velocity
+    Translation2d linearVelocity =
+        getLinearVelocityFromJoysticks(xSupplier.getAsDouble(), ySupplier.getAsDouble());
+
+    // Apply deadband to angular velocity
+    double omega =
+        MathUtil.applyDeadband(omegaSupplier.getAsDouble(), Constants.DriveConstants.DEADBAND);
+
+    // Square the angular velocity for finer control
+    omega = Math.copySign(omega * omega, omega);
+
+    // Convert to field-relative speeds and send command
+    ChassisSpeeds speeds =
+        new ChassisSpeeds(
+            linearVelocity.getX() * getMaxLinearSpeedMetersPerSec(),
+            linearVelocity.getY() * getMaxLinearSpeedMetersPerSec(),
+            omega * getMaxAngularSpeedRadPerSec());
+
+    // Run velocity command
+    runFieldRelativeVelocity(speeds);
   }
 
   /** Runs the drive in a straight line with the specified drive output. */
@@ -387,5 +445,18 @@ public class Drive extends SubsystemBase {
       new Translation2d(TunerConstants.BackLeft.LocationX, TunerConstants.BackLeft.LocationY),
       new Translation2d(TunerConstants.BackRight.LocationX, TunerConstants.BackRight.LocationY)
     };
+  }
+
+  public Command followPPPath(String pathName) {
+    return AutoBuilder.followPath(generatePPPath(pathName));
+  }
+
+  public PathPlannerPath generatePPPath(String pathName) {
+    try {
+      return PathPlannerPath.fromPathFile(pathName);
+    } catch (Exception e) {
+      e.printStackTrace();
+      return null;
+    }
   }
 }
