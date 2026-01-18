@@ -33,7 +33,6 @@ import edu.wpi.first.hal.FRCNetComm.tResourceType;
 import edu.wpi.first.hal.HAL;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.Matrix;
-import edu.wpi.first.math.controller.HolonomicDriveController;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
@@ -46,10 +45,11 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
-import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.math.trajectory.TrapezoidProfile;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -141,8 +141,28 @@ public class Drive extends SubsystemBase {
   private final SwerveDrivePoseEstimator poseEstimator =
       new SwerveDrivePoseEstimator(kinematics, rawGyroRotation, lastModulePositions, new Pose2d());
 
-  // HolonomicDriveController for autoMoveToPose
-  private final HolonomicDriveController holonomicController;
+  // PID Controllers for autoMoveToPose
+  private final PIDController xController;
+  private final PIDController yController;
+  private final ProfiledPIDController thetaController;
+
+  private void initializeAutoMoveToPoseControllers() {
+    // Initialize X and Y PID controllers
+    xController.setPID(5.0, 0.0, 0.0);
+    yController.setPID(5.0, 0.0, 0.0);
+
+    // Initialize theta ProfiledPID controller
+    thetaController.setPID(5.0, 0.0, 0.0);
+    thetaController.enableContinuousInput(-Math.PI, Math.PI);
+    thetaController.setConstraints(
+        new TrapezoidProfile.Constraints(
+            getMaxAngularSpeedRadPerSec(), getMaxAngularSpeedRadPerSec() * 4.));
+
+    // Set tolerances
+    xController.setTolerance(0.05); // 5cm position
+    yController.setTolerance(0.05); // 5cm position
+    thetaController.setTolerance(Units.degreesToRadians(2.0)); // 2° position
+  }
 
   public Drive(
       GyroIO gyroIO,
@@ -156,22 +176,11 @@ public class Drive extends SubsystemBase {
     modules[2] = new Module(blModuleIO, 2, TunerConstants.BackLeft);
     modules[3] = new Module(brModuleIO, 3, TunerConstants.BackRight);
 
-    // Initialize HolonomicDriveController with proper constraints and continuous input
-    ProfiledPIDController thetaController =
-        new ProfiledPIDController(
-            5.0,
-            0.0,
-            0.0,
-            new TrapezoidProfile.Constraints(
-                getMaxAngularSpeedRadPerSec(), // Max angular velocity
-                getMaxAngularSpeedRadPerSec() * 2)); // Max angular acceleration
-    thetaController.enableContinuousInput(-Math.PI, Math.PI);
-
-    holonomicController =
-        new HolonomicDriveController(
-            new PIDController(5.0, 0.0, 0.0), // X controller
-            new PIDController(5.0, 0.0, 0.0), // Y controller
-            thetaController);
+    // Initialize PID controllers for autoMoveToPose
+    xController = new PIDController(0, 0, 0);
+    yController = new PIDController(0, 0, 0);
+    thetaController = new ProfiledPIDController(0, 0, 0, new TrapezoidProfile.Constraints(0, 0));
+    initializeAutoMoveToPoseControllers();
 
     // Usage reporting for swerve template
     HAL.report(tResourceType.kResourceType_RobotDrive, tInstances.kRobotDriveSwerve_AdvantageKit);
@@ -483,44 +492,46 @@ public class Drive extends SubsystemBase {
   }
 
   /**
-   * Automatically moves the robot to the target pose using a HolonomicDriveController.
-   * This method should be called periodically (e.g., in a command's execute() method)
-   * until the robot reaches the target pose.
+   * Automatically moves the robot to the target pose using separate PID controllers for X, Y, and
+   * theta. This method should be called periodically (e.g., in a command's execute() method) until
+   * the robot reaches the target pose.
    *
    * @param targetPose The desired pose to move to (field-relative)
    */
   public void autoMoveToPose(Pose2d targetPose) {
-    // Get current pose
     Pose2d currentPose = getPose();
-    
-    // Calculate the desired chassis speeds using the holonomic drive controller
-    // The controller outputs field-relative speeds
-    ChassisSpeeds targetSpeeds = holonomicController.calculate(
-        currentPose, 
-        targetPose, 
-        0.0, // Desired linear velocity at target (0 = stop at target)
-        targetPose.getRotation()); // Desired rotation at target
-    
-    // Convert from field-relative to robot-relative speeds
-    ChassisSpeeds robotRelativeSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(
-        targetSpeeds, currentPose.getRotation());
-    
-    // Apply the calculated speeds to the drivetrain
-    runVelocity(robotRelativeSpeeds);
-    
-    // Log the target pose for debugging
+
+    double xVelocity = xController.calculate(currentPose.getX(), targetPose.getX());
+    double yVelocity = yController.calculate(currentPose.getY(), targetPose.getY());
+    double omega =
+        thetaController.calculate(
+            currentPose.getRotation().getRadians(), targetPose.getRotation().getRadians());
+
+    // Clamp linear velocity by vector magnitude
+    Translation2d linear = new Translation2d(xVelocity, yVelocity);
+    double maxV = getMaxLinearSpeedMetersPerSec();
+    if (linear.getNorm() > maxV) {
+      linear = linear.times(maxV / linear.getNorm());
+    }
+
     Logger.recordOutput("Drive/AutoMoveToPose/Target", targetPose);
-    Logger.recordOutput("Drive/AutoMoveToPose/Error", 
-        currentPose.getTranslation().getDistance(targetPose.getTranslation()));
+    Logger.recordOutput(
+        "AutoMoveToPose/CommandedSpeeds", new ChassisSpeeds(linear.getX(), linear.getY(), omega));
+
+    if (atTargetPose()) {
+      stop();
+      return;
+    }
+
+    runFieldRelativeVelocity(new ChassisSpeeds(linear.getX(), linear.getY(), omega));
   }
 
   /**
-   * Returns whether the robot is at the target pose within the tolerances
-   * set in the HolonomicDriveController.
+   * Returns whether the robot is at the target pose within specified tolerances.
    *
    * @return true if the robot is within tolerance of the target pose
    */
   public boolean atTargetPose() {
-    return holonomicController.atReference();
+    return xController.atSetpoint() && yController.atSetpoint() && thetaController.atGoal();
   }
 }
