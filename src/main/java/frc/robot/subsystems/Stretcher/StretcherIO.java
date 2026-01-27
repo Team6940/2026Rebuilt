@@ -23,8 +23,8 @@ public interface StretcherIO {
         public double motorVoltageVolts;
         public double motorCurrentAmps;
 
-        public double StretcherPositionRadians = 0.;
-        public double StretcherRotationDegrees = 0.;
+        public double stretcherPositionRadians = 0.;
+        public double stretcherRotationDegrees = 0.;
     }
 
     default public void updateInputs(StretcherIOInputs inputs) {

@@ -6,12 +6,10 @@ import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
-import com.ctre.phoenix6.signals.GravityTypeValue;
 
 import frc.robot.Constants.MotorIDs;
 import frc.robot.Constants.StretcherConstants;
 import edu.wpi.first.math.util.Units;
-import com.ctre.phoenix6.hardware.core.CoreTalonFX;
 
 public class StretcherIOPhoenix6 implements StretcherIO {
     private static TalonFX motor;
@@ -76,9 +74,9 @@ public class StretcherIOPhoenix6 implements StretcherIO {
 
         inputs.motorVoltageVolts = motor.getMotorVoltage().getValueAsDouble();
         inputs.motorCurrentAmps = motor.getSupplyCurrent().getValueAsDouble();
-        inputs.StretcherRotationDegrees = Units.rotationsToDegrees(motor.getPosition().getValueAsDouble());
-        //inputs.StretcherPositionRadians = inputs.StretcherRotationDegrees * Math.PI / 180.0;
-
+        inputs.stretcherRotationDegrees = Units.rotationsToDegrees(motor.getPosition().getValueAsDouble());
+        inputs.stretcherPositionRadians = inputs.stretcherRotationDegrees * Math.PI / 180.0;
+ 
     }
 
 }

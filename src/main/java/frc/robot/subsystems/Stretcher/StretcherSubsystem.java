@@ -45,7 +45,7 @@ public class StretcherSubsystem extends SubsystemBase{
     }
 
     boolean IsAtTargetPosition() {
-        return MathUtil.isNear(targetPosition, inputs.StretcherPositionRadians, StretcherConstants.StretcherPositionToleranceDegs);
+        return MathUtil.isNear(targetPosition, inputs.stretcherPositionRadians, StretcherConstants.StretcherPositionToleranceDegs);
     }
 
     public double getTargetPosition() {
