@@ -13,6 +13,7 @@
 
 package frc.robot;
 
+import com.ctre.phoenix6.signals.InvertedValue;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -63,6 +64,14 @@ public final class Constants {
     public static final int kBackRightDriveMotorId = 7;
     public static final int kBackRightSteerMotorId = 8;
     public static final int kBackRightEncoderId = 12;
+
+    /*   Stretcher   */
+    public static final int StretcherMotorID = 14;
+
+    /*   Intake   */
+    public static final int IntakeMotorID = 15;
+
+
   }
 
   public final class DriveConstants {
@@ -367,5 +376,53 @@ public final class Constants {
         throw new RuntimeException("Failed to load AprilTag layout", e);
       }
     }
+  }
+
+  public final class IntakeConstants {
+    public static final double IntakeRatio = 1.0 / 1.0; // Sensor rotations to mechanism rotations
+    public static final InvertedValue IntakeInverted = InvertedValue.Clockwise_Positive;
+
+    // PID Gains
+    public static final double kP = 0.5;
+    public static final double kI = 0.0;
+    public static final double kD = 0.0;
+    public static final double kV = 0.1;
+    public static final double kS = 0.0;
+
+    public static final double IntakeVelocityToleranceRPS = 0.5;
+
+    public static final double IntakingRPS = 10.0;
+    public static final double ReversingRPS = 0;
+
+  }
+
+  public final class StretcherConstants {
+    public static final double StretcherRatio = 1.0 / 1.0; // Sensor rotations to mechanism rotations
+    public static final InvertedValue Inverted = InvertedValue.Clockwise_Positive;
+    public static final double StretcherVelocityToleranceRPS = 0.2;
+
+    // PID Gains
+    public static final double kP = 1.0;
+    public static final double kI = 0.0;
+    public static final double kD = 0.0;
+    public static final double kV = 0.2;
+    public static final double kS = 0.0;
+    // public static final double kG = 0.3;
+
+    // Motion Magic Gains
+    public static final double MaxVelocity = 4.0; // Rotations per second
+    public static final double Acceleration = 8.0; // Rotations per second squared
+    //public static final double Deadband = 0.24;
+
+    // Positions(Degrees)
+    public static final double StretcherPositionToleranceDegs = 3.;
+
+    public static final double MinDegs = -66.; //degrees CCW Positive
+    public static final double MaxDegs = 90.; 
+
+    public static final double ExtendedPosition = -61.;
+    public static final double RetractedPosition = 90.;
+
+    public static final double IdlePosition = 0.;
   }
 }

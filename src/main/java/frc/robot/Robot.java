@@ -134,9 +134,10 @@ public class Robot extends LoggedRobot {
   public void autonomousInit() {
     autonomousCommand = robotContainer.getAutonomousCommand();
 
-    // schedule the autonomous command (example)
+    /* Edited for "Warning: [removal] The schedule() in Command is out of date, and will be removed in a future
+    release. Use CommandScheduler.getInstance().schedule(command) instead." */
     if (autonomousCommand != null) {
-      autonomousCommand.schedule();
+      CommandScheduler.getInstance().schedule(autonomousCommand);
     }
   }
 
