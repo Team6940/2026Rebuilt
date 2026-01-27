@@ -33,11 +33,11 @@ public class StretcherIOPhoenix6 implements StretcherIO {
         config.Slot0.kD = StretcherConstants.kD;
         config.Slot0.kV = StretcherConstants.kV;
         config.Slot0.kS = StretcherConstants.kS;
-        config.Slot0.kG = StretcherConstants.kG;
+        // config.Slot0.kG = StretcherConstants.kG;
 
         config.MotorOutput.Inverted = StretcherConstants.Inverted;
 
-        config.Slot0.GravityType = GravityTypeValue.Arm_Cosine;
+        // config.Slot0.GravityType = GravityTypeValue.Arm_Cosine;
 
         config.MotionMagic.MotionMagicCruiseVelocity = StretcherConstants.MaxVelocity;
         config.MotionMagic.MotionMagicAcceleration = StretcherConstants.Acceleration;
@@ -45,7 +45,7 @@ public class StretcherIOPhoenix6 implements StretcherIO {
         //config.MotorOutput.DutyCycleNeutralDeadband = StretcherConstants.Deadband;
         motor.getConfigurator().apply(config);
 
-        motor.setPosition(0.25);//1/4rotation, which means 90degs
+        motor.setPosition(Units.degreesToRotations(StretcherConstants.IdlePosition));//1/4rotation, which means 90degs
             //zeroStretcherPosition();
     }
 

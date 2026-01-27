@@ -1,4 +1,4 @@
-package frc.robot.subsystems.Intaker;
+package frc.robot.subsystems.Intake;
 
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.CANBus;
@@ -7,31 +7,31 @@ import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
-import frc.robot.Constants.IntakerConstants;
+import frc.robot.Constants.IntakeConstants;
 import frc.robot.Constants.MotorIDs;
 
-public class IntakerIOPhoenix6 implements IntakerIO {
-    private static final TalonFX motor = new TalonFX(MotorIDs.IntakerMotorID, CANBus.roboRIO());
+public class IntakeIOPhoenix6 implements IntakeIO {
+    private static final TalonFX motor = new TalonFX(MotorIDs.IntakeMotorID, CANBus.roboRIO());
 
     private static final VelocityVoltage dutycycle = new VelocityVoltage(0);
 
-    public IntakerIOPhoenix6() {
+    public IntakeIOPhoenix6() {
         motorConfig();
     }
 
     private void motorConfig() {
         TalonFXConfiguration config = new TalonFXConfiguration();
         config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
-        config.Feedback.SensorToMechanismRatio = IntakerConstants.IntakerRatio;
+        config.Feedback.SensorToMechanismRatio = IntakeConstants.IntakeRatio;
         config.Voltage.PeakForwardVoltage = 12.0;
         config.Voltage.PeakReverseVoltage = -12.0;
-        config.Slot0.kP = IntakerConstants.kP;
-        config.Slot0.kI = IntakerConstants.kI;
-        config.Slot0.kD = IntakerConstants.kD;
-        config.Slot0.kV = IntakerConstants.kV;
-        config.Slot0.kS = IntakerConstants.kS;
+        config.Slot0.kP = IntakeConstants.kP;
+        config.Slot0.kI = IntakeConstants.kI;
+        config.Slot0.kD = IntakeConstants.kD;
+        config.Slot0.kV = IntakeConstants.kV;
+        config.Slot0.kS = IntakeConstants.kS;
 
-        config.MotorOutput.Inverted = IntakerConstants.IntakerInverted;
+        config.MotorOutput.Inverted = IntakeConstants.IntakeInverted;
         motor.getConfigurator().apply(config);
     }
 
@@ -49,7 +49,7 @@ public class IntakerIOPhoenix6 implements IntakerIO {
     }
 
     @Override
-    public void updateInputs(IntakerIOInputs inputs) {
+    public void updateInputs(IntakeIOInputs inputs) {
         inputs.motorConnected = BaseStatusSignal.refreshAll(
             motor.getMotorVoltage(),
             motor.getSupplyCurrent(),
@@ -58,7 +58,7 @@ public class IntakerIOPhoenix6 implements IntakerIO {
         
         inputs.motorVoltageVolts = motor.getMotorVoltage().getValueAsDouble();
         inputs.motorCurrentAmps = motor.getSupplyCurrent().getValueAsDouble();
-        inputs.intakerVelocityRPS = motor.getVelocity().getValueAsDouble();
+        inputs.intakeVelocityRPS = motor.getVelocity().getValueAsDouble();
     }
 
 
