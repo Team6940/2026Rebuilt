@@ -58,12 +58,14 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants;
+import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.Mode;
 import frc.robot.generated.TunerConstants;
 import frc.robot.util.LocalADStarAK;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.DoubleSupplier;
+import java.util.function.Supplier;
 import org.ironmaple.simulation.drivesims.COTS;
 import org.ironmaple.simulation.drivesims.configs.DriveTrainSimulationConfig;
 import org.ironmaple.simulation.drivesims.configs.SwerveModuleSimulationConfig;
@@ -145,23 +147,25 @@ public class Drive extends SubsystemBase {
   private final PIDController xController;
   private final PIDController yController;
   private final ProfiledPIDController thetaController;
+  private final ProfiledPIDController fieldCentricAngleController;
 
   private void initializeAutoMoveToPoseControllers() {
     // Initialize X and Y PID controllers
-    xController.setPID(5.0, 0.0, 0.0);
-    yController.setPID(5.0, 0.0, 0.0);
+    xController.setPID(DriveConstants.MOVE_TO_X_KP, 0.0, DriveConstants.MOVE_TO_X_KD);
+    yController.setPID(DriveConstants.MOVE_TO_Y_KP, 0.0, DriveConstants.MOVE_TO_Y_KD);
 
     // Initialize theta ProfiledPID controller
-    thetaController.setPID(5.0, 0.0, 0.0);
+    thetaController.setPID(DriveConstants.MOVE_TO_THETA_KP, 0.0, DriveConstants.MOVE_TO_THETA_KD);
     thetaController.enableContinuousInput(-Math.PI, Math.PI);
     thetaController.setConstraints(
         new TrapezoidProfile.Constraints(
-            getMaxAngularSpeedRadPerSec(), getMaxAngularSpeedRadPerSec() * 4.));
+            DriveConstants.ANGLE_MAX_VELOCITY, DriveConstants.ANGLE_MAX_ACCELERATION));
 
     // Set tolerances
-    xController.setTolerance(0.05); // 5cm position
-    yController.setTolerance(0.05); // 5cm position
-    thetaController.setTolerance(Units.degreesToRadians(2.0)); // 2° position
+    xController.setTolerance(DriveConstants.MOVE_TO_POSITION_TOLERANCE_METERS);
+    yController.setTolerance(DriveConstants.MOVE_TO_POSITION_TOLERANCE_METERS);
+    thetaController.setTolerance(
+        Units.degreesToRadians(DriveConstants.MOVE_TO_ANGLE_TOLERANCE_DEGREES));
   }
 
   public Drive(
@@ -182,6 +186,17 @@ public class Drive extends SubsystemBase {
     thetaController = new ProfiledPIDController(0, 0, 0, new TrapezoidProfile.Constraints(0, 0));
     initializeAutoMoveToPoseControllers();
 
+    // Initialize field centric angle controller
+    fieldCentricAngleController =
+        new ProfiledPIDController(
+            Constants.DriveConstants.ANGLE_KP,
+            0.0,
+            Constants.DriveConstants.ANGLE_KD,
+            new TrapezoidProfile.Constraints(
+                Constants.DriveConstants.ANGLE_MAX_VELOCITY,
+                Constants.DriveConstants.ANGLE_MAX_ACCELERATION));
+    fieldCentricAngleController.enableContinuousInput(-Math.PI, Math.PI);
+
     // Usage reporting for swerve template
     HAL.report(tResourceType.kResourceType_RobotDrive, tInstances.kRobotDriveSwerve_AdvantageKit);
 
@@ -195,7 +210,9 @@ public class Drive extends SubsystemBase {
         this::getChassisSpeeds,
         this::runVelocity,
         new PPHolonomicDriveController(
-            new PIDConstants(5.0, 0.0, 0.0), new PIDConstants(5.0, 0.0, 0.0)),
+            new PIDConstants(
+                DriveConstants.PP_TRANSLATION_KP, 0.0, DriveConstants.PP_TRANSLATION_KD),
+            new PIDConstants(DriveConstants.PP_ROTATION_KP, 0.0, DriveConstants.PP_ROTATION_KD)),
         PP_CONFIG,
         () -> DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red,
         this);
@@ -353,6 +370,36 @@ public class Drive extends SubsystemBase {
             isFlipped ? this.getRotation().plus(new Rotation2d(Math.PI)) : this.getRotation()));
   }
 
+  /**
+   * Field relative drive using joystick for linear control and PID for angular control. Possible
+   * use cases include snapping to an angle, aiming at a vision target, or controlling absolute
+   * rotation with a joystick.
+   */
+  public void driveFieldCentricAtAngle(
+      DoubleSupplier xSupplier, DoubleSupplier ySupplier, Supplier<Rotation2d> rotationSupplier) {
+    // Get linear velocity
+    Translation2d linearVelocity =
+        getLinearVelocityFromJoysticks(xSupplier.getAsDouble(), ySupplier.getAsDouble());
+
+    // Calculate angular speed
+    double omega =
+        fieldCentricAngleController.calculate(
+            getRotation().getRadians(), rotationSupplier.get().getRadians());
+
+    // Convert to field relative speeds & send command
+    ChassisSpeeds speeds =
+        new ChassisSpeeds(
+            linearVelocity.getX() * getMaxLinearSpeedMetersPerSec(),
+            linearVelocity.getY() * getMaxLinearSpeedMetersPerSec(),
+            omega);
+    boolean isFlipped =
+        DriverStation.getAlliance().isPresent()
+            && DriverStation.getAlliance().get() == Alliance.Red;
+    runVelocity(
+        ChassisSpeeds.fromFieldRelativeSpeeds(
+            speeds, isFlipped ? getRotation().plus(new Rotation2d(Math.PI)) : getRotation()));
+  }
+
   /** Runs the drive in a straight line with the specified drive output. */
   public void runCharacterization(double output) {
     for (int i = 0; i < 4; i++) {
@@ -442,6 +489,47 @@ public class Drive extends SubsystemBase {
   /** Returns the current odometry rotation. */
   public Rotation2d getRotation() {
     return getPose().getRotation();
+  }
+
+  /**
+   * Returns chassis speeds relative to the hub center, expressed as (radial, tangential). Radial is
+   * positive away from the hub, tangential is positive counter-clockwise.
+   */
+  public Translation2d getHubRelativeChassisSpeeds() {
+    Translation2d hubCenter = getAllianceHubCenter();
+    Translation2d robotPosition = getPose().getTranslation();
+    Translation2d hubToRobot = robotPosition.minus(hubCenter);
+
+    double distance = hubToRobot.getNorm();
+    if (distance < 1e-6) {
+      return new Translation2d();
+    }
+
+    Translation2d radialUnit = hubToRobot.div(distance);
+    Translation2d tangentialUnit = new Translation2d(-radialUnit.getY(), radialUnit.getX());
+
+    ChassisSpeeds fieldSpeeds =
+        ChassisSpeeds.fromRobotRelativeSpeeds(getChassisSpeeds(), getRotation());
+    Translation2d velocity =
+        new Translation2d(fieldSpeeds.vxMetersPerSecond, fieldSpeeds.vyMetersPerSecond);
+
+    double radial = velocity.getX() * radialUnit.getX() + velocity.getY() * radialUnit.getY();
+    double tangential =
+        velocity.getX() * tangentialUnit.getX() + velocity.getY() * tangentialUnit.getY();
+
+    return new Translation2d(radial, tangential);
+  }
+
+  /*
+   * Returns the center point of the alliance hub based on the current alliance.
+   */
+  private static Translation2d getAllianceHubCenter() {
+    boolean isRedAlliance =
+        DriverStation.getAlliance().isPresent()
+            && DriverStation.getAlliance().get() == Alliance.Red;
+    return isRedAlliance
+        ? Constants.FieldConstants.Hub.oppCenterPoint
+        : Constants.FieldConstants.Hub.centerPoint;
   }
 
   /** Resets the current odometry pose. */
