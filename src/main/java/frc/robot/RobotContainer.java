@@ -20,7 +20,7 @@ import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import frc.robot.subsystems.ImprovedCommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.commands.DriveCommands;
 import frc.robot.generated.TunerConstants;
@@ -52,7 +52,7 @@ public class RobotContainer {
   private SwerveDriveSimulation driveSimulation = null;
 
   // Controller
-  private final CommandXboxController controller = new CommandXboxController(0);
+  public static final ImprovedCommandXboxController driveController = new ImprovedCommandXboxController(0);
 
   // Dashboard inputs
   private final LoggedDashboardChooser<Command> autoChooser;
@@ -134,25 +134,25 @@ public class RobotContainer {
         drive.run(
             () ->
                 drive.driveFieldCentric(
-                    () -> -controller.getLeftY(),
-                    () -> -controller.getLeftX(),
-                    () -> -controller.getRightX())));
+                    () -> -driveController.getLeftY(),
+                    () -> -driveController.getLeftX(),
+                    () -> -driveController.getRightX())));
 
     // Lock to 0° when A button is held
-    controller
+    driveController
         .a()
         .whileTrue(
             DriveCommands.joystickDriveAtAngle(
                 drive,
-                () -> -controller.getLeftY(),
-                () -> -controller.getLeftX(),
+                () -> -driveController.getLeftY(),
+                () -> -driveController.getLeftX(),
                 () -> new Rotation2d()));
 
     // Switch to X pattern when X button is pressed
-    controller.x().onTrue(Commands.runOnce(drive::stopWithX, drive));
+    driveController.x().onTrue(Commands.runOnce(drive::stopWithX, drive));
 
     // Reset gyro to 0° when B button is pressed
-    controller
+    driveController
         .b()
         .onTrue(
             Commands.runOnce(
