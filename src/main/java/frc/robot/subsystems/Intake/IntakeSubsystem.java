@@ -2,13 +2,10 @@ package frc.robot.subsystems.Intake;
 
 import org.littletonrobotics.junction.Logger;
 
-import com.ctre.phoenix6.swerve.SwerveRequest.Idle;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Robot;
 import frc.robot.Constants.IntakeConstants;
-import frc.robot.subsystems.Intake.IntakeIO;
-import frc.robot.subsystems.Intake.IntakeIOInputsAutoLogged;
 
 public class IntakeSubsystem extends SubsystemBase{
     public static IntakeSubsystem m_instance;

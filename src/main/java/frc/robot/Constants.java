@@ -71,7 +71,14 @@ public final class Constants {
     /*   Intake   */
     public static final int IntakeMotorID = 15;
 
+    /*   Shooter   */
+    public static final int ShooterMotorID = 16;
 
+    /*   Hood   */
+    public static final int HoodMotorID = 17;
+
+    /*   Turret   */
+    public static final int TurretMotorID = 18;
   }
 
   public final class DriveConstants {
@@ -393,11 +400,61 @@ public final class Constants {
 
     public static final double IntakingRPS = 10.0;
     public static final double ReversingRPS = 0;
+  }
 
+  public final class HoodConstants {
+    public static final double HoodRatio = 1.0 / 1.0;
+    public static final InvertedValue Inverted = InvertedValue.Clockwise_Positive;
+
+    // PID Gains
+    public static final double kP = 1.0;
+    public static final double kI = 0.0;
+    public static final double kD = 0.0;
+    public static final double kV = 0.0;
+    public static final double kS = 0.0;
+
+    // Motion Magic Gains
+    public static final double MaxVelocity = 4.0; // Rotations per second
+    public static final double Acceleration = 8.0; // Rotations per second squared
+
+    // Positions (Degrees)
+    public static final double HoodPositionToleranceDegs = 2.0;
+    public static final double MinDegs = -10.0;
+    public static final double MaxDegs = 90.0;
+    public static final double IdlePosition = 0.0;
+
+    // Manual control tuning
+    public static final double HoodManualSensitivity = 1.0;
+  }
+
+  public final class TurretConstants {
+    public static final double TurretRatio = 1.0 / 1.0;
+    public static final InvertedValue Inverted = InvertedValue.Clockwise_Positive;
+
+    // PID Gains
+    public static final double kP = 1.0;
+    public static final double kI = 0.0;
+    public static final double kD = 0.0;
+    public static final double kV = 0.0;
+    public static final double kS = 0.0;
+
+    // Motion Magic Gains
+    public static final double MaxVelocity = 4.0; // Rotations per second
+    public static final double Acceleration = 8.0; // Rotations per second squared
+
+    // Positions (Degrees)
+    public static final double TurretPositionToleranceDegs = 2.0;
+    public static final double MinDegs = -180.0;
+    public static final double MaxDegs = 180.0;
+    public static final double IdlePosition = 0.0;
+
+    // Manual control tuning
+    public static final double TurretManualSensitivity = 1.0;
   }
 
   public final class StretcherConstants {
-    public static final double StretcherRatio = 1.0 / 1.0; // Sensor rotations to mechanism rotations
+    public static final double StretcherRatio =
+        1.0 / 1.0; // Sensor rotations to mechanism rotations
     public static final InvertedValue Inverted = InvertedValue.Clockwise_Positive;
     public static final double StretcherVelocityToleranceRPS = 0.2;
 
@@ -412,17 +469,37 @@ public final class Constants {
     // Motion Magic Gains
     public static final double MaxVelocity = 4.0; // Rotations per second
     public static final double Acceleration = 8.0; // Rotations per second squared
-    //public static final double Deadband = 0.24;
+    // public static final double Deadband = 0.24;
 
     // Positions(Degrees)
     public static final double StretcherPositionToleranceDegs = 3.;
 
-    public static final double MinDegs = -66.; //degrees CCW Positive
-    public static final double MaxDegs = 90.; 
+    public static final double MinDegs = -66.; // degrees CCW Positive
+    public static final double MaxDegs = 90.;
 
     public static final double ExtendedPosition = -61.;
     public static final double RetractedPosition = 90.;
 
     public static final double IdlePosition = 0.;
+  }
+
+  public final class ShooterConstants {
+    public static final double ShooterRatio = 1.0 / 1.0;
+    public static final InvertedValue Inverted = InvertedValue.Clockwise_Positive;
+    public static final double ShooterVelocityToleranceRPS = 0.5;
+
+    // PID Gains
+    public static final double kP = 0.5;
+    public static final double kI = 0.0;
+    public static final double kD = 0.0;
+
+    // Torque-current feedforward (Amps per RPS)
+    public static final double kTorqueFFPerRPS = 0.0;
+
+    // Consider using a static Torque feedforward here
+    public static final double kT = 0.1;
+
+    // Current limits
+    public static final double SupplyCurrentLimit = 80.0;
   }
 }
