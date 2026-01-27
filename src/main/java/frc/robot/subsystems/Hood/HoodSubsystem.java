@@ -1,0 +1,117 @@
+package frc.robot.subsystems.Hood;
+
+import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants.HoodConstants;
+import frc.robot.Robot;
+import org.littletonrobotics.junction.Logger;
+
+public class HoodSubsystem extends SubsystemBase {
+  public static HoodSubsystem m_instance;
+
+  public static HoodSubsystem getInstance() {
+    return m_instance == null ? m_instance = new HoodSubsystem() : m_instance;
+  }
+
+  public enum HoodMode {
+    AUTO,
+    MANUAL
+  }
+
+  private final HoodIO io;
+  private final HoodIOInputsAutoLogged inputs = new HoodIOInputsAutoLogged();
+
+  private HoodMode mode = HoodMode.AUTO;
+  private double autoSetpointDegs = HoodConstants.IdlePosition;
+  private double manualSetpointDegs = HoodConstants.IdlePosition;
+  private double targetPositionDegs = HoodConstants.IdlePosition;
+
+  public HoodSubsystem() {
+    if (Robot.isReal()) {
+      io = new HoodIOPhoenix6();
+    } else {
+      // TODO: Implement simulation code here
+      io = new HoodIO() {};
+    }
+  }
+
+  public void resetPosition() {
+    io.resetPosition(HoodConstants.IdlePosition);
+  }
+
+  public void setPosition(double positionDegrees) {
+    positionDegrees = clamp(positionDegrees);
+    io.setPosition(positionDegrees);
+  }
+
+  public void setModeAuto() {
+    mode = HoodMode.AUTO;
+    autoSetpointDegs = clamp(autoSetpointDegs);
+  }
+
+  public void setModeManual() {
+    mode = HoodMode.MANUAL;
+    manualSetpointDegs = clamp(manualSetpointDegs);
+  }
+
+  public HoodMode getMode() {
+    return mode;
+  }
+
+  public void setAutoSetpoint(double positionDegrees) {
+    autoSetpointDegs = clamp(positionDegrees);
+  }
+
+  public void setManualSetpoint(double positionDegrees) {
+    manualSetpointDegs = clamp(positionDegrees);
+  }
+
+  public void nudgeManualSetpoint(double scalarDelta) {
+    manualSetpointDegs =
+        clamp(manualSetpointDegs + scalarDelta * HoodConstants.HoodManualSensitivity);
+  }
+
+  public double getTargetPositionDegs() {
+    return targetPositionDegs;
+  }
+
+  public boolean isAtTargetPosition() {
+    return MathUtil.isNear(
+        targetPositionDegs, inputs.hoodPositionDegrees, HoodConstants.HoodPositionToleranceDegs);
+  }
+
+  public void setVoltage(double voltage) {
+    io.setVoltage(voltage);
+  }
+
+  @Override
+  public void periodic() {
+    io.updateInputs(inputs);
+
+    switch (mode) {
+      case AUTO -> handleAuto();
+      case MANUAL -> handleManual();
+    }
+
+    Logger.processInputs("Hood", inputs);
+    Logger.recordOutput("Hood/Mode", mode.toString());
+    Logger.recordOutput("Hood/TargetPositionDegs", targetPositionDegs);
+    Logger.recordOutput("Hood/IsAtTarget", isAtTargetPosition());
+    Logger.recordOutput("Hood/AutoSetpointDegs", autoSetpointDegs);
+    Logger.recordOutput("Hood/ManualSetpointDegs", manualSetpointDegs);
+  }
+
+  private void handleAuto() {
+    targetPositionDegs = clamp(autoSetpointDegs);
+    io.setPosition(targetPositionDegs);
+  }
+
+  private void handleManual() {
+    targetPositionDegs = clamp(manualSetpointDegs);
+    io.setPosition(targetPositionDegs);
+  }
+
+  private double clamp(double positionDegrees) {
+    return MathUtil.clamp(positionDegrees, HoodConstants.MinDegs, HoodConstants.MaxDegs);
+  }
+}
