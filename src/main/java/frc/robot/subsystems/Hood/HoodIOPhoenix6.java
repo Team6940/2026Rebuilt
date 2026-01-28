@@ -30,6 +30,9 @@ public class HoodIOPhoenix6 implements HoodIO {
     config.Slot0.kV = HoodConstants.kV;
     config.Slot0.kS = HoodConstants.kS;
 
+    config.CurrentLimits.SupplyCurrentLimitEnable = true;
+    config.CurrentLimits.SupplyCurrentLimit = HoodConstants.HoodSupplyCurrentLimit;
+
     config.MotorOutput.Inverted = HoodConstants.Inverted;
 
     config.MotionMagic.MotionMagicCruiseVelocity = HoodConstants.MaxVelocity;
