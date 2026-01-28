@@ -30,6 +30,9 @@ public class TurretIOPhoenix6 implements TurretIO {
     config.Slot0.kV = TurretConstants.kV;
     config.Slot0.kS = TurretConstants.kS;
 
+    config.CurrentLimits.SupplyCurrentLimitEnable = true;
+    config.CurrentLimits.SupplyCurrentLimit = TurretConstants.TurretSupplyCurrentLimit;
+
     config.MotorOutput.Inverted = TurretConstants.Inverted;
 
     config.MotionMagic.MotionMagicCruiseVelocity = TurretConstants.MaxVelocity;

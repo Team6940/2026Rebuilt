@@ -14,6 +14,7 @@
 package frc.robot;
 
 import com.ctre.phoenix6.signals.InvertedValue;
+import com.ctre.phoenix6.signals.MotorAlignmentValue;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -73,6 +74,7 @@ public final class Constants {
 
     /*   Shooter   */
     public static final int ShooterMotorID = 16;
+    public static final int ShooterFollowerMotorID = 19;
 
     /*   Hood   */
     public static final int HoodMotorID = 17;
@@ -388,6 +390,7 @@ public final class Constants {
   public final class IntakeConstants {
     public static final double IntakeRatio = 1.0 / 1.0; // Sensor rotations to mechanism rotations
     public static final InvertedValue IntakeInverted = InvertedValue.Clockwise_Positive;
+    public static final double IntakeSupplyCurrentLimit = 40.0;
 
     // PID Gains
     public static final double kP = 0.5;
@@ -405,6 +408,7 @@ public final class Constants {
   public final class HoodConstants {
     public static final double HoodRatio = 1.0 / 1.0;
     public static final InvertedValue Inverted = InvertedValue.Clockwise_Positive;
+    public static final double HoodSupplyCurrentLimit = 40.0;
 
     // PID Gains
     public static final double kP = 1.0;
@@ -430,6 +434,7 @@ public final class Constants {
   public final class TurretConstants {
     public static final double TurretRatio = 1.0 / 1.0;
     public static final InvertedValue Inverted = InvertedValue.Clockwise_Positive;
+    public static final double TurretSupplyCurrentLimit = 40.0;
 
     // PID Gains
     public static final double kP = 1.0;
@@ -457,6 +462,7 @@ public final class Constants {
         1.0 / 1.0; // Sensor rotations to mechanism rotations
     public static final InvertedValue Inverted = InvertedValue.Clockwise_Positive;
     public static final double StretcherVelocityToleranceRPS = 0.2;
+    public static final double StretcherSupplyCurrentLimit = 40.0;
 
     // PID Gains
     public static final double kP = 1.0;
@@ -487,6 +493,7 @@ public final class Constants {
     public static final double ShooterRatio = 1.0 / 1.0;
     public static final InvertedValue Inverted = InvertedValue.Clockwise_Positive;
     public static final double ShooterVelocityToleranceRPS = 0.5;
+    public static final MotorAlignmentValue FollowerAlignment = MotorAlignmentValue.Aligned;
 
     // PID Gains
     public static final double kP = 0.5;
@@ -500,6 +507,6 @@ public final class Constants {
     public static final double kT = 0.1;
 
     // Current limits
-    public static final double SupplyCurrentLimit = 80.0;
+    public static final double ShooterSupplyCurrentLimit = 80.0;
   }
 }

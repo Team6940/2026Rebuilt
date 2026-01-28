@@ -3,6 +3,7 @@ package frc.robot.subsystems.Shooter;
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.CANBus;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.controls.VelocityTorqueCurrentFOC;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
@@ -12,7 +13,10 @@ import frc.robot.Constants.ShooterConstants;
 public class ShooterIOPhoenix6 implements ShooterIO {
 
   private final TalonFX flywheel = new TalonFX(MotorIDs.ShooterMotorID, CANBus.roboRIO());
+  private final TalonFX follower = new TalonFX(MotorIDs.ShooterFollowerMotorID, CANBus.roboRIO());
   private final VelocityTorqueCurrentFOC velocityRequest = new VelocityTorqueCurrentFOC(0.0);
+  private final Follower followerRequest =
+      new Follower(MotorIDs.ShooterMotorID, ShooterConstants.FollowerAlignment);
 
   public ShooterIOPhoenix6() {
     TalonFXConfiguration config = new TalonFXConfiguration();
@@ -27,11 +31,13 @@ public class ShooterIOPhoenix6 implements ShooterIO {
     config.Slot0.kS = 0.0;
 
     config.CurrentLimits.SupplyCurrentLimitEnable = true;
-    config.CurrentLimits.SupplyCurrentLimit = ShooterConstants.SupplyCurrentLimit;
+    config.CurrentLimits.SupplyCurrentLimit = ShooterConstants.ShooterSupplyCurrentLimit;
 
     config.MotorOutput.Inverted = ShooterConstants.Inverted;
 
     flywheel.getConfigurator().apply(config);
+    follower.getConfigurator().apply(config);
+    follower.setControl(followerRequest);
   }
 
   @Override
