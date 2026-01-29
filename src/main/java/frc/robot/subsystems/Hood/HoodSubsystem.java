@@ -14,17 +14,18 @@ public class HoodSubsystem extends SubsystemBase {
   }
 
   public enum HoodMode {
-    AUTO,
+    HYBRID,
     MANUAL
   }
 
   private final HoodIO io;
   private final HoodIOInputsAutoLogged inputs = new HoodIOInputsAutoLogged();
 
-  private HoodMode mode = HoodMode.AUTO;
+  private HoodMode mode = HoodMode.HYBRID;
   private double autoSetpointDegs = HoodConstants.IdlePosition;
   private double manualSetpointDegs = HoodConstants.IdlePosition;
   private double targetPositionDegs = HoodConstants.IdlePosition;
+  private double operatorInputScalar = 0.0;
 
   public HoodSubsystem() {
     if (Robot.isReal()) {
@@ -44,8 +45,8 @@ public class HoodSubsystem extends SubsystemBase {
     io.setPosition(positionDegrees);
   }
 
-  public void setModeAuto() {
-    mode = HoodMode.AUTO;
+  public void setModeHybrid() {
+    mode = HoodMode.HYBRID;
     autoSetpointDegs = clamp(autoSetpointDegs);
   }
 
@@ -64,6 +65,10 @@ public class HoodSubsystem extends SubsystemBase {
 
   public void setManualSetpoint(double positionDegrees) {
     manualSetpointDegs = clamp(positionDegrees);
+  }
+
+  public void setOperatorInputScalar(double scalar) {
+    operatorInputScalar = MathUtil.clamp(scalar, -1.0, 1.0);
   }
 
   public void nudgeManualSetpoint(double scalarDelta) {
@@ -89,7 +94,7 @@ public class HoodSubsystem extends SubsystemBase {
     io.updateInputs(inputs);
 
     switch (mode) {
-      case AUTO -> handleAuto();
+      case HYBRID -> handleHybrid();
       case MANUAL -> handleManual();
     }
 
@@ -99,14 +104,17 @@ public class HoodSubsystem extends SubsystemBase {
     Logger.recordOutput("Hood/IsAtTarget", isAtTargetPosition());
     Logger.recordOutput("Hood/AutoSetpointDegs", autoSetpointDegs);
     Logger.recordOutput("Hood/ManualSetpointDegs", manualSetpointDegs);
+    Logger.recordOutput("Hood/OperatorInputScalar", operatorInputScalar);
   }
 
-  private void handleAuto() {
-    targetPositionDegs = clamp(autoSetpointDegs);
+  private void handleHybrid() {
+    targetPositionDegs =
+        clamp(autoSetpointDegs + operatorInputScalar * HoodConstants.HoodHybridRangeDegs);
     io.setPosition(targetPositionDegs);
   }
 
   private void handleManual() {
+    nudgeManualSetpoint(operatorInputScalar);
     targetPositionDegs = clamp(manualSetpointDegs);
     io.setPosition(targetPositionDegs);
   }

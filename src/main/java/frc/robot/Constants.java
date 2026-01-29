@@ -429,6 +429,7 @@ public final class Constants {
 
     // Manual control tuning
     public static final double HoodManualSensitivity = 1.0;
+    public static final double HoodHybridRangeDegs = 15.0;
   }
 
   public final class TurretConstants {
@@ -455,6 +456,7 @@ public final class Constants {
 
     // Manual control tuning
     public static final double TurretManualSensitivity = 1.0;
+    public static final double TurretHybridRangeDegs = 30.0;
   }
 
   public final class StretcherConstants {

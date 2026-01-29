@@ -16,17 +16,18 @@ public class TurretSubsystem extends SubsystemBase {
   }
 
   public enum TurretMode {
-    AUTO,
+    HYBRID,
     MANUAL
   }
 
   private final TurretIO io;
   private final TurretIOInputsAutoLogged inputs = new TurretIOInputsAutoLogged();
 
-  private TurretMode mode = TurretMode.AUTO;
+  private TurretMode mode = TurretMode.HYBRID;
   private double autoSetpointDegs = TurretConstants.IdlePosition;
   private double manualSetpointDegs = TurretConstants.IdlePosition;
   private double targetPositionDegs = TurretConstants.IdlePosition;
+  private double operatorInputScalar = 0.0;
 
   private Rotation2d fieldRelativeRotation2d = new Rotation2d();
   private Pose2d lastRobotPose = new Pose2d();
@@ -49,8 +50,8 @@ public class TurretSubsystem extends SubsystemBase {
     io.setPosition(positionDegrees);
   }
 
-  public void setModeAuto() {
-    mode = TurretMode.AUTO;
+  public void setModeHybrid() {
+    mode = TurretMode.HYBRID;
     autoSetpointDegs = clamp(autoSetpointDegs);
   }
 
@@ -83,9 +84,13 @@ public class TurretSubsystem extends SubsystemBase {
     manualSetpointDegs = clamp(positionDegrees);
   }
 
-  public void nudgeManualSetpoint(double scalarDelta) {
+  public void setOperatorInputScalar(double scalar) {
+    operatorInputScalar = MathUtil.clamp(scalar, -1.0, 1.0);
+  }
+
+  public void nudgeManualSetpoint(double scalar) {
     manualSetpointDegs =
-        clamp(manualSetpointDegs + scalarDelta * TurretConstants.TurretManualSensitivity);
+        clamp(manualSetpointDegs + scalar * TurretConstants.TurretManualSensitivity);
   }
 
   public double getTargetPositionDegs() {
@@ -112,7 +117,7 @@ public class TurretSubsystem extends SubsystemBase {
     io.updateInputs(inputs);
 
     switch (mode) {
-      case AUTO -> handleAuto();
+      case HYBRID -> handleHybrid();
       case MANUAL -> handleManual();
     }
 
@@ -124,14 +129,17 @@ public class TurretSubsystem extends SubsystemBase {
     Logger.recordOutput("Turret/ManualSetpointDegs", manualSetpointDegs);
     Logger.recordOutput("Turret/FieldTargetDegs", fieldRelativeRotation2d.getDegrees());
     Logger.recordOutput("Turret/RobotHeadingDegs", lastRobotPose.getRotation().getDegrees());
+    Logger.recordOutput("Turret/OperatorInputScalar", operatorInputScalar);
   }
 
-  private void handleAuto() {
-    targetPositionDegs = clamp(autoSetpointDegs);
+  private void handleHybrid() {
+    targetPositionDegs =
+        clamp(autoSetpointDegs + operatorInputScalar * TurretConstants.TurretHybridRangeDegs);
     io.setPosition(targetPositionDegs);
   }
 
   private void handleManual() {
+    nudgeManualSetpoint(operatorInputScalar);
     targetPositionDegs = clamp(manualSetpointDegs);
     io.setPosition(targetPositionDegs);
   }
