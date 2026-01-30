@@ -16,11 +16,22 @@ public interface TurretIO {
   @AutoLog
   public class TurretIOInputs {
     public boolean motorConnected = false;
+    public boolean encoderConnected = false;
 
     public double motorVoltageVolts;
     public double motorCurrentAmps;
 
+    public double encoderPositionDegrees;
     public double turretPositionDegrees;
+
+    public enum EncoderMagnetHealth {
+      GOOD,
+      RISKY,
+      BAD,
+      INVALID
+    }
+
+    public EncoderMagnetHealth encoderMagnetHealth = EncoderMagnetHealth.BAD;
   }
 
   public default void updateInputs(TurretIOInputs inputs) {}

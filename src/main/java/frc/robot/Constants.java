@@ -15,6 +15,7 @@ package frc.robot;
 
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.MotorAlignmentValue;
+import com.ctre.phoenix6.signals.SensorDirectionValue;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -84,6 +85,7 @@ public final class Constants {
 
     /*   Turret   */
     public static final int TurretMotorID = 18;
+    public static final int TurretEncoderID = 20;
 
     /*   Feeder   */
     public static final int FeederTurntableMotorID = 20;
@@ -531,9 +533,12 @@ public final class Constants {
   }
 
   public final class TurretConstants {
-    public static final double TurretRatio = 1.0 / 1.0;
+    public static final double TurretEncoderToMechanismRatio = 1.0;
     public static final InvertedValue Inverted = InvertedValue.Clockwise_Positive;
     public static final double TurretSupplyCurrentLimit = 40.0;
+    public static final double TurretEncoderOffsetDegrees = 0.0;
+    public static final SensorDirectionValue TurretEncoderDirection =
+        SensorDirectionValue.Clockwise_Positive;
 
     // PID Gains
     public static final double kP = 1.0;
@@ -612,7 +617,8 @@ public final class Constants {
 
   public final class FeederConstants {
     // Turntable Constants
-    public static final double TurntableRatio = 1.0 / 1.0; // Sensor rotations to mechanism rotations
+    public static final double TurntableRatio =
+        1.0 / 1.0; // Sensor rotations to mechanism rotations
     public static final InvertedValue TurntableInverted = InvertedValue.Clockwise_Positive;
     public static final double TurntableSupplyCurrentLimit = 40.0;
 
