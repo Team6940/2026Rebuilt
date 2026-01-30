@@ -296,6 +296,17 @@ public class Drive extends SubsystemBase {
 
     // Update gyro alert
     gyroDisconnectedAlert.set(!gyroInputs.connected && Constants.currentMode != Mode.SIM);
+
+    // Logging data
+    processLog();
+  }
+
+  public void processLog() {
+    Logger.recordOutput("Drive/ChassisSpeeds", getChassisSpeeds());
+    Logger.recordOutput("Drive/HubRelativeChassisSpeeds", getHubRelativeChassisSpeeds());
+    Logger.recordOutput("Drive/DistanceToAllianceHub", getDistanceToAllianceHub());
+    Logger.recordOutput("Drive/AllianceHubCenter", getAllianceHubCenter());
+    Logger.recordOutput("Drive/RotationToAllianceHub", getRotationToAllianceHub());
   }
 
   public static Translation2d getLinearVelocityFromJoysticks(double x, double y) {
