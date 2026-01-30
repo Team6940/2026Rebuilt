@@ -81,6 +81,10 @@ public final class Constants {
 
     /*   Turret   */
     public static final int TurretMotorID = 18;
+
+    /*   Feeder   */
+    public static final int FeederTurntableMotorID = 20;
+    public static final int FeederFeedMotorID = 21;
   }
 
   public final class DriveConstants {
@@ -508,5 +512,39 @@ public final class Constants {
 
     // Current limits
     public static final double ShooterSupplyCurrentLimit = 80.0;
+  }
+
+  public final class FeederConstants {
+    // Turntable Constants
+    public static final double TurntableRatio = 1.0 / 1.0; // Sensor rotations to mechanism rotations
+    public static final InvertedValue TurntableInverted = InvertedValue.Clockwise_Positive;
+    public static final double TurntableSupplyCurrentLimit = 40.0;
+
+    // Turntable motor PID Gains
+    public static final double TurntablekP = 0.5;
+    public static final double TurntablekI = 0.0;
+    public static final double TurntablekD = 0.0;
+    public static final double TurntablekV = 0.1;
+    public static final double TurntablekS = 0.0;
+
+    public static final double TurntableVelocityToleranceRPS = 0.5;
+
+    // Feed (upward feeding) Constants
+    public static final double FeedRatio = 1.0 / 1.0; // Sensor rotations to mechanism rotations
+    public static final InvertedValue FeedInverted = InvertedValue.Clockwise_Positive;
+    public static final double FeedSupplyCurrentLimit = 40.0;
+
+    // Feed motor PID Gains
+    public static final double FeedkP = 0.5;
+    public static final double FeedkI = 0.0;
+    public static final double FeedkD = 0.0;
+    public static final double FeedkV = 0.1;
+    public static final double FeedkS = 0.0;
+
+    public static final double FeedVelocityToleranceRPS = 0.5;
+
+    // Default RPS values
+    public static final double DefaultTurntableRPS = 5.0;
+    public static final double DefaultFeedRPS = 10.0;
   }
 }
