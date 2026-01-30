@@ -15,12 +15,16 @@ package frc.robot;
 
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.MotorAlignmentValue;
+import com.ctre.phoenix6.signals.SensorDirectionValue;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.RobotBase;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -51,15 +55,15 @@ public final class Constants {
 
     /*   Chassis   */
     // Pigeon IMU
-    public static final int kPigeonId = 0; // TODO CHANGE TO REAL VALUE
+    public static final int kPigeonId = 0;
     // Front Left
-    public static final int kFrontLeftDriveMotorId = 3;
-    public static final int kFrontLeftSteerMotorId = 4;
-    public static final int kFrontLeftEncoderId = 10;
+    public static final int kFrontLeftDriveMotorId = 1;
+    public static final int kFrontLeftSteerMotorId = 2;
+    public static final int kFrontLeftEncoderId = 9;
     // Front Right
-    public static final int kFrontRightDriveMotorId = 1;
-    public static final int kFrontRightSteerMotorId = 2;
-    public static final int kFrontRightEncoderId = 9;
+    public static final int kFrontRightDriveMotorId = 3;
+    public static final int kFrontRightSteerMotorId = 4;
+    public static final int kFrontRightEncoderId = 10;
     // Back Left
     public static final int kBackLeftDriveMotorId = 5;
     public static final int kBackLeftSteerMotorId = 6;
@@ -84,6 +88,7 @@ public final class Constants {
 
     /*   Turret   */
     public static final int TurretMotorID = 18;
+    public static final int TurretEncoderID = 20;
 
     /*   Feeder   */
     public static final int FeederTurntableMotorID = 20;
@@ -209,7 +214,9 @@ public final class Constants {
 
   public static final class FieldConstants {
     private static final Path LIBRARY_LAYOUT_PATH =
-        Path.of("src", "main", "deploy", "pathplanner", "field2026", "2026-official-andymark.json");
+        Filesystem.getDeployDirectory()
+            .toPath()
+            .resolve(Path.of("pathplanner", "field2026", "2026-official-andymark.json"));
     private static final AprilTagFieldLayout LAYOUT = loadAprilTagLayout();
 
     // AprilTag related constants
@@ -223,13 +230,13 @@ public final class Constants {
      */
     public static class LinesVertical {
       public static final double center = fieldLength / 2.0;
-      public static final double starting = LAYOUT.getTagPose(26).get().getX();
+      public static final double starting = getTagPoseOrDefault(26).getX();
       public static final double allianceZone = starting;
-      public static final double hubCenter = LAYOUT.getTagPose(26).get().getX() + Hub.width / 2.0;
+      public static final double hubCenter = getTagPoseOrDefault(26).getX() + Hub.width / 2.0;
       public static final double neutralZoneNear = center - Units.inchesToMeters(120);
       public static final double neutralZoneFar = center + Units.inchesToMeters(120);
-      public static final double oppHubCenter = LAYOUT.getTagPose(4).get().getX() + Hub.width / 2.0;
-      public static final double oppAllianceZone = LAYOUT.getTagPose(10).get().getX();
+      public static final double oppHubCenter = getTagPoseOrDefault(4).getX() + Hub.width / 2.0;
+      public static final double oppAllianceZone = getTagPoseOrDefault(10).getX();
     }
 
     /**
@@ -268,13 +275,12 @@ public final class Constants {
 
       // Relevant reference points on alliance side
       public static final Translation3d topCenterPoint =
-          new Translation3d(
-              LAYOUT.getTagPose(26).get().getX() + width / 2.0, fieldWidth / 2.0, height);
+          new Translation3d(getTagPoseOrDefault(26).getX() + width / 2.0, fieldWidth / 2.0, height);
       public static final Translation3d innerCenterPoint =
           new Translation3d(
-              LAYOUT.getTagPose(26).get().getX() + width / 2.0, fieldWidth / 2.0, innerHeight);
+              getTagPoseOrDefault(26).getX() + width / 2.0, fieldWidth / 2.0, innerHeight);
       public static final Translation2d centerPoint =
-          new Translation2d(LAYOUT.getTagPose(26).get().getX() + width / 2.0, fieldWidth / 2.0);
+          new Translation2d(getTagPoseOrDefault(26).getX() + width / 2.0, fieldWidth / 2.0);
 
       public static final Translation2d nearLeftCorner =
           new Translation2d(topCenterPoint.getX() - width / 2.0, fieldWidth / 2.0 + width / 2.0);
@@ -287,10 +293,9 @@ public final class Constants {
 
       // Relevant reference points on the opposite side
       public static final Translation3d oppTopCenterPoint =
-          new Translation3d(
-              LAYOUT.getTagPose(4).get().getX() + width / 2.0, fieldWidth / 2.0, height);
+          new Translation3d(getTagPoseOrDefault(4).getX() + width / 2.0, fieldWidth / 2.0, height);
       public static final Translation2d oppCenterPoint =
-          new Translation2d(LAYOUT.getTagPose(4).get().getX() + width / 2.0, fieldWidth / 2.0);
+          new Translation2d(getTagPoseOrDefault(4).getX() + width / 2.0, fieldWidth / 2.0);
       public static final Translation2d oppNearLeftCorner =
           new Translation2d(oppTopCenterPoint.getX() - width / 2.0, fieldWidth / 2.0 + width / 2.0);
       public static final Translation2d oppNearRightCorner =
@@ -301,10 +306,10 @@ public final class Constants {
           new Translation2d(oppTopCenterPoint.getX() + width / 2.0, fieldWidth / 2.0 - width / 2.0);
 
       // Hub faces
-      public static final Pose2d nearFace = LAYOUT.getTagPose(26).get().toPose2d();
-      public static final Pose2d farFace = LAYOUT.getTagPose(20).get().toPose2d();
-      public static final Pose2d rightFace = LAYOUT.getTagPose(18).get().toPose2d();
-      public static final Pose2d leftFace = LAYOUT.getTagPose(21).get().toPose2d();
+      public static final Pose2d nearFace = getTagPoseOrDefault(26).toPose2d();
+      public static final Pose2d farFace = getTagPoseOrDefault(20).toPose2d();
+      public static final Pose2d rightFace = getTagPoseOrDefault(18).toPose2d();
+      public static final Pose2d leftFace = getTagPoseOrDefault(21).toPose2d();
     }
 
     /** Left Bump related constants */
@@ -418,33 +423,33 @@ public final class Constants {
 
       // Relevant reference points on alliance side
       public static final Translation2d centerPoint =
-          new Translation2d(frontFaceX, LAYOUT.getTagPose(31).get().getY());
+          new Translation2d(frontFaceX, getTagPoseOrDefault(31).getY());
       public static final Translation2d leftUpright =
           new Translation2d(
               frontFaceX,
-              (LAYOUT.getTagPose(31).get().getY())
+              (getTagPoseOrDefault(31).getY())
                   + innerOpeningWidth / 2
                   + Units.inchesToMeters(0.75));
       public static final Translation2d rightUpright =
           new Translation2d(
               frontFaceX,
-              (LAYOUT.getTagPose(31).get().getY())
+              (getTagPoseOrDefault(31).getY())
                   - innerOpeningWidth / 2
                   - Units.inchesToMeters(0.75));
 
       // Relevant reference points on opposing side
       public static final Translation2d oppCenterPoint =
-          new Translation2d(fieldLength - frontFaceX, LAYOUT.getTagPose(15).get().getY());
+          new Translation2d(fieldLength - frontFaceX, getTagPoseOrDefault(15).getY());
       public static final Translation2d oppLeftUpright =
           new Translation2d(
               fieldLength - frontFaceX,
-              (LAYOUT.getTagPose(15).get().getY())
+              (getTagPoseOrDefault(15).getY())
                   + innerOpeningWidth / 2
                   + Units.inchesToMeters(0.75));
       public static final Translation2d oppRightUpright =
           new Translation2d(
               fieldLength - frontFaceX,
-              (LAYOUT.getTagPose(15).get().getY())
+              (getTagPoseOrDefault(15).getY())
                   - innerOpeningWidth / 2
                   - Units.inchesToMeters(0.75));
     }
@@ -473,14 +478,27 @@ public final class Constants {
 
       // Relevant reference points on alliance side
       public static final Translation2d centerPoint =
-          new Translation2d(0, LAYOUT.getTagPose(29).get().getY());
+          new Translation2d(0, getTagPoseOrDefault(29).getY());
+    }
+
+    private static Pose3d getTagPoseOrDefault(int id) {
+      return LAYOUT
+          .getTagPose(id)
+          .orElseGet(
+              () -> {
+                DriverStation.reportError(
+                    "Missing AprilTag ID " + id + " in layout: " + LIBRARY_LAYOUT_PATH, false);
+                return new Pose3d();
+              });
     }
 
     private static AprilTagFieldLayout loadAprilTagLayout() {
       try {
         return new AprilTagFieldLayout(LIBRARY_LAYOUT_PATH);
       } catch (IOException e) {
-        throw new RuntimeException("Failed to load AprilTag layout", e);
+        DriverStation.reportError(
+            "Failed to load AprilTag layout from " + LIBRARY_LAYOUT_PATH, e.getStackTrace());
+        return new AprilTagFieldLayout(new java.util.ArrayList<>(), 0.0, 0.0);
       }
     }
   }
@@ -531,9 +549,12 @@ public final class Constants {
   }
 
   public final class TurretConstants {
-    public static final double TurretRatio = 1.0 / 1.0;
+    public static final double TurretEncoderToMechanismRatio = 1.0;
     public static final InvertedValue Inverted = InvertedValue.Clockwise_Positive;
     public static final double TurretSupplyCurrentLimit = 40.0;
+    public static final double TurretEncoderOffsetDegrees = 0.0;
+    public static final SensorDirectionValue TurretEncoderDirection =
+        SensorDirectionValue.Clockwise_Positive;
 
     // PID Gains
     public static final double kP = 1.0;
@@ -612,7 +633,8 @@ public final class Constants {
 
   public final class FeederConstants {
     // Turntable Constants
-    public static final double TurntableRatio = 1.0 / 1.0; // Sensor rotations to mechanism rotations
+    public static final double TurntableRatio =
+        1.0 / 1.0; // Sensor rotations to mechanism rotations
     public static final InvertedValue TurntableInverted = InvertedValue.Clockwise_Positive;
     public static final double TurntableSupplyCurrentLimit = 40.0;
 
