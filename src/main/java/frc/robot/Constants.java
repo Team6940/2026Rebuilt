@@ -19,10 +19,13 @@ import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
+import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.RobotBase;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.NavigableMap;
+import java.util.TreeMap;
 
 /**
  * This class defines the runtime mode used by AdvantageKit. The mode is always "real" when running
@@ -107,6 +110,97 @@ public final class Constants {
     public static final double PP_TRANSLATION_KD = 0.4;
     public static final double PP_ROTATION_KP = 5.;
     public static final double PP_ROTATION_KD = 0.4;
+  }
+
+  public final class ProjectileConstants {
+    /** Distance (meters) -> Shooter RPS */
+    public static final InterpolatingDoubleTreeMap DistanceToShooterRps =
+        new InterpolatingDoubleTreeMap();
+
+    public static final InterpolatingDoubleTreeMap DistanceToHoodPositionDegs =
+        new InterpolatingDoubleTreeMap();
+
+    /** 2D correction surface: hood angle (deg) -> (radial velocity m/s -> ΔRPS). */
+    public static final NavigableMap<Double, InterpolatingDoubleTreeMap> CorrectionSurface =
+        new TreeMap<>();
+
+    static {
+      // Distance (meters) -> Shooter RPS
+      DistanceToShooterRps.put(1.5, 30.0);
+      DistanceToShooterRps.put(2.5, 35.0);
+      DistanceToShooterRps.put(3.5, 40.0);
+      DistanceToShooterRps.put(4.5, 45.0);
+
+      // Distance (meters) -> Hood position (degrees)
+      DistanceToHoodPositionDegs.put(1.5, 10.0);
+      DistanceToHoodPositionDegs.put(2.5, 18.0);
+      DistanceToHoodPositionDegs.put(3.5, 26.0);
+      DistanceToHoodPositionDegs.put(4.5, 34.0);
+
+      // Radial Velocity (m/s) -> ΔRPS, the name represents the hood angle
+      InterpolatingDoubleTreeMap hood20 = new InterpolatingDoubleTreeMap();
+      hood20.put(-1.0, -2.0);
+      hood20.put(0.0, 0.0);
+      hood20.put(1.0, 2.0);
+
+      InterpolatingDoubleTreeMap hood30 = new InterpolatingDoubleTreeMap();
+      hood30.put(-1.0, -3.0);
+      hood30.put(0.0, 0.0);
+      hood30.put(1.0, 3.0);
+
+      InterpolatingDoubleTreeMap hood40 = new InterpolatingDoubleTreeMap();
+      hood40.put(-1.0, -4.0);
+      hood40.put(0.0, 0.0);
+      hood40.put(1.0, 4.0);
+
+      CorrectionSurface.put(20.0, hood20);
+      CorrectionSurface.put(30.0, hood30);
+      CorrectionSurface.put(40.0, hood40);
+    }
+  }
+
+  public static final class ProjectileCalculator {
+    /** Lookup shooter RPS from distance, with no motion correction. */
+    public static double getStaticShotRps(double distanceMeters) {
+      return ProjectileConstants.DistanceToShooterRps.get(distanceMeters);
+    }
+
+    /** Lookup hood angle (deg) from distance (meters). */
+    public static double getStaticShotHoodAngle(double distanceMeters) {
+      return ProjectileConstants.DistanceToHoodPositionDegs.get(distanceMeters);
+    }
+
+    /** Bilinear lookup of ΔRPS using hood angle (deg) and radial velocity (m/s). */
+    public static double getMotionShotRpsCorrection(double hoodAngleDegs, double radialVelocity) {
+      var correctionSurface = ProjectileConstants.CorrectionSurface;
+      if (correctionSurface.isEmpty()) {
+        return 0.0;
+      }
+
+      var lowerEntry = correctionSurface.floorEntry(hoodAngleDegs);
+      var upperEntry = correctionSurface.ceilingEntry(hoodAngleDegs);
+
+      if (lowerEntry == null) {
+        lowerEntry = correctionSurface.firstEntry();
+      }
+      if (upperEntry == null) {
+        upperEntry = correctionSurface.lastEntry();
+      }
+
+      double lowAngle = lowerEntry.getKey();
+      double highAngle = upperEntry.getKey();
+
+      double deltaLow = lowerEntry.getValue().get(radialVelocity);
+      double deltaHigh = upperEntry.getValue().get(radialVelocity);
+
+      if (Math.abs(highAngle - lowAngle) < 1e-6) {
+        return deltaLow;
+      }
+
+      // Linear interpolation
+      double t = (hoodAngleDegs - lowAngle) / (highAngle - lowAngle);
+      return deltaLow + t * (deltaHigh - deltaLow);
+    }
   }
 
   public static final class FieldConstants {
