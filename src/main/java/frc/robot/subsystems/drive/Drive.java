@@ -526,6 +526,13 @@ public class Drive extends SubsystemBase {
     return getPose().getTranslation().getDistance(hubCenter);
   }
 
+  /** Returns the field-relative rotation that points the robot toward the alliance hub center. */
+  public Rotation2d getRotationToAllianceHub() {
+    Translation2d hubCenter = getAllianceHubCenter();
+    Translation2d robotPosition = getPose().getTranslation();
+    return hubCenter.minus(robotPosition).getAngle();
+  }
+
   /*
    * Returns the center point of the alliance hub based on the current alliance.
    */
