@@ -1,9 +1,13 @@
 package frc.robot.subsystems.Shooter;
 
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.networktables.GenericEntry;
+import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.ShooterConstants;
 import frc.robot.Robot;
+import java.util.Map;
 import org.littletonrobotics.junction.Logger;
 
 public class ShooterSubsystem extends SubsystemBase {
@@ -16,7 +20,16 @@ public class ShooterSubsystem extends SubsystemBase {
   private final ShooterIO io;
   private final ShooterIOInputsAutoLogged inputs = new ShooterIOInputsAutoLogged();
 
+  private static final double MAX_DASH_RPS = 100.0;
+  private final GenericEntry dashRps =
+      Shuffleboard.getTab("Shooter")
+          .add("RPS", 0.0)
+          .withWidget(BuiltInWidgets.kNumberSlider)
+          .withProperties(Map.of("min", 0.0, "max", MAX_DASH_RPS))
+          .getEntry();
+
   private double targetRPS = 0;
+  private double dashboardRps = 0.0;
 
   public ShooterSubsystem() {
     if (Robot.isReal()) {
@@ -62,9 +75,10 @@ public class ShooterSubsystem extends SubsystemBase {
     Logger.processInputs("Shooter", inputs);
     Logger.recordOutput("Shooter/TargetRPS", targetRPS);
     Logger.recordOutput("Shooter/IsAtTargetRPS", isAtTargetRps());
+    Logger.recordOutput("Shooter/DashboardRPS", dashboardRps);
   }
 
   private void processDashboard() {
-    // TODO: Implement dashboard code here
+    dashboardRps = MathUtil.clamp(dashRps.getDouble(0.0), 0.0, MAX_DASH_RPS);
   }
 }

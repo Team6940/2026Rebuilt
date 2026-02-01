@@ -126,7 +126,12 @@ public final class Constants {
     public static final InterpolatingDoubleTreeMap DistanceToShooterRps =
         new InterpolatingDoubleTreeMap();
 
+    /** Distance (meters) -> Hood position (degrees). */
     public static final InterpolatingDoubleTreeMap DistanceToHoodPositionDegs =
+        new InterpolatingDoubleTreeMap();
+
+    /** Distance (meters) -> Flight time (seconds). */
+    public static final InterpolatingDoubleTreeMap DistanceToFlightTimeSecs =
         new InterpolatingDoubleTreeMap();
 
     /** 2D correction surface: hood angle (deg) -> (radial velocity m/s -> ΔRPS). */
@@ -145,6 +150,12 @@ public final class Constants {
       DistanceToHoodPositionDegs.put(2.5, 18.0);
       DistanceToHoodPositionDegs.put(3.5, 26.0);
       DistanceToHoodPositionDegs.put(4.5, 34.0);
+
+      // Distance (meters) -> Flight time (seconds)
+      DistanceToFlightTimeSecs.put(1.5, 0.45);
+      DistanceToFlightTimeSecs.put(2.5, 0.55);
+      DistanceToFlightTimeSecs.put(3.5, 0.65);
+      DistanceToFlightTimeSecs.put(4.5, 0.75);
 
       // Radial Velocity (m/s) -> ΔRPS, the name represents the hood angle
       InterpolatingDoubleTreeMap hood20 = new InterpolatingDoubleTreeMap();
@@ -165,50 +176,6 @@ public final class Constants {
       CorrectionSurface.put(20.0, hood20);
       CorrectionSurface.put(30.0, hood30);
       CorrectionSurface.put(40.0, hood40);
-    }
-  }
-
-  public static final class ProjectileCalculator {
-    /** Lookup shooter RPS from distance, with no motion correction. */
-    public static double getStaticShotRps(double distanceMeters) {
-      return ProjectileConstants.DistanceToShooterRps.get(distanceMeters);
-    }
-
-    /** Lookup hood angle (deg) from distance (meters). */
-    public static double getStaticShotHoodAngle(double distanceMeters) {
-      return ProjectileConstants.DistanceToHoodPositionDegs.get(distanceMeters);
-    }
-
-    /** Bilinear lookup of ΔRPS using hood angle (deg) and radial velocity (m/s). */
-    public static double getMotionShotRpsCorrection(double hoodAngleDegs, double radialVelocity) {
-      var correctionSurface = ProjectileConstants.CorrectionSurface;
-      if (correctionSurface.isEmpty()) {
-        return 0.0;
-      }
-
-      var lowerEntry = correctionSurface.floorEntry(hoodAngleDegs);
-      var upperEntry = correctionSurface.ceilingEntry(hoodAngleDegs);
-
-      if (lowerEntry == null) {
-        lowerEntry = correctionSurface.firstEntry();
-      }
-      if (upperEntry == null) {
-        upperEntry = correctionSurface.lastEntry();
-      }
-
-      double lowAngle = lowerEntry.getKey();
-      double highAngle = upperEntry.getKey();
-
-      double deltaLow = lowerEntry.getValue().get(radialVelocity);
-      double deltaHigh = upperEntry.getValue().get(radialVelocity);
-
-      if (Math.abs(highAngle - lowAngle) < 1e-6) {
-        return deltaLow;
-      }
-
-      // Linear interpolation
-      double t = (hoodAngleDegs - lowAngle) / (highAngle - lowAngle);
-      return deltaLow + t * (deltaHigh - deltaLow);
     }
   }
 
