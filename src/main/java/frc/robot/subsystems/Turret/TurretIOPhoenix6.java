@@ -16,6 +16,8 @@ import frc.robot.Constants.TurretConstants;
 public class TurretIOPhoenix6 implements TurretIO {
   private static final TalonFX motor = new TalonFX(MotorIDs.TurretMotorID, CANBus.roboRIO());
   private static final CANcoder encoder = new CANcoder(MotorIDs.TurretEncoderID, CANBus.roboRIO());
+  private static final CANcoder encoder2 =
+      new CANcoder(MotorIDs.TurretEncoder2ID, CANBus.roboRIO());
   private static final MotionMagicVoltage request = new MotionMagicVoltage(0.0);
 
   public TurretIOPhoenix6() {
@@ -29,13 +31,19 @@ public class TurretIOPhoenix6 implements TurretIO {
         Units.degreesToRotations(TurretConstants.TurretEncoderOffsetDegrees);
     config.MagnetSensor.SensorDirection = TurretConstants.TurretEncoderDirection;
     encoder.getConfigurator().apply(config);
+
+    CANcoderConfiguration config2 = new CANcoderConfiguration();
+    config2.MagnetSensor.MagnetOffset =
+        Units.degreesToRotations(TurretConstants.TurretEncoder2OffsetDegrees);
+    config2.MagnetSensor.SensorDirection = TurretConstants.TurretEncoder2Direction;
+    encoder2.getConfigurator().apply(config2);
   }
 
   private void motorConfig() {
     TalonFXConfiguration config = new TalonFXConfiguration();
     config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
-    config.Feedback.SensorToMechanismRatio = TurretConstants.TurretEncoderToMechanismRatio;
-    config.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.RemoteCANcoder;
+    config.Feedback.SensorToMechanismRatio = TurretConstants.TurretRatio;
+    config.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.RotorSensor;
     config.Feedback.FeedbackRemoteSensorID = MotorIDs.TurretEncoderID;
     config.Voltage.PeakForwardVoltage = 12.0;
     config.Voltage.PeakReverseVoltage = -12.0;
@@ -68,7 +76,7 @@ public class TurretIOPhoenix6 implements TurretIO {
 
   @Override
   public void resetPosition(double positionDegrees) {
-    encoder.setPosition(Units.degreesToRotations(positionDegrees));
+    motor.setPosition(Units.degreesToRotations(positionDegrees));
   }
 
   @Override
@@ -83,11 +91,18 @@ public class TurretIOPhoenix6 implements TurretIO {
                 encoder.getAbsolutePosition(), encoder.getPosition(), encoder.getMagnetHealth())
             .isOK();
 
+    inputs.encoder2Connected =
+        BaseStatusSignal.refreshAll(
+                encoder2.getAbsolutePosition(), encoder2.getPosition(), encoder2.getMagnetHealth())
+            .isOK();
+
     inputs.motorVoltageVolts = motor.getMotorVoltage().getValueAsDouble();
     inputs.motorCurrentAmps = motor.getSupplyCurrent().getValueAsDouble();
     inputs.turretPositionDegrees = Units.rotationsToDegrees(motor.getPosition().getValueAsDouble());
     inputs.encoderPositionDegrees =
         Units.rotationsToDegrees(encoder.getPosition().getValueAsDouble());
+    inputs.encoder2PositionDegrees =
+        Units.rotationsToDegrees(encoder2.getPosition().getValueAsDouble());
 
     switch (encoder.getMagnetHealth().getValue()) {
       case Magnet_Green -> inputs.encoderMagnetHealth = TurretIOInputs.EncoderMagnetHealth.GOOD;
@@ -95,6 +110,15 @@ public class TurretIOPhoenix6 implements TurretIO {
       case Magnet_Red -> inputs.encoderMagnetHealth = TurretIOInputs.EncoderMagnetHealth.BAD;
       case Magnet_Invalid ->
           inputs.encoderMagnetHealth = TurretIOInputs.EncoderMagnetHealth.INVALID;
+      default -> {}
+    }
+
+    switch (encoder2.getMagnetHealth().getValue()) {
+      case Magnet_Green -> inputs.encoder2MagnetHealth = TurretIOInputs.EncoderMagnetHealth.GOOD;
+      case Magnet_Orange -> inputs.encoder2MagnetHealth = TurretIOInputs.EncoderMagnetHealth.RISKY;
+      case Magnet_Red -> inputs.encoder2MagnetHealth = TurretIOInputs.EncoderMagnetHealth.BAD;
+      case Magnet_Invalid ->
+          inputs.encoder2MagnetHealth = TurretIOInputs.EncoderMagnetHealth.INVALID;
       default -> {}
     }
   }
