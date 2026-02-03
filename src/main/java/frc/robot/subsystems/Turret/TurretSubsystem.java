@@ -28,6 +28,7 @@ public class TurretSubsystem extends SubsystemBase {
   private double manualSetpointDegs = TurretConstants.IdlePosition;
   private double targetPositionDegs = TurretConstants.IdlePosition;
   private double operatorInputScalar = 0.0;
+  private double encoderCalculatedPositionDegs = TurretConstants.IdlePosition;
 
   private Rotation2d fieldRelativeRotation2d = new Rotation2d();
   private Pose2d lastRobotPose = new Pose2d();
@@ -39,10 +40,14 @@ public class TurretSubsystem extends SubsystemBase {
       // TODO: Implement simulation code here
       io = new TurretIO() {};
     }
+    encoderCalculatedPositionDegs =
+        calculateTurretDegsFromEncoders(
+            inputs.encoderPositionDegrees, inputs.encoder2PositionDegrees);
+    resetPosition(encoderCalculatedPositionDegs);
   }
 
-  public void resetPosition() {
-    io.resetPosition(TurretConstants.IdlePosition);
+  public void resetPosition(double positionDegrees) {
+    io.resetPosition(positionDegrees);
   }
 
   public void setPosition(double positionDegrees) {
@@ -116,6 +121,12 @@ public class TurretSubsystem extends SubsystemBase {
   public void periodic() {
     io.updateInputs(inputs);
 
+    if (inputs.encoderConnected && inputs.encoder2Connected) {
+      encoderCalculatedPositionDegs =
+          calculateTurretDegsFromEncoders(
+              inputs.encoderPositionDegrees, inputs.encoder2PositionDegrees);
+    }
+
     switch (mode) {
       case HYBRID -> handleHybrid();
       case MANUAL -> handleManual();
@@ -130,6 +141,7 @@ public class TurretSubsystem extends SubsystemBase {
     Logger.recordOutput("Turret/FieldTargetDegs", fieldRelativeRotation2d.getDegrees());
     Logger.recordOutput("Turret/RobotHeadingDegs", lastRobotPose.getRotation().getDegrees());
     Logger.recordOutput("Turret/OperatorInputScalar", operatorInputScalar);
+    Logger.recordOutput("Turret/EncoderCalculatedPositionDegs", encoderCalculatedPositionDegs);
   }
 
   private void handleHybrid() {
@@ -146,5 +158,35 @@ public class TurretSubsystem extends SubsystemBase {
 
   private double clamp(double positionDegrees) {
     return MathUtil.clamp(positionDegrees, TurretConstants.MinDegs, TurretConstants.MaxDegs);
+  }
+
+  private double calculateTurretDegsFromEncoders(double encoder1Deg, double encoder2Deg) {
+    double difference = encoder2Deg - encoder1Deg;
+    if (difference > 250.0) {
+      difference -= 360.0;
+    }
+    if (difference < -250.0) {
+      difference += 360.0;
+    }
+
+    double slope =
+        (TurretConstants.GEAR_2 * TurretConstants.GEAR_1)
+            / ((TurretConstants.GEAR_1 - TurretConstants.GEAR_2) * TurretConstants.GEAR_TURRET);
+    difference *= slope;
+
+    double encoder1Rotations =
+        (difference * TurretConstants.GEAR_TURRET / TurretConstants.GEAR_1) / 360.0;
+    double encoder1RotationsFloored = Math.floor(encoder1Rotations);
+    double turretAngle =
+        (encoder1RotationsFloored * 360.0 + encoder1Deg)
+            * (TurretConstants.GEAR_1 / TurretConstants.GEAR_TURRET);
+
+    if (turretAngle - difference < -100.0) {
+      turretAngle += (TurretConstants.GEAR_1 / TurretConstants.GEAR_TURRET) * 360.0;
+    } else if (turretAngle - difference > 100.0) {
+      turretAngle -= (TurretConstants.GEAR_1 / TurretConstants.GEAR_TURRET) * 360.0;
+    }
+
+    return turretAngle;
   }
 }

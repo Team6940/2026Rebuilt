@@ -89,6 +89,7 @@ public final class Constants {
     /*   Turret   */
     public static final int TurretMotorID = 18;
     public static final int TurretEncoderID = 20;
+    public static final int TurretEncoder2ID = 22;
 
     /*   Feeder   */
     public static final int FeederTurntableMotorID = 20;
@@ -516,11 +517,21 @@ public final class Constants {
   }
 
   public final class TurretConstants {
-    public static final double TurretEncoderToMechanismRatio = 1.0;
+    // Gear tooth counts for dual-encoder absolute angle calculation
+    public static final double GEAR_TURRET = 70.0;
+    public static final double GEAR_1 = 36.0;
+    public static final double GEAR_2 = 34.0;
+
+    public static final double TurretRatio = 1.0;
     public static final InvertedValue Inverted = InvertedValue.Clockwise_Positive;
     public static final double TurretSupplyCurrentLimit = 40.0;
+
     public static final double TurretEncoderOffsetDegrees = 0.0;
     public static final SensorDirectionValue TurretEncoderDirection =
+        SensorDirectionValue.Clockwise_Positive;
+
+    public static final double TurretEncoder2OffsetDegrees = 0.0;
+    public static final SensorDirectionValue TurretEncoder2Direction =
         SensorDirectionValue.Clockwise_Positive;
 
     // PID Gains

@@ -17,11 +17,13 @@ public interface TurretIO {
   public class TurretIOInputs {
     public boolean motorConnected = false;
     public boolean encoderConnected = false;
+    public boolean encoder2Connected = false;
 
     public double motorVoltageVolts;
     public double motorCurrentAmps;
 
     public double encoderPositionDegrees;
+    public double encoder2PositionDegrees;
     public double turretPositionDegrees;
 
     public enum EncoderMagnetHealth {
@@ -32,6 +34,7 @@ public interface TurretIO {
     }
 
     public EncoderMagnetHealth encoderMagnetHealth = EncoderMagnetHealth.BAD;
+    public EncoderMagnetHealth encoder2MagnetHealth = EncoderMagnetHealth.BAD;
   }
 
   public default void updateInputs(TurretIOInputs inputs) {}
