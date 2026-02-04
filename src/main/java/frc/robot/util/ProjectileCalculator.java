@@ -5,14 +5,18 @@ import frc.robot.Constants;
 public final class ProjectileCalculator {
   private ProjectileCalculator() {}
 
-  /** Lookup shooter RPS from distance, with no motion correction. */
+  /** Lookup shooter RPS from distance (meters) with zero radial velocity. */
   public static double getStaticShotRps(double distanceMeters) {
-    return Constants.ProjectileConstants.DistanceToShooterRps.get(distanceMeters);
+    return Interpolating2DMap.lookup(
+        Constants.ProjectileConstants.RadialVelocityToDistanceToShooterRps, 0.0, distanceMeters);
   }
 
-  /** Lookup hood angle (deg) from distance (meters). */
+  /** Lookup hood angle (deg) from distance (meters) with zero radial velocity. */
   public static double getStaticShotHoodAngle(double distanceMeters) {
-    return Constants.ProjectileConstants.DistanceToHoodPositionDegs.get(distanceMeters);
+    return Interpolating2DMap.lookup(
+        Constants.ProjectileConstants.RadialVelocityToDistanceToHoodPositionDegs,
+        0.0,
+        distanceMeters);
   }
 
   /** Lookup flight time (seconds) from distance (meters). */
@@ -20,46 +24,27 @@ public final class ProjectileCalculator {
     return Constants.ProjectileConstants.DistanceToFlightTimeSecs.get(distanceMeters);
   }
 
-  /** Estimate horizontal ball velocity (m/s) from distance and flight time. */
-  public static double estimateStaticShotVx(double distanceMeters) {
-    double flightTimeSecs = getStaticShotFlightTime(distanceMeters);
-    if (flightTimeSecs <= 1e-6) {
-      return 0.0;
-    }
-    return distanceMeters / flightTimeSecs;
-  }
-
-  /**
-   * Estimate motion-compensated shot RPS from static shot RPS and velocities.
-   *
-   * <p>Positive radial velocity means approaching the target (less exit velocity needed).
-   */
-  public static double estimateMotionShotRps(
-      double staticShotRps, double staticShotVx, double radialVelocity) {
-    if (staticShotVx <= 1e-6) {
-      return staticShotRps;
-    }
-
-    double adjustedVx = staticShotVx - radialVelocity;
-    if (adjustedVx < 0.0) {
-      adjustedVx = 0.0;
-    }
-
-    return staticShotRps * (adjustedVx / staticShotVx);
-  }
-
   /** Estimate motion-compensated shot RPS from distance and radial velocity. */
   public static double estimateMotionShotRps(double distanceMeters, double radialVelocity) {
-    double staticShotRps = getStaticShotRps(distanceMeters);
-    double staticShotVx = estimateStaticShotVx(distanceMeters);
-    return estimateMotionShotRps(staticShotRps, staticShotVx, radialVelocity);
+    return Interpolating2DMap.lookup(
+        Constants.ProjectileConstants.RadialVelocityToDistanceToShooterRps,
+        radialVelocity,
+        distanceMeters);
+  }
+
+  /** Estimate motion-compensated hood angle (deg) from distance and radial velocity. */
+  public static double estimateMotionShotHoodAngle(double distanceMeters, double radialVelocity) {
+    return Interpolating2DMap.lookup(
+        Constants.ProjectileConstants.RadialVelocityToDistanceToHoodPositionDegs,
+        radialVelocity,
+        distanceMeters);
   }
 
   /*
    * Estimate lead yaw angle (degrees) given tangential velocity (m/s), flight time (s), and
    * distance to target (m).
    */
-  public static double estimateLeadYawDegrees(double tangentialVelocity, double distanceMeters) {
+  public static double estimateLeadYawDegrees(double distanceMeters, double tangentialVelocity) {
     if (Math.abs(distanceMeters) <= 1e-6) {
       return 0.0;
     }
@@ -67,49 +52,17 @@ public final class ProjectileCalculator {
     return Math.toDegrees(Math.atan((tangentialVelocity * flightTimeSecs) / distanceMeters));
   }
 
-  /**
-   * Bilinear lookup of ΔRPS using hood angle (deg) and radial velocity (m/s). This correction
-   * method uses linear interpolation between nearest neighbors in a 2D grid. Tuning the 2D table is
-   * done empirically to account for robot motion effects on shot velocity. Do NOT use this method
-   * if calculating flight time is considered a better approach.
-   */
-  public static double estimateMotionShotRpsCorrection2DTable(
-      double hoodAngleDegs, double radialVelocity) {
-    var correctionSurface = Constants.ProjectileConstants.CorrectionSurface;
-    if (correctionSurface.isEmpty()) {
-      return 0.0;
-    }
-
-    var lowerEntry = correctionSurface.floorEntry(hoodAngleDegs);
-    var upperEntry = correctionSurface.ceilingEntry(hoodAngleDegs);
-
-    if (lowerEntry == null) {
-      lowerEntry = correctionSurface.firstEntry();
-    }
-    if (upperEntry == null) {
-      upperEntry = correctionSurface.lastEntry();
-    }
-
-    double lowAngle = lowerEntry.getKey();
-    double highAngle = upperEntry.getKey();
-
-    double deltaLow = lowerEntry.getValue().get(radialVelocity);
-    double deltaHigh = upperEntry.getValue().get(radialVelocity);
-
-    if (Math.abs(highAngle - lowAngle) < 1e-6) {
-      return deltaLow;
-    }
-
-    // Linear interpolation
-    double t = (hoodAngleDegs - lowAngle) / (highAngle - lowAngle);
-    return deltaLow + t * (deltaHigh - deltaLow);
-  }
-
+  /* BRIEF INTRODUCTION */
   /*
-   * All the motion shot methods above do NOT consider vertical velocity effects.
-   * So choosing the best static shot trajectories are extremely important to minimize vertical error.
-   * If vertical velocity is significant, consider using physical models to calculate required exit velocity and angle.
-   * e.g., use interpolation tables which converts (HoodDegs, ShootRps) -> (ExitVelocity, ExitAngle)
-   * Well, this needs to be determined later.
+   * Now all the motion shot methods above manages both rps and hood angle.
+   * Therefore, the motion shot methods considers both horizontal and vertical velocities.
+   * To do this, I created two 2D maps to lookup based on distance & radial velocity.
+   * (distance, radialVelocity) -> (rps) & (distance, radialVelocity) -> (hood angle)
+   * To optimize this system, you should optimize the static shot trajectories first.
+   * For the motion shot part, after optimizing the static shots, you should adjust the constants in the 2D maps.
+   * For better motion shot performance, you should change the constants to make the motion shot
+   * trajectories at a specifc distance have the same shapes as the static shots have at the given point.
+   * The basic logic is that we want to make the velocity vector of the ball at wherever of thefield the same
+   * Consequently, tune the constants to make the motion shots and static shots have the same trajectory.
    */
 }

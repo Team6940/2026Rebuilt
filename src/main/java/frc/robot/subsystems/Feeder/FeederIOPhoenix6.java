@@ -14,8 +14,9 @@ public class FeederIOPhoenix6 implements FeederIO {
       new TalonFX(MotorIDs.FeederTurntableMotorID, CANBus.roboRIO());
   private final TalonFX feedMotor = new TalonFX(MotorIDs.FeederFeedMotorID, CANBus.roboRIO());
 
-  private final VelocityVoltage turntableVelocityRequest = new VelocityVoltage(0);
-  private final VelocityVoltage feedVelocityRequest = new VelocityVoltage(0);
+  private final VelocityVoltage turntableVelocityRequest =
+      new VelocityVoltage(0).withEnableFOC(true);
+  private final VelocityVoltage feedVelocityRequest = new VelocityVoltage(0).withEnableFOC(true);
 
   public FeederIOPhoenix6() {
     turntableMotorConfig();
@@ -111,4 +112,3 @@ public class FeederIOPhoenix6 implements FeederIO {
     inputs.feedVelocityRPS = feedMotor.getVelocity().getValueAsDouble();
   }
 }
-

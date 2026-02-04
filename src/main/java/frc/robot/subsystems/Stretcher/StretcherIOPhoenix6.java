@@ -13,7 +13,7 @@ import frc.robot.Constants.StretcherConstants;
 public class StretcherIOPhoenix6 implements StretcherIO {
   private static TalonFX motor;
 
-  private static MotionMagicVoltage m_request = new MotionMagicVoltage(0.);
+  private static MotionMagicVoltage m_request = new MotionMagicVoltage(0.).withEnableFOC(true);
 
   public StretcherIOPhoenix6() {
     motorConfig();

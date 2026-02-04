@@ -45,6 +45,10 @@ public class ShooterSubsystem extends SubsystemBase {
     io.setRPS(rps);
   }
 
+  public void setDashboardRPS() {
+    io.setRPS(dashboardRps);
+  }
+
   public boolean isAtTargetRps() {
     return MathUtil.isNear(
         targetRPS, inputs.shooterVelocityRPS, ShooterConstants.ShooterVelocityToleranceRPS);
