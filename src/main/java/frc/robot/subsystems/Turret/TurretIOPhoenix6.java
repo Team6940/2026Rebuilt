@@ -18,7 +18,7 @@ public class TurretIOPhoenix6 implements TurretIO {
   private static final CANcoder encoder = new CANcoder(MotorIDs.TurretEncoderID, CANBus.roboRIO());
   private static final CANcoder encoder2 =
       new CANcoder(MotorIDs.TurretEncoder2ID, CANBus.roboRIO());
-  private static final MotionMagicVoltage request = new MotionMagicVoltage(0.0);
+  private static final MotionMagicVoltage request = new MotionMagicVoltage(0.0).withEnableFOC(true);
 
   public TurretIOPhoenix6() {
     encoderConfig();
@@ -100,9 +100,10 @@ public class TurretIOPhoenix6 implements TurretIO {
     inputs.motorCurrentAmps = motor.getSupplyCurrent().getValueAsDouble();
     inputs.turretPositionDegrees = Units.rotationsToDegrees(motor.getPosition().getValueAsDouble());
     inputs.encoderPositionDegrees =
-        Units.rotationsToDegrees(encoder.getPosition().getValueAsDouble());
+        Units.rotationsToDegrees(encoder.getAbsolutePosition().getValueAsDouble());
     inputs.encoder2PositionDegrees =
-        Units.rotationsToDegrees(encoder2.getPosition().getValueAsDouble());
+        Units.rotationsToDegrees(encoder2.getAbsolutePosition().getValueAsDouble());
+    // The calculate position algorithm requires the absolute position of the encoder
 
     switch (encoder.getMagnetHealth().getValue()) {
       case Magnet_Green -> inputs.encoderMagnetHealth = TurretIOInputs.EncoderMagnetHealth.GOOD;

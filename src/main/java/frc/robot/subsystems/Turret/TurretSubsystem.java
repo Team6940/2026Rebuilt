@@ -40,10 +40,12 @@ public class TurretSubsystem extends SubsystemBase {
       // TODO: Implement simulation code here
       io = new TurretIO() {};
     }
+    io.updateInputs(inputs); // this is necessary to initialize the inputs
     encoderCalculatedPositionDegs =
         calculateTurretDegsFromEncoders(
             inputs.encoderPositionDegrees, inputs.encoder2PositionDegrees);
     resetPosition(encoderCalculatedPositionDegs);
+    // this is added to ensure the turret starts at the correct position
   }
 
   public void resetPosition(double positionDegrees) {

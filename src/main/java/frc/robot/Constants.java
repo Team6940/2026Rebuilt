@@ -123,60 +123,125 @@ public final class Constants {
   }
 
   public final class ProjectileConstants {
-    /** Distance (meters) -> Shooter RPS */
-    public static final InterpolatingDoubleTreeMap DistanceToShooterRps =
-        new InterpolatingDoubleTreeMap();
+    /** Radial velocity (m/s) -> (distance (m) -> shooter RPS). */
+    public static final NavigableMap<Double, InterpolatingDoubleTreeMap>
+        RadialVelocityToDistanceToShooterRps = new TreeMap<>();
 
-    /** Distance (meters) -> Hood position (degrees). */
-    public static final InterpolatingDoubleTreeMap DistanceToHoodPositionDegs =
-        new InterpolatingDoubleTreeMap();
+    /** Radial velocity (m/s) -> (distance (m) -> hood position degs). */
+    public static final NavigableMap<Double, InterpolatingDoubleTreeMap>
+        RadialVelocityToDistanceToHoodPositionDegs = new TreeMap<>();
 
     /** Distance (meters) -> Flight time (seconds). */
     public static final InterpolatingDoubleTreeMap DistanceToFlightTimeSecs =
         new InterpolatingDoubleTreeMap();
 
-    /** 2D correction surface: hood angle (deg) -> (radial velocity m/s -> ΔRPS). */
-    public static final NavigableMap<Double, InterpolatingDoubleTreeMap> CorrectionSurface =
-        new TreeMap<>();
-
     static {
-      // Distance (meters) -> Shooter RPS
-      DistanceToShooterRps.put(1.5, 30.0);
-      DistanceToShooterRps.put(2.5, 35.0);
-      DistanceToShooterRps.put(3.5, 40.0);
-      DistanceToShooterRps.put(4.5, 45.0);
+      // Radial velocity (m/s) -> Distance (meters) -> Shooter RPS
+      InterpolatingDoubleTreeMap shooterRpsNeg1 = new InterpolatingDoubleTreeMap();
+      shooterRpsNeg1.put(1.5, 32.0);
+      shooterRpsNeg1.put(2.5, 37.0);
+      shooterRpsNeg1.put(3.5, 42.0);
+      shooterRpsNeg1.put(4.5, 47.0);
 
-      // Distance (meters) -> Hood position (degrees)
-      DistanceToHoodPositionDegs.put(1.5, 10.0);
-      DistanceToHoodPositionDegs.put(2.5, 18.0);
-      DistanceToHoodPositionDegs.put(3.5, 26.0);
-      DistanceToHoodPositionDegs.put(4.5, 34.0);
+      InterpolatingDoubleTreeMap shooterRpsNeg2 = new InterpolatingDoubleTreeMap();
+      shooterRpsNeg2.put(1.5, 34.0);
+      shooterRpsNeg2.put(2.5, 39.0);
+      shooterRpsNeg2.put(3.5, 44.0);
+      shooterRpsNeg2.put(4.5, 49.0);
+
+      InterpolatingDoubleTreeMap shooterRpsNeg3 = new InterpolatingDoubleTreeMap();
+      shooterRpsNeg3.put(1.5, 36.0);
+      shooterRpsNeg3.put(2.5, 41.0);
+      shooterRpsNeg3.put(3.5, 46.0);
+      shooterRpsNeg3.put(4.5, 51.0);
+
+      InterpolatingDoubleTreeMap shooterRpsZero = new InterpolatingDoubleTreeMap();
+      shooterRpsZero.put(1.5, 30.0);
+      shooterRpsZero.put(2.5, 35.0);
+      shooterRpsZero.put(3.5, 40.0);
+      shooterRpsZero.put(4.5, 45.0);
+
+      InterpolatingDoubleTreeMap shooterRpsPos1 = new InterpolatingDoubleTreeMap();
+      shooterRpsPos1.put(1.5, 28.0);
+      shooterRpsPos1.put(2.5, 33.0);
+      shooterRpsPos1.put(3.5, 38.0);
+      shooterRpsPos1.put(4.5, 43.0);
+
+      InterpolatingDoubleTreeMap shooterRpsPos2 = new InterpolatingDoubleTreeMap();
+      shooterRpsPos2.put(1.5, 26.0);
+      shooterRpsPos2.put(2.5, 31.0);
+      shooterRpsPos2.put(3.5, 36.0);
+      shooterRpsPos2.put(4.5, 41.0);
+
+      InterpolatingDoubleTreeMap shooterRpsPos3 = new InterpolatingDoubleTreeMap();
+      shooterRpsPos3.put(1.5, 24.0);
+      shooterRpsPos3.put(2.5, 29.0);
+      shooterRpsPos3.put(3.5, 34.0);
+      shooterRpsPos3.put(4.5, 39.0);
+
+      RadialVelocityToDistanceToShooterRps.put(-3.0, shooterRpsNeg3);
+      RadialVelocityToDistanceToShooterRps.put(-2.0, shooterRpsNeg2);
+      RadialVelocityToDistanceToShooterRps.put(-1.0, shooterRpsNeg1);
+      RadialVelocityToDistanceToShooterRps.put(0.0, shooterRpsZero);
+      RadialVelocityToDistanceToShooterRps.put(1.0, shooterRpsPos1);
+      RadialVelocityToDistanceToShooterRps.put(2.0, shooterRpsPos2);
+      RadialVelocityToDistanceToShooterRps.put(3.0, shooterRpsPos3);
+
+      // Radial velocity (m/s) -> Distance (meters) -> Hood position (degrees)
+      InterpolatingDoubleTreeMap hoodNeg1 = new InterpolatingDoubleTreeMap();
+      hoodNeg1.put(1.5, 12.0);
+      hoodNeg1.put(2.5, 20.0);
+      hoodNeg1.put(3.5, 28.0);
+      hoodNeg1.put(4.5, 36.0);
+
+      InterpolatingDoubleTreeMap hoodNeg2 = new InterpolatingDoubleTreeMap();
+      hoodNeg2.put(1.5, 14.0);
+      hoodNeg2.put(2.5, 22.0);
+      hoodNeg2.put(3.5, 30.0);
+      hoodNeg2.put(4.5, 38.0);
+
+      InterpolatingDoubleTreeMap hoodNeg3 = new InterpolatingDoubleTreeMap();
+      hoodNeg3.put(1.5, 16.0);
+      hoodNeg3.put(2.5, 24.0);
+      hoodNeg3.put(3.5, 32.0);
+      hoodNeg3.put(4.5, 40.0);
+
+      InterpolatingDoubleTreeMap hoodZero = new InterpolatingDoubleTreeMap();
+      hoodZero.put(1.5, 10.0);
+      hoodZero.put(2.5, 18.0);
+      hoodZero.put(3.5, 26.0);
+      hoodZero.put(4.5, 34.0);
+
+      InterpolatingDoubleTreeMap hoodPos1 = new InterpolatingDoubleTreeMap();
+      hoodPos1.put(1.5, 9.0);
+      hoodPos1.put(2.5, 17.0);
+      hoodPos1.put(3.5, 25.0);
+      hoodPos1.put(4.5, 33.0);
+
+      InterpolatingDoubleTreeMap hoodPos2 = new InterpolatingDoubleTreeMap();
+      hoodPos2.put(1.5, 8.0);
+      hoodPos2.put(2.5, 16.0);
+      hoodPos2.put(3.5, 24.0);
+      hoodPos2.put(4.5, 32.0);
+
+      InterpolatingDoubleTreeMap hoodPos3 = new InterpolatingDoubleTreeMap();
+      hoodPos3.put(1.5, 7.0);
+      hoodPos3.put(2.5, 15.0);
+      hoodPos3.put(3.5, 23.0);
+      hoodPos3.put(4.5, 31.0);
+      RadialVelocityToDistanceToHoodPositionDegs.put(-3.0, hoodNeg3);
+      RadialVelocityToDistanceToHoodPositionDegs.put(-2.0, hoodNeg2);
+      RadialVelocityToDistanceToHoodPositionDegs.put(-1.0, hoodNeg1);
+      RadialVelocityToDistanceToHoodPositionDegs.put(0.0, hoodZero);
+      RadialVelocityToDistanceToHoodPositionDegs.put(1.0, hoodPos1);
+      RadialVelocityToDistanceToHoodPositionDegs.put(2.0, hoodPos2);
+      RadialVelocityToDistanceToHoodPositionDegs.put(3.0, hoodPos3);
 
       // Distance (meters) -> Flight time (seconds)
       DistanceToFlightTimeSecs.put(1.5, 0.45);
       DistanceToFlightTimeSecs.put(2.5, 0.55);
       DistanceToFlightTimeSecs.put(3.5, 0.65);
       DistanceToFlightTimeSecs.put(4.5, 0.75);
-
-      // Radial Velocity (m/s) -> ΔRPS, the name represents the hood angle
-      InterpolatingDoubleTreeMap hood20 = new InterpolatingDoubleTreeMap();
-      hood20.put(-1.0, -2.0);
-      hood20.put(0.0, 0.0);
-      hood20.put(1.0, 2.0);
-
-      InterpolatingDoubleTreeMap hood30 = new InterpolatingDoubleTreeMap();
-      hood30.put(-1.0, -3.0);
-      hood30.put(0.0, 0.0);
-      hood30.put(1.0, 3.0);
-
-      InterpolatingDoubleTreeMap hood40 = new InterpolatingDoubleTreeMap();
-      hood40.put(-1.0, -4.0);
-      hood40.put(0.0, 0.0);
-      hood40.put(1.0, 4.0);
-
-      CorrectionSurface.put(20.0, hood20);
-      CorrectionSurface.put(30.0, hood30);
-      CorrectionSurface.put(40.0, hood40);
     }
   }
 
@@ -526,10 +591,12 @@ public final class Constants {
     public static final InvertedValue Inverted = InvertedValue.Clockwise_Positive;
     public static final double TurretSupplyCurrentLimit = 40.0;
 
+    // Encoder 1
     public static final double TurretEncoderOffsetDegrees = 0.0;
     public static final SensorDirectionValue TurretEncoderDirection =
         SensorDirectionValue.Clockwise_Positive;
 
+    // Encoder 2
     public static final double TurretEncoder2OffsetDegrees = 0.0;
     public static final SensorDirectionValue TurretEncoder2Direction =
         SensorDirectionValue.Clockwise_Positive;

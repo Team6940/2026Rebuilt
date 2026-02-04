@@ -12,7 +12,7 @@ import frc.robot.Constants.MotorIDs;
 public class IntakeIOPhoenix6 implements IntakeIO {
   private static final TalonFX motor = new TalonFX(MotorIDs.IntakeMotorID, CANBus.roboRIO());
 
-  private static final VelocityVoltage dutycycle = new VelocityVoltage(0);
+  private static final VelocityVoltage dutycycle = new VelocityVoltage(0).withEnableFOC(true);
 
   public IntakeIOPhoenix6() {
     motorConfig();

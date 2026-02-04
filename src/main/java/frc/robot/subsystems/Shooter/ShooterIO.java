@@ -9,8 +9,6 @@ public interface ShooterIO {
     public double motorVoltageVolts;
     public double motorCurrentAmps;
     public double shooterVelocityRPS;
-    public boolean sensorFrontGet;
-    public boolean sensorRearGet;
   }
 
   public default void setVoltage(double voltage) {}
