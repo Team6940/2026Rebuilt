@@ -97,7 +97,7 @@ public final class Constants {
   }
 
   public final class DriveConstants {
-    public static final double DEADBAND = 0.1;
+    public static final double DEADBAND = 0.05;
     public static final double ANGLE_KP = 5.0;
     public static final double ANGLE_KD = 0.4;
     public static final double ANGLE_MAX_VELOCITY = 8.0;
@@ -674,6 +674,12 @@ public final class Constants {
 
     // Current limits
     public static final double ShooterSupplyCurrentLimit = 80.0;
+
+    // Manual shooter presets (ABXY)
+    public static final double ManualRpsA = 30.0;
+    public static final double ManualRpsB = 35.0;
+    public static final double ManualRpsX = 40.0;
+    public static final double ManualRpsY = 45.0;
   }
 
   public final class FeederConstants {

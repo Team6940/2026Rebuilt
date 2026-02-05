@@ -16,11 +16,11 @@ package frc.robot;
 import com.pathplanner.lib.auto.AutoBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.wpilibj.GenericHID;
-import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import frc.robot.subsystems.ImprovedCommandXboxController;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import frc.robot.commands.DriveCommands;
+import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.Drive.Drive;
 import frc.robot.subsystems.Drive.GyroIO;
 import frc.robot.subsystems.Drive.GyroIOPigeon2;
@@ -28,10 +28,16 @@ import frc.robot.subsystems.Drive.GyroIOSim;
 import frc.robot.subsystems.Drive.ModuleIO;
 import frc.robot.subsystems.Drive.ModuleIOTalonFXReal;
 import frc.robot.subsystems.Drive.ModuleIOTalonFXSim;
-import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
-import frc.robot.commands.DriveCommands;
-import frc.robot.generated.TunerConstants;
-
+import frc.robot.subsystems.Feeder.FeederSubsystem;
+import frc.robot.subsystems.Hood.HoodSubsystem;
+import frc.robot.subsystems.ImprovedCommandXboxController;
+import frc.robot.subsystems.ImprovedCommandXboxController.Button;
+import frc.robot.subsystems.Intake.IntakeSubsystem;
+import frc.robot.subsystems.Shooter.ShooterSubsystem;
+import frc.robot.subsystems.Stretcher.StretcherSubsystem;
+import frc.robot.subsystems.SuperStructure;
+import frc.robot.subsystems.Turret.TurretSubsystem;
+import java.util.Set;
 import org.ironmaple.simulation.SimulatedArena;
 import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
 import org.littletonrobotics.junction.Logger;
@@ -44,16 +50,23 @@ import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
  * subsystems, commands, and button mappings) should be declared here.
  */
 public class RobotContainer {
-
-  public static final double DEADBAND = 0.05; // TODO CHANGE JOYSTICK DEADBAND HERE
-
   // Subsystems
   private final Drive drive;
-
+  private final FeederSubsystem feeder = FeederSubsystem.getInstance();
+  private final HoodSubsystem hood = HoodSubsystem.getInstance();
+  private final IntakeSubsystem intake = IntakeSubsystem.getInstance();
+  private final ShooterSubsystem shooter = ShooterSubsystem.getInstance();
+  private final StretcherSubsystem stretcher = StretcherSubsystem.getInstance();
+  private final TurretSubsystem turret = TurretSubsystem.getInstance();
+  private final SuperStructure superStructure = SuperStructure.getInstance();
+  // Simulated subsystems
   private SwerveDriveSimulation driveSimulation = null;
 
   // Controller
-  public static final ImprovedCommandXboxController driveController = new ImprovedCommandXboxController(0);
+  public static final ImprovedCommandXboxController driverController =
+      new ImprovedCommandXboxController(0);
+  public static final ImprovedCommandXboxController operatorController =
+      new ImprovedCommandXboxController(1);
 
   // Dashboard inputs
   private final LoggedDashboardChooser<Command> autoChooser;
@@ -122,38 +135,15 @@ public class RobotContainer {
     configureButtonBindings();
   }
 
-  /**
-   * Use this method to define your button->command mappings. Buttons can be created by
-   * instantiating a {@link GenericHID} or one of its subclasses ({@link
-   * edu.wpi.first.wpilibj.Joystick} or {@link XboxController}), and then passing it to a {@link
-   * edu.wpi.first.wpilibj2.command.button.JoystickButton}.
-   */
   private void configureButtonBindings() {
-
-    // Default command, normal field-relative drive
     drive.setDefaultCommand(
         drive.run(
             () ->
                 drive.driveFieldCentric(
-                    () -> -driveController.getLeftY(),
-                    () -> -driveController.getLeftX(),
-                    () -> -driveController.getRightX())));
-
-    // Lock to 0° when A button is held
-    driveController
-        .a()
-        .whileTrue(
-            DriveCommands.joystickDriveAtAngle(
-                drive,
-                () -> -driveController.getLeftY(),
-                () -> -driveController.getLeftX(),
-                () -> new Rotation2d()));
-
-    // Switch to X pattern when X button is pressed
-    driveController.x().onTrue(Commands.runOnce(drive::stopWithX, drive));
-
-    // Reset gyro to 0° when B button is pressed
-    driveController
+                    () -> -driverController.getLeftY(),
+                    () -> -driverController.getLeftX(),
+                    () -> -driverController.getRightX())));
+    driverController
         .b()
         .onTrue(
             Commands.runOnce(
@@ -162,6 +152,20 @@ public class RobotContainer {
                             new Pose2d(drive.getPose().getTranslation(), new Rotation2d())),
                     drive)
                 .ignoringDisable(true));
+    driverController
+        .rightBumper()
+        .toggleOnTrue(
+            Commands.defer(() -> superStructure.getIntakeCommand(), Set.of(stretcher, intake)));
+
+    driverController
+        .leftBumper()
+        .whileTrue(
+            Commands.defer(
+                () -> superStructure.getShootCommand(Button.kRightTrigger, Button.kRightBumper),
+                Set.of(feeder, hood, shooter, turret)));
+    driverController
+        .povDown()
+        .onTrue(superStructure.runOnce(() -> superStructure.toggleControlMode()));
   }
 
   /**
@@ -173,6 +177,7 @@ public class RobotContainer {
     return autoChooser.get();
   }
 
+  // Simulation methods
   public void resetSimulationField() {
     if (Constants.currentMode != Constants.Mode.SIM) return;
 
