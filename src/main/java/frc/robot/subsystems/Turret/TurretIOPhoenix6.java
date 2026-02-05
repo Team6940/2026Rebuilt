@@ -30,12 +30,14 @@ public class TurretIOPhoenix6 implements TurretIO {
     config.MagnetSensor.MagnetOffset =
         Units.degreesToRotations(TurretConstants.TurretEncoderOffsetDegrees);
     config.MagnetSensor.SensorDirection = TurretConstants.TurretEncoderDirection;
+    config.MagnetSensor.AbsoluteSensorDiscontinuityPoint = 1.0;
     encoder.getConfigurator().apply(config);
 
     CANcoderConfiguration config2 = new CANcoderConfiguration();
     config2.MagnetSensor.MagnetOffset =
         Units.degreesToRotations(TurretConstants.TurretEncoder2OffsetDegrees);
     config2.MagnetSensor.SensorDirection = TurretConstants.TurretEncoder2Direction;
+    config2.MagnetSensor.AbsoluteSensorDiscontinuityPoint = 1.0;
     encoder2.getConfigurator().apply(config2);
   }
 

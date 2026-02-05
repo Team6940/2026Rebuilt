@@ -1,0 +1,60 @@
+package frc.robot.subsystems;
+
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.commands.HybridShootCommand;
+import frc.robot.commands.IntakeCommand;
+import frc.robot.commands.ManualShootCommand;
+import frc.robot.subsystems.ImprovedCommandXboxController.Button;
+import org.littletonrobotics.junction.Logger;
+
+public class SuperStructure extends SubsystemBase {
+  private static SuperStructure instance;
+
+  public static SuperStructure getInstance() {
+    return instance == null ? (instance = new SuperStructure()) : instance;
+  }
+
+  public enum ControlMode {
+    HYBRID,
+    MANUAL
+  }
+
+  private ControlMode controlMode = ControlMode.HYBRID;
+
+  public void setControlMode(ControlMode mode) {
+    controlMode = mode;
+  }
+
+  public void toggleControlMode() {
+    controlMode = controlMode == ControlMode.HYBRID ? ControlMode.MANUAL : ControlMode.HYBRID;
+  }
+
+  public ControlMode getControlMode() {
+    return controlMode;
+  }
+
+  public Command getManualShootCommand(Button shootButton, Button resetButton) {
+    return new ManualShootCommand(shootButton, resetButton);
+  }
+
+  public Command getHybridShootCommand(Button shootButton) {
+    return new HybridShootCommand(shootButton);
+  }
+
+  public Command getShootCommand(Button shootButton, Button resetButton) {
+    return switch (controlMode) {
+      case HYBRID -> getHybridShootCommand(shootButton);
+      case MANUAL -> getManualShootCommand(shootButton, resetButton);
+    };
+  }
+
+  public Command getIntakeCommand() {
+    return new IntakeCommand();
+  }
+
+  @Override
+  public void periodic() {
+    Logger.recordOutput("Superstructure/ControlMode", controlMode);
+  }
+}

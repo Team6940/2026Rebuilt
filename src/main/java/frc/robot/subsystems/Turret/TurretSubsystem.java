@@ -79,7 +79,7 @@ public class TurretSubsystem extends SubsystemBase {
    * Sets the turret to a field-relative angle by calculating the
    * turret-relative angle based on the robot's current pose.
    */
-  public void setAutofieldRelativeRotation2d(Rotation2d fieldAngle, Pose2d robotPose) {
+  public void setAutoSetpointFieldRelativeRotation2d(Rotation2d fieldAngle, Pose2d robotPose) {
     fieldRelativeRotation2d = fieldAngle;
     lastRobotPose = robotPose;
     Rotation2d turretRelative = fieldAngle.minus(robotPose.getRotation());

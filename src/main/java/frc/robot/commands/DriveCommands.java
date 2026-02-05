@@ -28,9 +28,7 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import frc.robot.RobotContainer;
 import frc.robot.subsystems.Drive.Drive;
-
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.LinkedList;
@@ -39,7 +37,7 @@ import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
 public class DriveCommands {
-  private static final double DEADBAND = RobotContainer.DEADBAND;
+  private static final double DEADBAND = 0.05;
   private static final double ANGLE_KP = 5.0; // 5.0
   private static final double ANGLE_KD = 0.4; // 0.4
   private static final double ANGLE_MAX_VELOCITY = 8.0;
