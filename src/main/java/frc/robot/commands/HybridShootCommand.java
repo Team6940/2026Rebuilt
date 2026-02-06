@@ -4,6 +4,8 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants.FeederConstants;
+import frc.robot.Constants.HoodConstants;
+import frc.robot.Constants.ShooterConstants;
 import frc.robot.RobotContainer;
 import frc.robot.subsystems.Drive.Drive;
 import frc.robot.subsystems.Feeder.FeederSubsystem;
@@ -11,6 +13,7 @@ import frc.robot.subsystems.Hood.HoodSubsystem;
 import frc.robot.subsystems.ImprovedCommandXboxController;
 import frc.robot.subsystems.ImprovedCommandXboxController.Button;
 import frc.robot.subsystems.Shooter.ShooterSubsystem;
+import frc.robot.subsystems.SuperStructure.ShootMode;
 import frc.robot.subsystems.Turret.TurretSubsystem;
 import frc.robot.util.ProjectileCalculator;
 import org.littletonrobotics.junction.Logger;
@@ -24,10 +27,14 @@ public class HybridShootCommand extends Command {
   private final ImprovedCommandXboxController operatorController =
       RobotContainer.operatorController;
   private final Button shootButton;
+  private final ShootMode shootMode;
 
-  public HybridShootCommand(Button shootButton) {
+  private static final double LEAD_YAW_COMPENSATION_INDEX = 0.1;
+
+  public HybridShootCommand(Button shootButton, ShootMode shootMode) {
     addRequirements(hood, turret, shooter, feeder);
     this.shootButton = shootButton;
+    this.shootMode = shootMode;
   }
 
   @Override
@@ -40,19 +47,42 @@ public class HybridShootCommand extends Command {
 
   @Override
   public void execute() {
-    double distanceMeters = drive.getDistanceToAllianceHub();
-    Translation2d hubRelativeSpeeds = drive.getHubRelativeChassisSpeeds();
-    double radialVelocity = hubRelativeSpeeds.getX();
-    double tangentialVelocity = hubRelativeSpeeds.getY();
+    double distanceMeters;
+    Translation2d relativeSpeeds;
+    double radialVelocity;
+    double tangentialVelocity;
+    Rotation2d fieldTargetAngle;
+    double targetRps;
+    double hoodDegs;
+    double leadYawDegs;
 
-    double targetRps = ProjectileCalculator.estimateMotionShotRps(distanceMeters, radialVelocity);
-    double hoodDegs =
-        ProjectileCalculator.estimateMotionShotHoodAngle(distanceMeters, radialVelocity);
-    double leadYawDegs =
-        ProjectileCalculator.estimateLeadYawDegrees(distanceMeters, tangentialVelocity);
+    if (shootMode == ShootMode.SCORE) {
+      // Score mode: shoot to hub with full motion compensation
+      distanceMeters = drive.getDistanceToAllianceHub();
+      relativeSpeeds = drive.getHubRelativeChassisSpeeds();
+      radialVelocity = relativeSpeeds.getX();
+      tangentialVelocity = relativeSpeeds.getY();
 
-    Rotation2d fieldTargetAngle =
-        drive.getRotationToAllianceHub().plus(Rotation2d.fromDegrees(leadYawDegs));
+      targetRps = ProjectileCalculator.estimateMotionShotRps(distanceMeters, radialVelocity);
+      hoodDegs = ProjectileCalculator.estimateMotionShotHoodAngle(distanceMeters, radialVelocity);
+      leadYawDegs = ProjectileCalculator.estimateLeadYawDegrees(distanceMeters, tangentialVelocity);
+
+      fieldTargetAngle = drive.getRotationToAllianceHub().plus(Rotation2d.fromDegrees(leadYawDegs));
+    } else {
+      // Pass mode: shoot to tower with static shooter settings
+      distanceMeters = drive.getDistanceToAllianceTower();
+      relativeSpeeds = drive.getTowerRelativeChassisSpeeds();
+      radialVelocity = relativeSpeeds.getX();
+      tangentialVelocity = relativeSpeeds.getY();
+
+      targetRps = ShooterConstants.PassRps;
+      hoodDegs = HoodConstants.PassHoodDegs;
+      leadYawDegs =
+          LEAD_YAW_COMPENSATION_INDEX * tangentialVelocity; // No lead compensation for passing
+
+      fieldTargetAngle =
+          drive.getRotationToAllianceTower().plus(Rotation2d.fromDegrees(leadYawDegs));
+    }
 
     hood.setAutoSetpoint(hoodDegs);
     turret.setAutoSetpointFieldRelativeRotation2d(fieldTargetAngle, drive.getPose());
@@ -61,6 +91,7 @@ public class HybridShootCommand extends Command {
     turret.setOperatorInputScalar(operatorController.getRightX());
 
     boolean shootingEnabled = operatorController.getButton(shootButton);
+    Logger.recordOutput("HybridShoot/ShootMode", shootMode.toString());
     Logger.recordOutput("HybridShoot/DistanceMeters", distanceMeters);
     Logger.recordOutput("HybridShoot/RadialVelocity", radialVelocity);
     Logger.recordOutput("HybridShoot/TangentialVelocity", tangentialVelocity);

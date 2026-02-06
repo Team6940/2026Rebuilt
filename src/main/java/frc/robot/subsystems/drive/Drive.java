@@ -510,20 +510,19 @@ public class Drive extends SubsystemBase {
   }
 
   /**
-   * Returns chassis speeds relative to the hub center, expressed as (radial, tangential). Radial is
-   * positive away from the hub, tangential is positive counter-clockwise.
+   * Returns chassis speeds relative to a target translation, expressed as (radial, tangential).
+   * Radial is positive away from the target, tangential is positive counter-clockwise.
    */
-  public Translation2d getHubRelativeChassisSpeeds() {
-    Translation2d hubCenter = getAllianceHubCenter();
+  public Translation2d getTargetRelativeChassisSpeeds(Translation2d target) {
     Translation2d robotPosition = getPose().getTranslation();
-    Translation2d hubToRobot = robotPosition.minus(hubCenter);
+    Translation2d targetToRobot = robotPosition.minus(target);
 
-    double distance = hubToRobot.getNorm();
+    double distance = targetToRobot.getNorm();
     if (distance < 1e-6) {
       return new Translation2d();
     }
 
-    Translation2d radialUnit = hubToRobot.div(distance);
+    Translation2d radialUnit = targetToRobot.div(distance);
     Translation2d tangentialUnit = new Translation2d(-radialUnit.getY(), radialUnit.getX());
 
     ChassisSpeeds fieldSpeeds =
@@ -538,10 +537,21 @@ public class Drive extends SubsystemBase {
     return new Translation2d(radial, tangential);
   }
 
+  /** Returns the distance from the robot to a target translation (meters). */
+  public double getDistanceToTarget(Translation2d target) {
+    return getPose().getTranslation().getDistance(target);
+  }
+
+  /** Returns chassis speeds relative to the hub center, expressed as (radial, tangential). */
+  public Translation2d getHubRelativeChassisSpeeds() {
+    Translation2d hubCenter = getAllianceHubCenter();
+    return getTargetRelativeChassisSpeeds(hubCenter);
+  }
+
   /** Returns the distance from the robot to the alliance hub center (meters). */
   public double getDistanceToAllianceHub() {
     Translation2d hubCenter = getAllianceHubCenter();
-    return getPose().getTranslation().getDistance(hubCenter);
+    return getDistanceToTarget(hubCenter);
   }
 
   /** Returns the field-relative rotation that points the robot toward the alliance hub center. */
@@ -549,6 +559,25 @@ public class Drive extends SubsystemBase {
     Translation2d hubCenter = getAllianceHubCenter();
     Translation2d robotPosition = getPose().getTranslation();
     return hubCenter.minus(robotPosition).getAngle();
+  }
+
+  /** Returns chassis speeds relative to the tower center, expressed as (radial, tangential). */
+  public Translation2d getTowerRelativeChassisSpeeds() {
+    Translation2d towerCenter = getAllianceTowerCenter();
+    return getTargetRelativeChassisSpeeds(towerCenter);
+  }
+
+  /** Returns the distance from the robot to the alliance tower center (meters). */
+  public double getDistanceToAllianceTower() {
+    Translation2d towerCenter = getAllianceTowerCenter();
+    return getDistanceToTarget(towerCenter);
+  }
+
+  /** Returns the field-relative rotation that points the robot toward the alliance tower center. */
+  public Rotation2d getRotationToAllianceTower() {
+    Translation2d towerCenter = getAllianceTowerCenter();
+    Translation2d robotPosition = getPose().getTranslation();
+    return towerCenter.minus(robotPosition).getAngle();
   }
 
   /*
@@ -561,6 +590,18 @@ public class Drive extends SubsystemBase {
     return isRedAlliance
         ? Constants.FieldConstants.Hub.oppCenterPoint
         : Constants.FieldConstants.Hub.centerPoint;
+  }
+
+  /*
+   * Returns the center point of the alliance tower based on the current alliance.
+   */
+  private static Translation2d getAllianceTowerCenter() {
+    boolean isRedAlliance =
+        DriverStation.getAlliance().isPresent()
+            && DriverStation.getAlliance().get() == Alliance.Red;
+    return isRedAlliance
+        ? Constants.FieldConstants.Tower.oppCenterPoint
+        : Constants.FieldConstants.Tower.centerPoint;
   }
 
   /** Resets the current odometry pose. */

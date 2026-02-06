@@ -579,6 +579,9 @@ public final class Constants {
     // Manual control tuning
     public static final double HoodManualSensitivity = 1.0;
     public static final double HoodHybridRangeDegs = 15.0;
+
+    // Passing mode constants (static values for tower passing)
+    public static final double PassHoodDegs = 30.0;
   }
 
   public final class TurretConstants {
@@ -680,6 +683,9 @@ public final class Constants {
     public static final double ManualRpsB = 35.0;
     public static final double ManualRpsX = 40.0;
     public static final double ManualRpsY = 45.0;
+
+    // Passing mode constants (static values for tower passing)
+    public static final double PassRps = 40.0;
   }
 
   public final class FeederConstants {
