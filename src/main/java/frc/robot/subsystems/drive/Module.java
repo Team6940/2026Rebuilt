@@ -26,6 +26,7 @@ public class Module {
   private final ModuleIO io;
   private final ModuleIOInputsAutoLogged inputs = new ModuleIOInputsAutoLogged();
   private final int index;
+  @SuppressWarnings("rawtypes")
   private final SwerveModuleConstants constants;
 
   private final Alert driveDisconnectedAlert;
@@ -33,6 +34,7 @@ public class Module {
   private final Alert turnEncoderDisconnectedAlert;
   private SwerveModulePosition[] odometryPositions = new SwerveModulePosition[] {};
 
+  @SuppressWarnings("rawtypes")
   public Module(ModuleIO io, int index, SwerveModuleConstants constants) {
     this.io = io;
     this.index = index;

@@ -4,6 +4,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
 
+// This is a legacy version of MUtils, which is used in 2025. Author is lpx.
 public class MUtils2025 {
   /**
    * Limits the given number within a given range.
@@ -42,8 +43,7 @@ public class MUtils2025 {
    *
    * <p>I didn't do a lot of safety checks here, do not use this method with untrusted inputs.
    *
-   * <p>TODO: debug it, I don't know if it works in the negative field
-   *
+   * <p>debug it, I don't know if it works in the negative field
    * @param currentNumber
    * @param start the smallest number in the range
    * @param end the biggest number in the range

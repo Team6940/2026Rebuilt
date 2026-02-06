@@ -20,18 +20,36 @@ public class SuperStructure extends SubsystemBase {
     MANUAL
   }
 
+  public enum ShootMode {
+    SCORE,
+    PASS
+  }
+
   private ControlMode controlMode = ControlMode.HYBRID;
+  private ShootMode shootMode = ShootMode.SCORE;
 
   public void setControlMode(ControlMode mode) {
     controlMode = mode;
+  }
+
+  public void setShootMode(ShootMode mode) {
+    shootMode = mode;
   }
 
   public void toggleControlMode() {
     controlMode = controlMode == ControlMode.HYBRID ? ControlMode.MANUAL : ControlMode.HYBRID;
   }
 
+  public void toggleShootMode() {
+    shootMode = shootMode == ShootMode.SCORE ? ShootMode.PASS : ShootMode.SCORE;
+  }
+
   public ControlMode getControlMode() {
     return controlMode;
+  }
+
+  public ShootMode getShootMode() {
+    return shootMode;
   }
 
   public Command getManualShootCommand(Button shootButton, Button resetButton) {
@@ -39,7 +57,7 @@ public class SuperStructure extends SubsystemBase {
   }
 
   public Command getHybridShootCommand(Button shootButton) {
-    return new HybridShootCommand(shootButton);
+    return new HybridShootCommand(shootButton, shootMode);
   }
 
   public Command getShootCommand(Button shootButton, Button resetButton) {
@@ -55,6 +73,7 @@ public class SuperStructure extends SubsystemBase {
 
   @Override
   public void periodic() {
-    Logger.recordOutput("Superstructure/ControlMode", controlMode);
+    Logger.recordOutput("SuperStructure/ControlMode", controlMode);
+    Logger.recordOutput("SuperStructure/ShootMode", shootMode);
   }
 }
