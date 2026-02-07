@@ -3,45 +3,45 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 2.0,
-        "y": 7.0
+        "x": 3.4301728723404254,
+        "y": 2.921256648936171
       },
       "prevControl": null,
       "nextControl": {
-        "x": 3.013282910175676,
-        "y": 6.5274984191074985
+        "x": 4.4301728723404254,
+        "y": 2.921256648936171
       },
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "RightS"
     },
     {
       "anchor": {
-        "x": 5.166769560390973,
-        "y": 5.0964860911203305
+        "x": 7.167918882978723,
+        "y": 2.2681715425531923
       },
       "prevControl": {
-        "x": 4.166769560390973,
-        "y": 6.0964860911203305
+        "x": 6.707260638297872,
+        "y": 2.116562500000001
       },
       "nextControl": {
-        "x": 6.166769560390973,
-        "y": 4.0964860911203305
+        "x": 7.689630764054141,
+        "y": 2.43987418695776
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 7.0,
-        "y": 1.0
+        "x": 7.745199468085106,
+        "y": 3.3935771276595745
       },
       "prevControl": {
-        "x": 6.75,
-        "y": 2.5
+        "x": 7.780186170212767,
+        "y": 2.7404920212765966
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "RightN2"
     }
   ],
   "rotationTargets": [],
@@ -49,8 +49,8 @@
   "pointTowardsZones": [],
   "eventMarkers": [],
   "globalConstraints": {
-    "maxVelocity": 3.0,
-    "maxAcceleration": 3.0,
+    "maxVelocity": 4.0,
+    "maxAcceleration": 5.0,
     "maxAngularVelocity": 540.0,
     "maxAngularAcceleration": 720.0,
     "nominalVoltage": 12.0,
@@ -58,13 +58,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 0.0
+    "rotation": 90.0
   },
   "reversed": false,
-  "folder": null,
+  "folder": "Right",
   "idealStartingState": {
     "velocity": 0,
-    "rotation": 0.0
+    "rotation": -0.7538483330707944
   },
-  "useDefaultConstraints": false
+  "useDefaultConstraints": true
 }
