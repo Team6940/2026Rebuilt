@@ -94,6 +94,9 @@ public final class Constants {
     /*   Feeder   */
     public static final int FeederTurntableMotorID = 20;
     public static final int FeederFeedMotorID = 21;
+
+    /*   Climber   */
+    public static final int ClimberMotorID = 23;
   }
 
   public final class DriveConstants {
@@ -721,5 +724,43 @@ public final class Constants {
     // Default RPS values
     public static final double DefaultTurntableRPS = 5.0;
     public static final double DefaultFeedRPS = 10.0;
+  }
+
+  public final class ClimberConstants {
+    public static final double ClimberRatio = 1.0 / 1.0; // Sensor rotations to mechanism rotations
+    public static final InvertedValue Inverted = InvertedValue.Clockwise_Positive;
+    public static final double ClimberSupplyCurrentLimit = 60.0;
+
+    // PID Gains
+    public static final double kP = 1.0;
+    public static final double kI = 0.0;
+    public static final double kD = 0.0;
+    public static final double kV = 0.0;
+    public static final double kS = 0.0;
+
+    // Motion Magic Gains
+    public static final double MaxVelocity = 4.0; // Rotations per second
+    public static final double Acceleration = 8.0; // Rotations per second squared
+
+    // Positions (Degrees)
+    public static final double ClimberPositionToleranceDegs = 5.0;
+    public static final double MinDegs = 0.0;
+    public static final double MaxDegs = 180.0;
+    public static final double IdlePosition = 0.0;
+
+    // Preset positions
+    public static final double RetractedPosition = 0.0;
+    public static final double ExtendedPosition = 90.;
+  }
+
+  public static final class PoseEstimatorConstants {
+    public static final InterpolatingDoubleTreeMap tAtoDev = new InterpolatingDoubleTreeMap();
+
+    static {
+      tAtoDev.put(0.17, 0.08);
+      tAtoDev.put(0.12, 0.20);
+      tAtoDev.put(0.071, 0.35);
+      tAtoDev.put(0.046, 0.4);
+    }
   }
 }
