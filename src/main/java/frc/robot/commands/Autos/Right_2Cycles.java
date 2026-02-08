@@ -38,18 +38,13 @@ public class Right_2Cycles extends SequentialCommandGroup {
     addCommands(
         drive
             .followPPPath("Right-RightN1")
-            .alongWith(
-                new WaitCommand(1.)
-                    .andThen(new IntakeCommand().withDeadline(drive.followPPPath("Right-RightN1")))));
+            .deadlineFor(new WaitCommand(1.).andThen(new IntakeCommand())));
     addCommands(drive.followPPPath("RightN1-RightS"));
     addCommands(new HybridShootCommand(Button.kAutoButton, ShootMode.SCORE));
     addCommands(
         drive
             .followPPPath("RightS-RightN2")
-            .alongWith(
-                new WaitCommand(1.)
-                    .andThen(
-                        new IntakeCommand().withDeadline(drive.followPPPath("RightS-RightN2")))));
+            .deadlineFor(new WaitCommand(1.).andThen(new IntakeCommand())));
     addCommands(drive.followPPPath("RightN2-RightS"));
     addCommands(new HybridShootCommand(Button.kAutoButton, ShootMode.SCORE));
     addCommands(drive.followPPPath("RightS-RightC"));

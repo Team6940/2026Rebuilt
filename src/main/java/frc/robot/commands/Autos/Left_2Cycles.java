@@ -38,18 +38,13 @@ public class Left_2Cycles extends SequentialCommandGroup {
     addCommands(
         drive
             .followPPPath("Left-LeftN1")
-            .alongWith(
-                new WaitCommand(1.)
-                    .andThen(new IntakeCommand().withDeadline(drive.followPPPath("Left-LeftN1")))));
+            .deadlineFor(new WaitCommand(1.).andThen(new IntakeCommand())));
     addCommands(drive.followPPPath("LeftN1-LeftS"));
     addCommands(new HybridShootCommand(Button.kAutoButton, ShootMode.SCORE));
     addCommands(
         drive
             .followPPPath("LeftS-LeftN2")
-            .alongWith(
-                new WaitCommand(1.)
-                    .andThen(
-                        new IntakeCommand().withDeadline(drive.followPPPath("LeftS-LeftN2")))));
+            .deadlineFor(new WaitCommand(1.).andThen(new IntakeCommand())));
     addCommands(drive.followPPPath("LeftN2-LeftS"));
     addCommands(new HybridShootCommand(Button.kAutoButton, ShootMode.SCORE));
     addCommands(drive.followPPPath("LeftS-LeftC"));
