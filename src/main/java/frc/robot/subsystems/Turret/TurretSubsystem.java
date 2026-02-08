@@ -78,13 +78,70 @@ public class TurretSubsystem extends SubsystemBase {
   /*
    * Sets the turret to a field-relative angle by calculating the
    * turret-relative angle based on the robot's current pose.
+   * Automatically finds the nearest equivalent angle within the turret's range.
    */
   public void setAutoSetpointFieldRelativeRotation2d(Rotation2d fieldAngle, Pose2d robotPose) {
     fieldRelativeRotation2d = fieldAngle;
     lastRobotPose = robotPose;
     Rotation2d turretRelative = fieldAngle.minus(robotPose.getRotation());
+
+    // Find the nearest equivalent angle within the turret's range
+    double targetAngle =
+        findNearestEquivalentAngle(
+            turretRelative.getDegrees(),
+            inputs.turretPositionDegrees,
+            TurretConstants.MinDegs,
+            TurretConstants.MaxDegs);
+
     Logger.recordOutput("Turret/FieldRelativeRotation2d", fieldRelativeRotation2d.getDegrees());
-    setAutoSetpoint(turretRelative.getDegrees());
+    Logger.recordOutput("Turret/RawTurretRelativeDegs", turretRelative.getDegrees());
+    Logger.recordOutput("Turret/ChosenEquivalentDegs", targetAngle);
+    setAutoSetpoint(targetAngle);
+  }
+
+  /**
+   * Finds the nearest equivalent angle to the current position within the given range. For example,
+   * if current position is 240°, target is 0°, min is -360°, max is 360°, it will choose 360°
+   * (equivalent to 0°) as it's closer than 0° or -360°.
+   */
+  private double findNearestEquivalentAngle(
+      double targetDeg, double currentDeg, double minDeg, double maxDeg) {
+    double bestAngle = targetDeg;
+    double minDistance = Double.MAX_VALUE;
+
+    // Normalize target to [-180, 180) range first
+    targetDeg = normalizeAngle(targetDeg);
+
+    // Check all equivalent angles by adding/subtracting 360° multiples
+    // We need to check enough rotations to cover the entire range
+    int maxRotations = (int) Math.ceil((maxDeg - minDeg) / 360.0) + 1;
+
+    for (int i = -maxRotations; i <= maxRotations; i++) {
+      double candidate = targetDeg + (i * 360.0);
+
+      // Check if this candidate is within the valid range
+      if (candidate >= minDeg && candidate <= maxDeg) {
+        double distance = Math.abs(candidate - currentDeg);
+
+        if (distance < minDistance) {
+          minDistance = distance;
+          bestAngle = candidate;
+        }
+      }
+    }
+
+    return bestAngle;
+  }
+
+  /** Normalizes an angle to the range [-180, 180) degrees. */
+  private double normalizeAngle(double degrees) {
+    double angle = degrees % 360.0;
+    if (angle >= 180.0) {
+      angle -= 360.0;
+    } else if (angle < -180.0) {
+      angle += 360.0;
+    }
+    return angle;
   }
 
   public void setManualSetpoint(double positionDegrees) {

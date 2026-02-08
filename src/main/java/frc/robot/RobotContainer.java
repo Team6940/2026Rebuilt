@@ -51,6 +51,7 @@ import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
  */
 public class RobotContainer {
   // Subsystems
+  public static final String limelight = "limelight";
   private final Drive drive;
   private final FeederSubsystem feeder = FeederSubsystem.getInstance();
   private final HoodSubsystem hood = HoodSubsystem.getInstance();
@@ -166,6 +167,7 @@ public class RobotContainer {
     driverController
         .povDown()
         .onTrue(superStructure.runOnce(() -> superStructure.toggleControlMode()));
+    driverController.povUp().onTrue(superStructure.runOnce(() -> superStructure.toggleShootMode()));
   }
 
   /**

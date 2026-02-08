@@ -20,6 +20,7 @@ import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.Volts;
 
 import com.ctre.phoenix6.CANBus;
+import com.ctre.phoenix6.Utils;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.config.ModuleConfig;
 import com.pathplanner.lib.config.PIDConstants;
@@ -33,6 +34,7 @@ import edu.wpi.first.hal.FRCNetComm.tResourceType;
 import edu.wpi.first.hal.HAL;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.Matrix;
+import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
@@ -60,7 +62,10 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.Mode;
+import frc.robot.Constants.PoseEstimatorConstants;
+import frc.robot.RobotContainer;
 import frc.robot.generated.TunerConstants;
+import frc.robot.subsystems.Vision.LimelightHelpers;
 import frc.robot.util.LocalADStarAK;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -314,6 +319,37 @@ public class Drive extends SubsystemBase {
     Logger.recordOutput("Drive/DistanceToAllianceHub", getDistanceToAllianceHub());
     Logger.recordOutput("Drive/AllianceHubCenter", getAllianceHubCenter());
     Logger.recordOutput("Drive/RotationToAllianceHub", getRotationToAllianceHub());
+  }
+
+  public void updateOdometry() {
+    LimelightHelpers.SetRobotOrientation(
+        RobotContainer.limelight,
+        gyroInputs.yawPosition.getDegrees(),
+        0,
+        gyroInputs.pitchPosition.getDegrees(),
+        0,
+        gyroInputs.rollPosition.getDegrees(),
+        0);
+    LimelightHelpers.PoseEstimate mt2 =
+        LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(RobotContainer.limelight);
+    if (mt2 == null) {
+      DriverStation.reportWarning(RobotContainer.limelight + " Diconnected!", false);
+      return;
+    }
+
+    if (Math.abs(getChassisSpeeds().omegaRadiansPerSecond) <= 4 * Math.PI
+        && mt2.tagCount > 0
+        && mt2.avgTagDist < 4
+        && Math.hypot(getChassisSpeeds().vxMetersPerSecond, getChassisSpeeds().vyMetersPerSecond)
+            < 2) {
+      addVisionMeasurement(
+          mt2.pose,
+          Utils.fpgaToCurrentTime(mt2.timestampSeconds),
+          VecBuilder.fill(
+              PoseEstimatorConstants.tAtoDev.get(mt2.avgTagArea),
+              PoseEstimatorConstants.tAtoDev.get(mt2.avgTagArea),
+              100000000));
+    }
   }
 
   public static Translation2d getLinearVelocityFromJoysticks(double x, double y) {
