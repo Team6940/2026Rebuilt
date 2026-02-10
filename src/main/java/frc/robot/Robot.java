@@ -16,9 +16,16 @@ package frc.robot;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants.DriveMotorArrangement;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants.SteerMotorArrangement;
+
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.generated.TunerConstants;
+import frc.robot.subsystems.controller.KeyboardController;
+import frc.robot.util.turretAiming.mobileScoring.AimTool;
 import org.littletonrobotics.junction.LogFileUtil;
 import org.littletonrobotics.junction.LoggedRobot;
 import org.littletonrobotics.junction.Logger;
@@ -35,6 +42,8 @@ import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 public class Robot extends LoggedRobot {
   private Command autonomousCommand;
   private RobotContainer robotContainer;
+  private static AimTool aimTool = new AimTool();
+  public static Pose2d robotPose = new Pose2d();
 
   public Robot() {
     // Record metadata
@@ -99,6 +108,9 @@ public class Robot extends LoggedRobot {
     // Instantiate our RobotContainer. This will perform all our button bindings,
     // and put our autonomous chooser on the dashboard.
     robotContainer = new RobotContainer();
+
+    // Custom  
+    Logger.recordOutput("AimingClac/Positions/Turret", new Pose3d(new Translation3d(), new Rotation3d()));
   }
 
   /** This function is called periodically during all modes. */
@@ -117,6 +129,13 @@ public class Robot extends LoggedRobot {
 
     // Return to non-RT thread priority (do not modify the first argument)
     // Threads.setCurrentThreadPriority(false, 10);
+
+    // Custom
+    KeyboardController.publishKeyboard();
+    robotPose = Robot.isSimulation()
+        ? RobotContainer.driveSimulation.getSimulatedDriveTrainPose()
+        :RobotContainer.drive.getPose();
+    aimTool.publishData(robotPose);
   }
 
   /** This function is called once when the robot is disabled. */

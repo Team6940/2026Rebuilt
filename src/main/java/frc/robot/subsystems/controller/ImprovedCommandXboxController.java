@@ -1,4 +1,4 @@
-package frc.robot.subsystems;
+package frc.robot.subsystems.controller;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 
 public class ImprovedCommandXboxController extends CommandXboxController {

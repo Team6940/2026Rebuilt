@@ -3,10 +3,10 @@ package frc.robot.commands.Intake;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants;
 import frc.robot.RobotContainer;
-import frc.robot.subsystems.ImprovedCommandXboxController;
-import frc.robot.subsystems.ImprovedCommandXboxController.Button;
 import frc.robot.subsystems.Intake.IntakeSubsystem;
 import frc.robot.subsystems.Stretcher.StretcherSubsystem;
+import frc.robot.subsystems.controller.ImprovedCommandXboxController;
+import frc.robot.subsystems.controller.ImprovedCommandXboxController.Button;
 
 
 public class GroundIntakeSequence extends Command {

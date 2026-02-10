@@ -15,15 +15,18 @@ package frc.robot;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import frc.robot.subsystems.ImprovedCommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.commands.DriveCommands;
 import frc.robot.generated.TunerConstants;
+import frc.robot.subsystems.controller.ImprovedCommandXboxController;
+import frc.robot.subsystems.controller.KeyboardController;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.GyroIO;
 import frc.robot.subsystems.drive.GyroIOPigeon2;
@@ -31,6 +34,10 @@ import frc.robot.subsystems.drive.GyroIOSim;
 import frc.robot.subsystems.drive.ModuleIO;
 import frc.robot.subsystems.drive.ModuleIOTalonFXReal;
 import frc.robot.subsystems.drive.ModuleIOTalonFXSim;
+import frc.robot.util.simulation.TrajectorySimulator;
+import frc.robot.util.simulation.bumpPhysicsEnhance.BumpConstants;
+import frc.robot.util.simulation.bumpPhysicsEnhance.BumpPhysicsUtil;
+
 import org.ironmaple.simulation.SimulatedArena;
 import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
 import org.littletonrobotics.junction.Logger;
@@ -47,15 +54,18 @@ public class RobotContainer {
   public static final double DEADBAND = 0.05; // TODO CHANGE JOYSTICK DEADBAND HERE
 
   // Subsystems
-  private final Drive drive;
-
-  private SwerveDriveSimulation driveSimulation = null;
-
+  public static Drive drive;
+  public static SwerveDriveSimulation driveSimulation = new SwerveDriveSimulation(Drive.mapleSimConfig, new Pose2d());
   // Controller
   public static final ImprovedCommandXboxController driveController = new ImprovedCommandXboxController(0);
-
+  public static final KeyboardController keyboardController = new KeyboardController();
   // Dashboard inputs
   private final LoggedDashboardChooser<Command> autoChooser;
+  //custom
+  public static boolean startAim = false;
+  public TrajectorySimulator trajectorySetter = new TrajectorySimulator();
+  private BumpPhysicsUtil.BumpState bump =
+    BumpPhysicsUtil.BumpState.flat();
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
@@ -119,6 +129,7 @@ public class RobotContainer {
 
     // Configure the button bindings
     configureButtonBindings();
+    configureKeyBoardBindings();
   }
 
   /**
@@ -162,6 +173,58 @@ public class RobotContainer {
                     drive)
                 .ignoringDisable(true));
   }
+  
+  private void configureKeyBoardBindings() {
+    // double vx = 0, vy = 0, vz = 0;
+    keyboardController.up().toggleOnTrue(
+        drive.run(
+            () ->
+                drive.driveFieldCentric(
+                    () -> 0.6,
+                    () -> 0.0,
+                    () -> 0.0)));
+    keyboardController.down().toggleOnTrue(
+        drive.run(
+            () ->
+                drive.driveFieldCentric(
+                    () -> -0.6,
+                    () -> 0.0,
+                    () -> 0.0)));
+    keyboardController.left().toggleOnTrue(
+        drive.run(
+            () ->
+                drive.driveFieldCentric(
+                    () -> 0.0,
+                    () -> 0.6,
+                    () -> 0.0)));
+    keyboardController.right().toggleOnTrue(
+        drive.run(
+            () ->
+                drive.driveFieldCentric(
+                    () -> 0.0,
+                    () -> -0.6,
+                    () -> 0.0)));
+    keyboardController.q().toggleOnTrue(
+        drive.run(
+            () ->
+                drive.driveFieldCentric(
+                    () -> 0.0,
+                    () -> 0.0,
+                    () -> Math.toRadians(60.0))));
+    keyboardController.e().toggleOnTrue(
+        drive.run(
+            () ->
+                drive.driveFieldCentric(
+                    () -> 0.0,
+                    () -> 0.0,
+                    () -> Math.toRadians(-60.0))));
+    keyboardController.z()
+        .onTrue(Commands.runOnce(() -> startAim = true));
+    keyboardController.v()
+        .onTrue(Commands.runOnce(() -> startAim = false));
+    keyboardController.i()
+        .onTrue(Commands.runOnce(() -> trajectorySetter.setTrajectory(Robot.robotPose)));
+  }
 
   /**
    * Use this to pass the autonomous command to the main {@link Robot} class.
@@ -179,15 +242,43 @@ public class RobotContainer {
     SimulatedArena.getInstance().resetFieldForAuto();
   }
 
-  public void updateSimulation() {
-    if (Constants.currentMode != Constants.Mode.SIM) return;
+public void updateSimulation() {
+  if (Constants.currentMode != Constants.Mode.SIM) return;
 
-    SimulatedArena.getInstance().simulationPeriodic();
+  SimulatedArena.getInstance().simulationPeriodic();
+
+  Pose2d pose = driveSimulation.getSimulatedDriveTrainPose();
+
+  // === 核心：纯几何解算 ===
+    bump = BumpPhysicsUtil.solve(pose);
+
+Logger.recordOutput(
+    "FieldSimulation/RobotPosition",
+    new Pose3d(
+        pose.getX(),
+        pose.getY(),
+        bump.z,
+        bump.rotation.plus(
+            new Rotation3d(
+                0, 0,
+                pose.getRotation().getRadians()))));
+
+  Logger.recordOutput(
+      "FieldSimulation/Fuel",
+      SimulatedArena.getInstance().getGamePiecesArrayByType("Fuel"));
+
+  for (Pose2d b : BumpConstants.BUMP_CENTERS) {
     Logger.recordOutput(
-        "FieldSimulation/RobotPosition", driveSimulation.getSimulatedDriveTrainPose());
-    Logger.recordOutput(
-        "FieldSimulation/Coral", SimulatedArena.getInstance().getGamePiecesArrayByType("Coral"));
-    Logger.recordOutput(
-        "FieldSimulation/Algae", SimulatedArena.getInstance().getGamePiecesArrayByType("Algae"));
+        "FieldSimulation/BumpAt"
+            + String.format("(%.2f,%.2f)", b.getX(), b.getY()),
+        new Pose3d(
+            b.getX(),
+            b.getY(),
+            BumpConstants.BUMP_HEIGHT / 2.0,
+            new Rotation3d(
+                0.0,
+                0.0,
+                b.getRotation().getRadians())));
   }
+}
 }
