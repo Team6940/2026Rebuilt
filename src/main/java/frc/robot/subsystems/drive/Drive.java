@@ -344,7 +344,8 @@ public class Drive extends SubsystemBase {
             < 2) {
       addVisionMeasurement(
           mt2.pose,
-          Utils.fpgaToCurrentTime(mt2.timestampSeconds),
+          mt2.timestampSeconds, // according to docs, 6328 template needs no fpgaToCurrentTime
+                                // conversion
           VecBuilder.fill(
               PoseEstimatorConstants.tAtoDev.get(mt2.avgTagArea),
               PoseEstimatorConstants.tAtoDev.get(mt2.avgTagArea),

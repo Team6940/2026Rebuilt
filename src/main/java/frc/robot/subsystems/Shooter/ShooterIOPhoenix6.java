@@ -25,10 +25,8 @@ public class ShooterIOPhoenix6 implements ShooterIO {
     config.Slot0.kP = ShooterConstants.kP;
     config.Slot0.kI = ShooterConstants.kI;
     config.Slot0.kD = ShooterConstants.kD;
-
-    // Disable kV/kS: torque control focuses on current domain.
-    config.Slot0.kV = 0.0;
-    config.Slot0.kS = 0.0;
+    config.Slot0.kV = ShooterConstants.kV;
+    config.Slot0.kS = ShooterConstants.kS;
 
     config.CurrentLimits.SupplyCurrentLimitEnable = true;
     config.CurrentLimits.SupplyCurrentLimit = ShooterConstants.ShooterSupplyCurrentLimit;
