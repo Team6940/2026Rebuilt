@@ -66,6 +66,7 @@ import frc.robot.Constants.PoseEstimatorConstants;
 import frc.robot.RobotContainer;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.Vision.LimelightHelpers;
+import frc.robot.subsystems.drive.GyroIOInputsAutoLogged;
 import frc.robot.util.LocalADStarAK;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;

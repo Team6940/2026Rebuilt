@@ -1,4 +1,5 @@
 package frc.robot.subsystems;
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 
 public class ImprovedCommandXboxController extends CommandXboxController {
@@ -127,6 +128,34 @@ public class ImprovedCommandXboxController extends CommandXboxController {
      */
     public boolean getButtonPressed(Button button){
         return getButtonPressed(button.value);
+    }
+
+    /**
+     * Returns the angle of the joystick in degrees, where 0 degrees is straight up, and increases clockwise.
+     * @param x The x-axis value of the joystick.
+     * @param y The y-axis value of the joystick.
+     * @param deadzone The deadzone radius to prevent noise when the stick is near the center.
+     * @return The angle of the joystick in degrees, normalized to [-180, 180].
+     */
+    public double getJoystickAngleDeg180(double x, double y, double deadzone) {
+        if (Math.hypot(x, y) < deadzone) return 0.0; // Deadzone check to prevent noise when the stick is near the center
+        double angleRad = Math.atan2(x, y);
+        double angleDeg = Math.toDegrees(angleRad);
+        return MathUtil.angleModulus(Math.toRadians(angleDeg)) * 180.0 / Math.PI;
+    }
+
+    /**
+    * Returns the angle of the joystick in degrees, where 0 degrees is straight up, and increases clockwise.
+    * @param x The x-axis value of the joystick.
+    * @param y The y-axis value of the joystick.
+    * @param deadzone The deadzone radius to prevent noise when the stick is near the center.
+    * @return The angle of the joystick in degrees, normalized to [0, 360).
+    */
+    public double getJoystickAngleDeg360(double x, double y, double deadzone) {
+        if (Math.hypot(x, y) < deadzone) return 0.0;
+        double angleRad = Math.atan2(x, y);
+        double angleDeg = Math.toDegrees(angleRad);
+        return (angleDeg + 360.0) % 360.0; // Normalize to [0, 360)
     }
 
     // public ChassisSpeeds getDesiredRelativeSpeeds(){
