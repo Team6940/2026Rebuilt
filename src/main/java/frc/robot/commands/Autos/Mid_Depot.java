@@ -38,10 +38,7 @@ public class Mid_Depot extends SequentialCommandGroup {
     addCommands(
         drive
             .followPPPath("Mid-LeftDepot")
-            .alongWith(
-                new WaitCommand(1.)
-                    .andThen(
-                        new IntakeCommand().withDeadline(drive.followPPPath("Mid-LeftDepot")))));
+            .deadlineFor(new WaitCommand(1.).andThen(new IntakeCommand())));
     addCommands(drive.followPPPath("LeftDepot-LeftC"));
     addCommands(new HybridShootCommand(Button.kAutoButton, ShootMode.SCORE));
   }

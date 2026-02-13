@@ -20,7 +20,6 @@ import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.Volts;
 
 import com.ctre.phoenix6.CANBus;
-import com.ctre.phoenix6.Utils;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.config.ModuleConfig;
 import com.pathplanner.lib.config.PIDConstants;
@@ -344,7 +343,8 @@ public class Drive extends SubsystemBase {
             < 2) {
       addVisionMeasurement(
           mt2.pose,
-          Utils.fpgaToCurrentTime(mt2.timestampSeconds),
+          mt2.timestampSeconds, // according to docs, 6328 template needs no fpgaToCurrentTime
+          // conversion
           VecBuilder.fill(
               PoseEstimatorConstants.tAtoDev.get(mt2.avgTagArea),
               PoseEstimatorConstants.tAtoDev.get(mt2.avgTagArea),
@@ -415,6 +415,46 @@ public class Drive extends SubsystemBase {
             linearVelocity.getX() * this.getMaxLinearSpeedMetersPerSec(),
             linearVelocity.getY() * this.getMaxLinearSpeedMetersPerSec(),
             omega * this.getMaxAngularSpeedRadPerSec());
+    boolean isFlipped =
+        DriverStation.getAlliance().isPresent()
+            && DriverStation.getAlliance().get() == Alliance.Red;
+    this.runVelocity(
+        ChassisSpeeds.fromFieldRelativeSpeeds(
+            speeds,
+            isFlipped ? this.getRotation().plus(new Rotation2d(Math.PI)) : this.getRotation()));
+  }
+
+  /**
+   * Field-centric drive with custom max speed. Allows you to scale the maximum linear and angular
+   * speeds independently.
+   *
+   * @param xSupplier X-axis joystick input (-1 to 1, forward positive)
+   * @param ySupplier Y-axis joystick input (-1 to 1, left positive)
+   * @param omegaSupplier Rotational joystick input (-1 to 1, CCW positive)
+   * @param maxLinearSpeed Maximum linear speed in meters per second
+   * @param maxAngularSpeed Maximum angular speed in radians per second
+   */
+  public void driveFieldCentricWithMaxSpeed(
+      DoubleSupplier xSupplier,
+      DoubleSupplier ySupplier,
+      DoubleSupplier omegaSupplier,
+      double maxLinearSpeed) {
+    // Get linear velocity
+    Translation2d linearVelocity =
+        getLinearVelocityFromJoysticks(xSupplier.getAsDouble(), ySupplier.getAsDouble());
+
+    // Apply deadband to angular velocity
+    double omega =
+        MathUtil.applyDeadband(omegaSupplier.getAsDouble(), Constants.DriveConstants.DEADBAND);
+
+    // Square the angular velocity for finer control
+    omega = Math.copySign(omega * omega, omega);
+
+    ChassisSpeeds speeds =
+        new ChassisSpeeds(
+            linearVelocity.getX() * maxLinearSpeed,
+            linearVelocity.getY() * maxLinearSpeed,
+            omega * (maxLinearSpeed / DRIVE_BASE_RADIUS));
     boolean isFlipped =
         DriverStation.getAlliance().isPresent()
             && DriverStation.getAlliance().get() == Alliance.Red;

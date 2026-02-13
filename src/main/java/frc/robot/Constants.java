@@ -668,9 +668,11 @@ public final class Constants {
     public static final MotorAlignmentValue FollowerAlignment = MotorAlignmentValue.Aligned;
 
     // PID Gains
-    public static final double kP = 0.5;
+    public static final double kP = 6.5;
     public static final double kI = 0.0;
-    public static final double kD = 0.0;
+    public static final double kD = 0.05;
+    public static final double kV = 0.1;
+    public static final double kS = 5.5;
 
     // Torque-current feedforward (Amps per RPS)
     public static final double kTorqueFFPerRPS = 0.0;
