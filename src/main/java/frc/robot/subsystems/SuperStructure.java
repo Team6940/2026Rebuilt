@@ -4,6 +4,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.commands.HybridShootCommand;
 import frc.robot.commands.IntakeCommand;
+import frc.robot.commands.ManualShootAtAngleCommand;
 import frc.robot.commands.ManualShootCommand;
 import frc.robot.subsystems.ImprovedCommandXboxController.Button;
 import org.littletonrobotics.junction.Logger;
@@ -54,6 +55,7 @@ public class SuperStructure extends SubsystemBase {
 
   public Command getManualShootCommand(Button shootButton, Button resetButton) {
     return new ManualShootCommand(shootButton, resetButton);
+    // return new ManualShootAtAngleCommand(shootButton, resetButton);
   }
 
   public Command getHybridShootCommand(Button shootButton) {
