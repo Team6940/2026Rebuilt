@@ -157,6 +157,10 @@ public class TurretSubsystem extends SubsystemBase {
         clamp(manualSetpointDegs + scalar * TurretConstants.TurretManualSensitivity);
   }
 
+  public double getCurrentPositionDegs() {
+    return inputs.turretPositionDegrees;
+  }
+
   public double getTargetPositionDegs() {
     return targetPositionDegs;
   }

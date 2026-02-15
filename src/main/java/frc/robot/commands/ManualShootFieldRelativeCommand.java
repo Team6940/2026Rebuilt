@@ -14,7 +14,7 @@ import frc.robot.subsystems.ImprovedCommandXboxController.Button;
 import frc.robot.subsystems.Shooter.ShooterSubsystem;
 import frc.robot.subsystems.Turret.TurretSubsystem;
 
-public class ManualShootAtAngleCommand extends Command {
+public class ManualShootFieldRelativeCommand extends Command {
   private final HoodSubsystem hood = HoodSubsystem.getInstance();
   private final TurretSubsystem turret = TurretSubsystem.getInstance();
   private final ShooterSubsystem shooter = ShooterSubsystem.getInstance();
@@ -27,7 +27,7 @@ public class ManualShootAtAngleCommand extends Command {
   private final Button resetButton;
   static TurretSubsystem turretSubsystem = TurretSubsystem.getInstance();
 
-  public ManualShootAtAngleCommand(Button shootButton, Button resetButton) {
+  public ManualShootFieldRelativeCommand(Button shootButton, Button resetButton) {
     addRequirements(hood, turret, shooter, feeder);
     this.shootButton = shootButton;
     this.resetButton = resetButton;
@@ -43,12 +43,14 @@ public class ManualShootAtAngleCommand extends Command {
   @Override
   public void execute() {
     hood.setOperatorInputScalar(-operatorController.getRightY());
-    double desiredFieldAngle = operatorController.getJoystickAngleDeg180(operatorController.getLeftX(), operatorController.getLeftY(), 0.05);
+
+    double desiredFieldAngle = operatorController.getJoystickAngleDeg180(operatorController.getLeftX(), operatorController.getLeftY(), 0.1);
     double turretSetpoint = turretSubsystem.findNearestEquivalentAngle(
-      desiredFieldAngle,
-      turret.getTurretFieldAngle(drive.getPose()).getDegrees(),
-      TurretConstants.MinDegs + 1,
-      TurretConstants.MaxDegs - 1
+      desiredFieldAngle - drive.getPose().getRotation().getDegrees(),
+      // turret.getTurretFieldAngle(drive.getPose()).getDegrees(),
+      turretSubsystem.getCurrentPositionDegs(),
+      TurretConstants.MinDegs,
+      TurretConstants.MaxDegs
 );
     turret.setManualSetpoint(turretSetpoint);
 

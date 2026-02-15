@@ -136,6 +136,16 @@ public class RobotContainer {
     configureButtonBindings();
   }
 
+  /**
+    ****** THE BINDING METHODS ARE SUCH ******
+    DRIVER CONROLLER：
+        * B： RESET GYRO
+        * RB: INTAKE
+        * LB: TRIGGER SHOOT MODE
+        * PovDown: TOGGLE  SHOOT MODE MANUAL/HYBRID
+        * PovUp: TOGGLE CONTROL MODE PASS/SCORE
+
+   */
   private void configureButtonBindings() {
     drive.setDefaultCommand(
         drive.run(
