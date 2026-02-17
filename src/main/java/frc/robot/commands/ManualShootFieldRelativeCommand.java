@@ -45,15 +45,16 @@ public class ManualShootFieldRelativeCommand extends Command {
     hood.setOperatorInputScalar(-operatorController.getRightY());
 
     double desiredFieldAngle = operatorController.getJoystickAngleDeg180(operatorController.getLeftX(), operatorController.getLeftY(), 0.1);
-    double turretSetpoint = turretSubsystem.findNearestEquivalentAngle(
-      desiredFieldAngle - drive.getPose().getRotation().getDegrees(),
-      // turret.getTurretFieldAngle(drive.getPose()).getDegrees(),
-      turretSubsystem.getCurrentPositionDegs(),
-      TurretConstants.MinDegs,
-      TurretConstants.MaxDegs
+    double turretSetpoint = 
+      turretSubsystem.findNearestEquivalentAngle(
+        desiredFieldAngle - drive.getPose().getRotation().getDegrees(),
+        // turret.getTurretFieldAngle(drive.getPose()).getDegrees(),
+        turretSubsystem.getCurrentPositionDegs(),
+        TurretConstants.MinDegs,
+        TurretConstants.MaxDegs
 );
-    turret.setManualSetpoint(turretSetpoint);
-
+    // turret.setManualSetpoint(turretSetpoint);
+    turret.setOperatorInputScalar(turretSetpoint);
     if (operatorController.getButtonPressed(Button.kA)) {
       targetRps = ShooterConstants.ManualRpsA;
     } else if (operatorController.getButtonPressed(Button.kB)) {
@@ -64,9 +65,9 @@ public class ManualShootFieldRelativeCommand extends Command {
       targetRps = ShooterConstants.ManualRpsY;
     }
 
-    if (operatorController.getButton(Button.kRightBumper)) {
+    if (operatorController.getButton(Button.kLeftBumper)) {
       targetRps += 5.0;
-    } else if (operatorController.getButton(Button.kRightTrigger)) {
+    } else if (operatorController.getButton(Button.kLeftTrigger)) {
       targetRps -= 5.0;
     }
 
@@ -79,8 +80,8 @@ public class ManualShootFieldRelativeCommand extends Command {
     }
 
     if (operatorController.getButton(resetButton)) {
-      hood.setManualSetpoint(HoodConstants.IdlePosition);
-      turret.setManualSetpoint(TurretConstants.IdlePosition);
+      hood.setManualSetpoint(HoodConstants.IdlePosition); //0.
+      turret.setManualSetpoint(TurretConstants.IdlePosition); //0.
       hood.setOperatorInputScalar(0.0);
       turret.setOperatorInputScalar(0.0);
     }
@@ -88,8 +89,8 @@ public class ManualShootFieldRelativeCommand extends Command {
 
   @Override
   public void end(boolean interrupted) {
-    hood.setOperatorInputScalar(0.0);
-    turret.setManualSetpoint(TurretConstants.IdlePosition);
+    hood.setOperatorInputScalar(HoodConstants.IdlePosition); //0.
+    turret.setManualSetpoint(TurretConstants.IdlePosition); //0.
     shooter.stop();
     feeder.stop();
   }

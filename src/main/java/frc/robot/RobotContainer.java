@@ -137,14 +137,38 @@ public class RobotContainer {
   }
 
   /**
-    ****** THE BINDING METHODS ARE SUCH ******
+    ****** THE CONTROL LOGIC IS SUCH ******
+
     DRIVER CONROLLER：
         * B： RESET GYRO
+        * X: STOP WITH X
         * RB: INTAKE
         * LB: TRIGGER SHOOT MODE
-        * PovDown: TOGGLE  SHOOT MODE MANUAL/HYBRID
+        * PovDown: TOGGLE SHOOT MODE MANUAL/HYBRID
         * PovUp: TOGGLE CONTROL MODE PASS/SCORE
 
+    OPERATOR CONTROLLER:
+        * RT: SHOOT
+        * RB: RESET SCORING UNIT
+        HYBRID SHOOTING:
+            * LEFT STICK Y: HOOD SCALAR
+            * RIGHT STICK X: TURRET SCALAR
+        MANUAL SHOOTING (CURRENTLY UNUSED):
+            * LEFT STICK Y: HOOD SCALAR
+            * RIGHT STICK X: TURRET SCALAR
+            * A: SET RPS 30
+            * B: SET RPS 35
+            * X: SET RPS 40
+            * Y: SET RPS 45
+        MANUAL FIELD-RELATIVE SHOOTING:
+            * LEFT STICK: AIMING (TURRET SETPOINT IS CALCULATED BASED ON ROBOT HEADING AND STICK ANGLE)
+            * RIGHT STICK Y: HOOD SCALAR
+            * A: SET RPS 30
+            * B: SET RPS 35
+            * X: SET RPS 40
+            * Y: SET RPS 45
+            * LEFT BUMPER: INCREASE RPS BY 5
+            * LEFT TRIGGER: DECREASE RPS BY 5
    */
   private void configureButtonBindings() {
     drive.setDefaultCommand(
@@ -154,6 +178,11 @@ public class RobotContainer {
                     () -> -driverController.getLeftY(),
                     () -> -driverController.getLeftX(),
                     () -> -driverController.getRightX())));
+    driverController
+        .x()
+        .onTrue(
+            Commands.runOnce(
+                drive::stopWithX, drive));
     driverController
         .b()
         .onTrue(
