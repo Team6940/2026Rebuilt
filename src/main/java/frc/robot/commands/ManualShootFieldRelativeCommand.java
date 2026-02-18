@@ -26,6 +26,8 @@ public class ManualShootFieldRelativeCommand extends Command {
   private final Button shootButton;
   private final Button resetButton;
   static TurretSubsystem turretSubsystem = TurretSubsystem.getInstance();
+  private double lastTurretSetpointDegs = TurretConstants.IdlePosition;
+  private static final double JOYSTICK_DEADZONE = 0.1;
 
   public ManualShootFieldRelativeCommand(Button shootButton, Button resetButton) {
     addRequirements(hood, turret, shooter, feeder);
@@ -38,23 +40,31 @@ public class ManualShootFieldRelativeCommand extends Command {
     hood.setModeManual();
     turret.setModeManual();
     hood.setOperatorInputScalar(0.0);
+    turret.setOperatorInputScalar(0.0);
+    lastTurretSetpointDegs = turret.getCurrentPositionDegs();
+    turret.setManualSetpoint(lastTurretSetpointDegs);
   }
 
   @Override
   public void execute() {
     hood.setOperatorInputScalar(-operatorController.getRightY());
 
-    double desiredFieldAngle = operatorController.getJoystickAngleDeg180(operatorController.getLeftX(), operatorController.getLeftY(), 0.1);
-    double turretSetpoint = 
-      turretSubsystem.findNearestEquivalentAngle(
-        desiredFieldAngle - drive.getPose().getRotation().getDegrees(),
-        // turret.getTurretFieldAngle(drive.getPose()).getDegrees(),
-        turretSubsystem.getCurrentPositionDegs(),
-        TurretConstants.MinDegs,
-        TurretConstants.MaxDegs
-);
-    // turret.setManualSetpoint(turretSetpoint);
-    turret.setOperatorInputScalar(turretSetpoint);
+    double leftX = operatorController.getLeftX();
+    double leftY = operatorController.getLeftY();
+    if (Math.hypot(leftX, leftY) >= JOYSTICK_DEADZONE) {
+      // Joystick angle is field-relative (0 deg is field "up", clockwise positive).
+      double desiredFieldAngle =
+          operatorController.getJoystickAngleDeg180(leftX, leftY, JOYSTICK_DEADZONE);
+      // Convert to turret-relative angle by subtracting robot heading.
+      double turretSetpoint =
+          turretSubsystem.findNearestEquivalentAngle(
+              desiredFieldAngle - drive.getPose().getRotation().getDegrees(),
+              turretSubsystem.getCurrentPositionDegs(),
+              TurretConstants.MinDegs,
+              TurretConstants.MaxDegs);
+      lastTurretSetpointDegs = turretSetpoint;
+    }
+    turret.setManualSetpoint(lastTurretSetpointDegs);
     if (operatorController.getButtonPressed(Button.kA)) {
       targetRps = ShooterConstants.ManualRpsA;
     } else if (operatorController.getButtonPressed(Button.kB)) {
@@ -84,12 +94,14 @@ public class ManualShootFieldRelativeCommand extends Command {
       turret.setManualSetpoint(TurretConstants.IdlePosition); //0.
       hood.setOperatorInputScalar(0.0);
       turret.setOperatorInputScalar(0.0);
+      lastTurretSetpointDegs = TurretConstants.IdlePosition;
     }
   }
 
   @Override
   public void end(boolean interrupted) {
-    hood.setOperatorInputScalar(HoodConstants.IdlePosition); //0.
+    hood.setOperatorInputScalar(0.0);
+    turret.setOperatorInputScalar(0.0);
     turret.setManualSetpoint(TurretConstants.IdlePosition); //0.
     shooter.stop();
     feeder.stop();
