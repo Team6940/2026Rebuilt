@@ -223,6 +223,7 @@ public class TurretSubsystem extends SubsystemBase {
     switch (mode) {
       case HYBRID -> handleHybrid();
       case MANUAL -> handleManual();
+      // case MANUAL -> handleManualFieldRelative();
     }
 
     Logger.processInputs("Turret", inputs);
@@ -249,6 +250,11 @@ public class TurretSubsystem extends SubsystemBase {
     io.setPosition(targetPositionDegs);
   }
 
+  // private void handleManualFieldRelative() {
+  //   targetPositionDegs = manualSetpointDegs;
+  //   io.setPosition(targetPositionDegs);
+  // }
+  
   private double clamp(double positionDegrees) {
     return MathUtil.clamp(positionDegrees, TurretConstants.MinDegs, TurretConstants.MaxDegs);
   }
