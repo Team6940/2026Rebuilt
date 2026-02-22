@@ -104,7 +104,7 @@ public class TurretSubsystem extends SubsystemBase {
    * if current position is 240°, target is 0°, min is -360°, max is 360°, it will choose 360°
    * (equivalent to 0°) as it's closer than 0° or -360°.
    */
-  private double findNearestEquivalentAngle(
+  public double findNearestEquivalentAngle(
       double targetDeg, double currentDeg, double minDeg, double maxDeg) {
     double bestAngle = targetDeg;
     double minDistance = Double.MAX_VALUE;
@@ -157,6 +157,10 @@ public class TurretSubsystem extends SubsystemBase {
         clamp(manualSetpointDegs + scalar * TurretConstants.TurretManualSensitivity);
   }
 
+  public double getCurrentPositionDegs() {
+    return inputs.turretPositionDegrees;
+  }
+
   public double getTargetPositionDegs() {
     return targetPositionDegs;
   }
@@ -164,6 +168,36 @@ public class TurretSubsystem extends SubsystemBase {
   public Rotation2d getTurretFieldAngle(Pose2d robotPose) {
     return robotPose.getRotation().plus(Rotation2d.fromDegrees(inputs.turretPositionDegrees));
   }
+
+//   /**
+//  * Computes the turret angle that would point to the desired field-relative angle, 
+//  * based on the robot's current pose and turret position.
+//  * Feat with a margin of to prevent jittering when the target is near the edge of the turret's range.
+//  *
+//  * @param desiredFieldAngle the field-relative angle we want the turret to point to
+//  * @param robotPose
+//  */
+// public double getTurretFieldAngle(
+//     Rotation2d desiredFieldAngle,
+//     Pose2d robotPose) {
+//     double currentTurretDeg = inputs.turretPositionDegrees;
+//     Rotation2d currentFieldAngle = getTurretFieldAngle(robotPose);
+//     double fieldError = desiredFieldAngle.minus(currentFieldAngle).getDegrees();
+//     double deltaSmall = normalizeAngle(fieldError);
+//     double candidateSmall = currentTurretDeg + deltaSmall;
+//     double margin = 1.0; // 1° margin
+//     double limitMin = -180.0 + margin;
+//     double limitMax = 180.0 - margin;
+//     if (candidateSmall >= limitMin && candidateSmall <= limitMax) {
+//         return currentTurretDeg + deltaSmall;
+//     }
+//     double deltaLarge = (deltaSmall > 0) ? deltaSmall - 360.0 : deltaSmall + 360.0;
+//     double candidateLarge = currentTurretDeg + deltaLarge;
+//     if (candidateLarge >= limitMin && candidateLarge <= limitMax) {
+//         return currentTurretDeg + deltaLarge;
+//     }
+//     return currentTurretDeg;
+// }
 
   public boolean isAtTargetPosition() {
     return MathUtil.isNear(
@@ -189,6 +223,7 @@ public class TurretSubsystem extends SubsystemBase {
     switch (mode) {
       case HYBRID -> handleHybrid();
       case MANUAL -> handleManual();
+      // case MANUAL -> handleManualFieldRelative();
     }
 
     Logger.processInputs("Turret", inputs);
@@ -215,6 +250,11 @@ public class TurretSubsystem extends SubsystemBase {
     io.setPosition(targetPositionDegs);
   }
 
+  // private void handleManualFieldRelative() {
+  //   targetPositionDegs = manualSetpointDegs;
+  //   io.setPosition(targetPositionDegs);
+  // }
+  
   private double clamp(double positionDegrees) {
     return MathUtil.clamp(positionDegrees, TurretConstants.MinDegs, TurretConstants.MaxDegs);
   }
