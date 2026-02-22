@@ -45,7 +45,12 @@ public class ShooterSubsystem extends SubsystemBase {
     io.setRPS(rps);
   }
 
+  /**
+   * Commands the shooter to run at the current dashboard-tuned RPS value. Call this instead of
+   * setRPS() during Shuffleboard tuning sessions so the slider value drives the motor.
+   */
   public void setDashboardRPS() {
+    targetRPS = dashboardRps;
     io.setRPS(dashboardRps);
   }
 

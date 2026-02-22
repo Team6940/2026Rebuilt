@@ -41,7 +41,7 @@ public class ManualShootCommand extends Command {
   @Override
   public void execute() {
     hood.setOperatorInputScalar(-operatorController.getLeftY());
-    turret.setOperatorInputScalar(operatorController.getRightX());
+    turret.setOperatorInputScalar(-operatorController.getRightX());
     if (operatorController.getButtonPressed(Button.kA)) {
       targetRps = ShooterConstants.ManualRpsA;
     } else if (operatorController.getButtonPressed(Button.kB)) {
