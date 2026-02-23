@@ -1,15 +1,17 @@
 package frc.robot.commands;
 
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants.FeederConstants;
 import frc.robot.Constants.HoodConstants;
 import frc.robot.Constants.ShooterConstants;
 import frc.robot.Constants.TurretConstants;
 import frc.robot.RobotContainer;
+import frc.robot.subsystems.Drive.Drive;
 import frc.robot.subsystems.Feeder.FeederSubsystem;
 import frc.robot.subsystems.Hood.HoodSubsystem;
 import frc.robot.subsystems.ImprovedCommandXboxController;
-import frc.robot.subsystems.Drive.Drive;
 import frc.robot.subsystems.ImprovedCommandXboxController.Button;
 import frc.robot.subsystems.Shooter.ShooterSubsystem;
 import frc.robot.subsystems.Turret.TurretSubsystem;
@@ -20,12 +22,13 @@ public class ManualShootFieldRelativeCommand extends Command {
   private final ShooterSubsystem shooter = ShooterSubsystem.getInstance();
   private final FeederSubsystem feeder = FeederSubsystem.getInstance();
   private final Drive drive = Drive.getInstance();
+
   private final ImprovedCommandXboxController operatorController =
       RobotContainer.operatorController;
+
   private double targetRps = ShooterConstants.ManualRpsA;
   private final Button shootButton;
   private final Button resetButton;
-  static TurretSubsystem turretSubsystem = TurretSubsystem.getInstance();
   private double lastTurretSetpointDegs = TurretConstants.IdlePosition;
   private static final double JOYSTICK_DEADZONE = 0.1;
 
@@ -47,19 +50,30 @@ public class ManualShootFieldRelativeCommand extends Command {
 
   @Override
   public void execute() {
-    hood.setOperatorInputScalar(-operatorController.getRightY());
+    turret.setOperatorInputScalar(
+        0.); // This is for safety reasons. Generally we CANNOT directly control setpoints, instead,
+    // setpoints should only be decided inside the subsystem itself by using set scalar.
+    // In this situation, we manage setpoints directly so scalar should ALWAYS be 0.
+    hood.setOperatorInputScalar(-operatorController.getLeftY());
 
-    double leftX = operatorController.getLeftX();
-    double leftY = operatorController.getLeftY();
-    if (Math.hypot(leftX, leftY) >= JOYSTICK_DEADZONE) {
+    double controllerX = -operatorController.getRightX();
+    double controllerY = -operatorController.getRightY();
+    if (Math.hypot(controllerX, controllerY) >= JOYSTICK_DEADZONE) {
       // Joystick angle is field-relative (0 deg is field "up", clockwise positive).
       double desiredFieldAngle =
-          operatorController.getJoystickAngleDeg180(leftX, leftY, JOYSTICK_DEADZONE);
+          operatorController.getJoystickAngleDeg180(controllerX, controllerY, JOYSTICK_DEADZONE);
+      // Flip 180° for Red alliance so joystick "up" still points away from our hub.
+      boolean isRed =
+          DriverStation.getAlliance().isPresent()
+              && DriverStation.getAlliance().get() == Alliance.Red;
+      if (isRed) {
+        desiredFieldAngle += 180.0;
+      }
       // Convert to turret-relative angle by subtracting robot heading.
       double turretSetpoint =
-          turretSubsystem.findNearestEquivalentAngle(
+          turret.findNearestEquivalentAngle(
               desiredFieldAngle - drive.getPose().getRotation().getDegrees(),
-              turretSubsystem.getCurrentPositionDegs(),
+              turret.getCurrentPositionDegs(),
               TurretConstants.MinDegs,
               TurretConstants.MaxDegs);
       lastTurretSetpointDegs = turretSetpoint;
@@ -75,12 +89,6 @@ public class ManualShootFieldRelativeCommand extends Command {
       targetRps = ShooterConstants.ManualRpsY;
     }
 
-    if (operatorController.getButton(Button.kLeftBumper)) {
-      targetRps += 5.0;
-    } else if (operatorController.getButton(Button.kLeftTrigger)) {
-      targetRps -= 5.0;
-    }
-
     if (operatorController.getButton(shootButton)) {
       shooter.setRPS(targetRps);
       feeder.setRPS(FeederConstants.DefaultTurntableRPS, FeederConstants.DefaultFeedRPS);
@@ -88,10 +96,9 @@ public class ManualShootFieldRelativeCommand extends Command {
       shooter.stop();
       feeder.stop();
     }
-
     if (operatorController.getButton(resetButton)) {
-      hood.setManualSetpoint(HoodConstants.IdlePosition); //0.
-      turret.setManualSetpoint(TurretConstants.IdlePosition); //0.
+      hood.setManualSetpoint(HoodConstants.IdlePosition); // 0.
+      turret.setManualSetpoint(TurretConstants.IdlePosition); // 0.
       hood.setOperatorInputScalar(0.0);
       turret.setOperatorInputScalar(0.0);
       lastTurretSetpointDegs = TurretConstants.IdlePosition;
@@ -102,7 +109,8 @@ public class ManualShootFieldRelativeCommand extends Command {
   public void end(boolean interrupted) {
     hood.setOperatorInputScalar(0.0);
     turret.setOperatorInputScalar(0.0);
-    turret.setManualSetpoint(TurretConstants.IdlePosition); //0.
+    turret.setManualSetpoint(TurretConstants.IdlePosition);
+    hood.setManualSetpoint(HoodConstants.IdlePosition);
     shooter.stop();
     feeder.stop();
   }
