@@ -1,5 +1,7 @@
 package frc.robot.subsystems;
 
+import edu.wpi.first.wpilibj.smartdashboard.Field2d;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.commands.HybridShootCommand;
@@ -7,10 +9,15 @@ import frc.robot.commands.IntakeCommand;
 import frc.robot.commands.ManualShootFieldRelativeCommand;
 import frc.robot.commands.ManualShootCommand;
 import frc.robot.subsystems.ImprovedCommandXboxController.Button;
+import frc.robot.subsystems.Drive.Drive;
+import frc.robot.subsystems.Drive.SwerveDriveSendable;
+
 import org.littletonrobotics.junction.Logger;
 
 public class SuperStructure extends SubsystemBase {
   private static SuperStructure instance;
+  private Field2d field = new Field2d();
+  private boolean swerveSendablePublished = false;
 
   public static SuperStructure getInstance() {
     return instance == null ? (instance = new SuperStructure()) : instance;
@@ -54,8 +61,8 @@ public class SuperStructure extends SubsystemBase {
   }
 
   public Command getManualShootCommand(Button shootButton, Button resetButton) {
-    return new ManualShootCommand(shootButton, resetButton);
-    // return new ManualShootFieldRelativeCommand(shootButton, resetButton);
+    // return new ManualShootCommand(shootButton, resetButton);
+    return new ManualShootFieldRelativeCommand(shootButton, resetButton);
   }
 
   public Command getHybridShootCommand(Button shootButton) {
@@ -75,6 +82,15 @@ public class SuperStructure extends SubsystemBase {
 
   @Override
   public void periodic() {
+    Drive currentDrive = Drive.getInstance();
+    if (currentDrive != null) {
+      field.setRobotPose(currentDrive.getPose());
+      if (!swerveSendablePublished) {
+        SmartDashboard.putData("Swerve Drive", new SwerveDriveSendable(currentDrive));
+        swerveSendablePublished = true;
+      }
+    }
+    SmartDashboard.putData("SuperStructure/Field", field);
     Logger.recordOutput("SuperStructure/ControlMode", controlMode);
     Logger.recordOutput("SuperStructure/ShootMode", shootMode);
   }
