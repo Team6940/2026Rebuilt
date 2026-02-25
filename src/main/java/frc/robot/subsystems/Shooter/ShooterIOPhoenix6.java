@@ -9,11 +9,12 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import frc.robot.Constants.MotorIDs;
 import frc.robot.Constants.ShooterConstants;
+import frc.robot.subsystems.Shooter.ShooterIO.ShooterIOInputs;
 
 public class ShooterIOPhoenix6 implements ShooterIO {
 
-  private final TalonFX flywheel = new TalonFX(MotorIDs.ShooterMotorID, CANBus.roboRIO());
-  private final TalonFX follower = new TalonFX(MotorIDs.ShooterFollowerMotorID, CANBus.roboRIO());
+  private final TalonFX flywheel = new TalonFX(MotorIDs.ShooterMotorID, new CANBus("canivore"));
+  private final TalonFX follower = new TalonFX(MotorIDs.ShooterFollowerMotorID, new CANBus("canivore"));
   private final VelocityTorqueCurrentFOC velocityRequest = new VelocityTorqueCurrentFOC(0.0);
   private final Follower followerRequest =
       new Follower(MotorIDs.ShooterMotorID, ShooterConstants.FollowerAlignment);

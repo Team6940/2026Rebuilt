@@ -12,7 +12,7 @@ import frc.robot.Constants.MotorIDs;
 public class FeederIOPhoenix6 implements FeederIO {
   private final TalonFX turntableMotor =
       new TalonFX(MotorIDs.FeederTurntableMotorID, CANBus.roboRIO());
-  private final TalonFX feedMotor = new TalonFX(MotorIDs.FeederFeedMotorID, CANBus.roboRIO());
+  private final TalonFX feedMotor = new TalonFX(MotorIDs.FeederFeedMotorID, new CANBus("canivore"));
 
   private final VelocityVoltage turntableVelocityRequest =
       new VelocityVoltage(0).withEnableFOC(true);

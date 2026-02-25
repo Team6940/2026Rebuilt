@@ -12,12 +12,13 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.math.util.Units;
 import frc.robot.Constants.MotorIDs;
 import frc.robot.Constants.TurretConstants;
+import frc.robot.subsystems.Turret.TurretIO.TurretIOInputs;
 
 public class TurretIOPhoenix6 implements TurretIO {
-  private static final TalonFX motor = new TalonFX(MotorIDs.TurretMotorID, CANBus.roboRIO());
-  private static final CANcoder encoder = new CANcoder(MotorIDs.TurretEncoderID, CANBus.roboRIO());
+  private static final TalonFX motor = new TalonFX(MotorIDs.TurretMotorID, new CANBus("canivore"));
+  private static final CANcoder encoder = new CANcoder(MotorIDs.TurretEncoderID, new CANBus("canivore"));
   private static final CANcoder encoder2 =
-      new CANcoder(MotorIDs.TurretEncoder2ID, CANBus.roboRIO());
+      new CANcoder(MotorIDs.TurretEncoder2ID, new CANBus("canivore"));
   private static final MotionMagicVoltage request = new MotionMagicVoltage(0.0).withEnableFOC(true);
 
   public TurretIOPhoenix6() {

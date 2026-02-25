@@ -321,34 +321,53 @@ public class Drive extends SubsystemBase {
   }
 
   public void updateOdometry() {
+    updateSingleLimelight(RobotContainer.limelightLeft);
+    updateSingleLimelight(RobotContainer.limelightRight);
+  }
+
+  /**
+   * Sends gyro orientation to a single Limelight and fuses its MegaTag2 pose estimate into the pose
+   * estimator if the estimate passes all quality gates.
+   */
+  private void updateSingleLimelight(String limelightName) {
     LimelightHelpers.SetRobotOrientation(
-        RobotContainer.limelight,
+        limelightName,
         gyroInputs.yawPosition.getDegrees(),
         0,
         gyroInputs.pitchPosition.getDegrees(),
         0,
         gyroInputs.rollPosition.getDegrees(),
         0);
+
     LimelightHelpers.PoseEstimate mt2 =
-        LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(RobotContainer.limelight);
+        LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(limelightName);
+
     if (mt2 == null) {
-      DriverStation.reportWarning(RobotContainer.limelight + " Diconnected!", false);
+      DriverStation.reportWarning(limelightName + " Disconnected!", false);
+      Logger.recordOutput("Vision/" + limelightName + "/Connected", false);
       return;
     }
 
-    if (Math.abs(getChassisSpeeds().omegaRadiansPerSecond) <= 4 * Math.PI
-        && mt2.tagCount > 0
-        && mt2.avgTagDist < 4
-        && Math.hypot(getChassisSpeeds().vxMetersPerSecond, getChassisSpeeds().vyMetersPerSecond)
-            < 2) {
+    Logger.recordOutput("Vision/" + limelightName + "/Connected", true);
+    Logger.recordOutput("Vision/" + limelightName + "/TagCount", mt2.tagCount);
+    Logger.recordOutput("Vision/" + limelightName + "/AvgTagDist", mt2.avgTagDist);
+    Logger.recordOutput("Vision/" + limelightName + "/RawPose", mt2.pose);
+
+    ChassisSpeeds speeds = getChassisSpeeds();
+    boolean omegaOk = Math.abs(speeds.omegaRadiansPerSecond) <= 4 * Math.PI;
+    boolean hasTag = mt2.tagCount > 0;
+    boolean distOk = mt2.avgTagDist < 4;
+    boolean velOk = Math.hypot(speeds.vxMetersPerSecond, speeds.vyMetersPerSecond) < 2;
+    boolean accepted = omegaOk && hasTag && distOk && velOk;
+
+    Logger.recordOutput("Vision/" + limelightName + "/Accepted", accepted);
+
+    if (accepted) {
+      double stdDev = PoseEstimatorConstants.tAtoDev.get(mt2.avgTagArea);
       addVisionMeasurement(
-          mt2.pose,
-          mt2.timestampSeconds, // according to docs, 6328 template needs no fpgaToCurrentTime
-          // conversion
-          VecBuilder.fill(
-              PoseEstimatorConstants.tAtoDev.get(mt2.avgTagArea),
-              PoseEstimatorConstants.tAtoDev.get(mt2.avgTagArea),
-              100000000));
+          mt2.pose, mt2.timestampSeconds, VecBuilder.fill(stdDev, stdDev, 100000000));
+      // according to docs, 6328 template needs no fpgaToCurrentTime
+      // conversion
     }
   }
 

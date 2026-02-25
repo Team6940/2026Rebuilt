@@ -14,13 +14,18 @@
 package frc.robot;
 
 import com.pathplanner.lib.auto.AutoBuilder;
+import edu.wpi.first.cameraserver.CameraServer;
+import edu.wpi.first.cscore.HttpCamera;
+import edu.wpi.first.cscore.VideoSource;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.commands.DriveCommands;
 import frc.robot.generated.TunerConstants;
+import frc.robot.subsystems.Climber.ClimberSubsystem;
 import frc.robot.subsystems.Drive.Drive;
 import frc.robot.subsystems.Drive.GyroIO;
 import frc.robot.subsystems.Drive.GyroIOPigeon2;
@@ -37,7 +42,6 @@ import frc.robot.subsystems.Shooter.ShooterSubsystem;
 import frc.robot.subsystems.Stretcher.StretcherSubsystem;
 import frc.robot.subsystems.SuperStructure;
 import frc.robot.subsystems.Turret.TurretSubsystem;
-import java.util.Set;
 import org.ironmaple.simulation.SimulatedArena;
 import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
 import org.ironmaple.simulation.seasonspecific.rebuilt2026.Arena2026Rebuilt;
@@ -52,7 +56,8 @@ import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
  */
 public class RobotContainer {
   // Subsystems
-  public static final String limelight = "limelight";
+  public static final String limelightLeft = "limelight-3g";
+  public static final String limelightRight = "limelight-4";
   private final Drive drive;
   private final FeederSubsystem feeder = FeederSubsystem.getInstance();
   private final HoodSubsystem hood = HoodSubsystem.getInstance();
@@ -60,6 +65,7 @@ public class RobotContainer {
   private final ShooterSubsystem shooter = ShooterSubsystem.getInstance();
   private final StretcherSubsystem stretcher = StretcherSubsystem.getInstance();
   private final TurretSubsystem turret = TurretSubsystem.getInstance();
+  private final ClimberSubsystem climber = ClimberSubsystem.getInstance();
   private final SuperStructure superStructure = SuperStructure.getInstance();
   // Simulated subsystems
   private SwerveDriveSimulation driveSimulation = null;
@@ -134,14 +140,32 @@ public class RobotContainer {
         "Drive SysId (Dynamic Reverse)", drive.sysIdDynamic(SysIdRoutine.Direction.kReverse));
 
     // Configure the button bindings
-    configureButtonBindings();
+
+    // configureButtonBindings();
+    testBindings();
+    configureLimelightStreams();
+   
+  }
+
+  private void configureLimelightStreams() {
+    // Elastic only supports camera streams published by the roboRIO CameraServer.
+    // Swap to fixed IPs for competition if mDNS (.local) is unreliable.
+    addLimelightCamera(limelightLeft, "http://10.69.40.11:5800/stream.mjpg", 1181);
+    addLimelightCamera(limelightRight, "http://10.69.40.12:5800/stream.mjpg", 1182);
+  }
+
+  private void addLimelightCamera(String name, String streamUrl, int mjpegPort) {
+    HttpCamera camera = new HttpCamera(name, streamUrl, HttpCamera.HttpCameraKind.kMJPGStreamer);
+    camera.setConnectionStrategy(VideoSource.ConnectionStrategy.kKeepOpen);
+    CameraServer.addCamera(camera);
+    CameraServer.addServer(name, mjpegPort).setSource(camera);
   }
 
   /**
     ****** THE CONTROL LOGIC IS SUCH ******
 
-    DRIVER CONROLLER：
-        * B： RESET GYRO
+    DRIVER CONROLLER:
+        * B：RESET GYRO
         * X: STOP WITH X
         * RB: INTAKE
         * LB: TRIGGER SHOOT MODE
@@ -172,6 +196,41 @@ public class RobotContainer {
             * LEFT TRIGGER: DECREASE RPS BY 5
    */
   private void configureButtonBindings() {
+    // drive.setDefaultCommand(
+    //     drive.run(
+    //         () ->
+    //             drive.driveFieldCentric(
+    //                 () -> -driverController.getLeftY(),
+    //                 () -> -driverController.getLeftX(),
+    //                 () -> -driverController.getRightX())));
+    // driverController.x().onTrue(Commands.runOnce(drive::stopWithX, drive));
+    // driverController
+    //     .b()
+    //     .onTrue(
+    //         Commands.runOnce(
+    //                 () ->
+    //                     drive.setPose(
+    //                         new Pose2d(drive.getPose().getTranslation(), new Rotation2d())),
+    //                 drive)
+    //             .ignoringDisable(true));
+    // driverController
+    //     .rightBumper()
+    //     .toggleOnTrue(
+    //         Commands.defer(() -> superStructure.getIntakeCommand(), Set.of(stretcher, intake)));
+
+    // driverController
+    //     .leftBumper()
+    //     .whileTrue(
+    //         Commands.defer(
+    //             () -> superStructure.getShootCommand(Button.kRightTrigger, Button.kRightBumper),
+    //             Set.of(feeder, hood, shooter, turret)));
+    // driverController
+    //     .povDown()
+    //     .onTrue(superStructure.runOnce(() -> superStructure.toggleControlMode()));
+    // driverController.povUp().onTrue(superStructure.runOnce(() -> superStructure.toggleShootMode()));
+  }
+
+  private void testBindings() {
     drive.setDefaultCommand(
         drive.run(
             () ->
@@ -193,21 +252,21 @@ public class RobotContainer {
                             new Pose2d(drive.getPose().getTranslation(), new Rotation2d())),
                     drive)
                 .ignoringDisable(true));
-    driverController
-        .rightBumper()
-        .toggleOnTrue(
-            Commands.defer(() -> superStructure.getIntakeCommand(), Set.of(stretcher, intake)));
+    // driverController
+    //     .rightBumper()
+    //     .toggleOnTrue(
+    //         Commands.defer(() -> superStructure.getIntakeCommand(), Set.of(stretcher, intake)));
 
-    driverController
-        .leftBumper()
-        .whileTrue(
-            Commands.defer(
-                () -> superStructure.getShootCommand(Button.kRightTrigger, Button.kRightBumper),
-                Set.of(feeder, hood, shooter, turret)));
-    driverController
-        .povDown()
-        .onTrue(superStructure.runOnce(() -> superStructure.toggleControlMode()));
-    driverController.povUp().onTrue(superStructure.runOnce(() -> superStructure.toggleShootMode()));
+    // driverController
+    //     .leftBumper()
+    //     .whileTrue(
+    //         Commands.defer(
+    //             () -> superStructure.getShootCommand(Button.kRightTrigger, Button.kRightBumper),
+    //             Set.of(feeder, hood, shooter, turret)));
+    // driverController
+    //     .povDown()
+    //     .onTrue(superStructure.runOnce(() -> superStructure.toggleControlMode()));
+    // driverController.povUp().onTrue(superStructure.runOnce(() -> superStructure.toggleShootMode()));
   }
 
   /**
