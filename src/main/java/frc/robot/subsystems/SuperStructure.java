@@ -11,6 +11,8 @@ import frc.robot.commands.ManualShootCommand;
 import frc.robot.subsystems.ImprovedCommandXboxController.Button;
 import frc.robot.subsystems.Drive.Drive;
 import frc.robot.subsystems.Drive.SwerveDriveSendable;
+import frc.robot.subsystems.Turret.TurretSubsystem;
+import frc.robot.util.ManualShotRecommender;
 
 import org.littletonrobotics.junction.Logger;
 
@@ -30,7 +32,8 @@ public class SuperStructure extends SubsystemBase {
 
   public enum ShootMode {
     SCORE,
-    PASS
+    PASS,
+    FREE
   }
 
   private ControlMode controlMode = ControlMode.HYBRID;
@@ -38,6 +41,9 @@ public class SuperStructure extends SubsystemBase {
 
   public void setControlMode(ControlMode mode) {
     controlMode = mode;
+    if (controlMode == ControlMode.HYBRID && shootMode == ShootMode.FREE) {
+      shootMode = ShootMode.SCORE;
+    }
   }
 
   public void setShootMode(ShootMode mode) {
@@ -45,11 +51,19 @@ public class SuperStructure extends SubsystemBase {
   }
 
   public void toggleControlMode() {
-    controlMode = controlMode == ControlMode.HYBRID ? ControlMode.MANUAL : ControlMode.HYBRID;
+    setControlMode(controlMode == ControlMode.HYBRID ? ControlMode.MANUAL : ControlMode.HYBRID);
   }
 
   public void toggleShootMode() {
-    shootMode = shootMode == ShootMode.SCORE ? ShootMode.PASS : ShootMode.SCORE;
+    if (controlMode == ControlMode.HYBRID) {
+      shootMode = shootMode == ShootMode.SCORE ? ShootMode.PASS : ShootMode.SCORE;
+      return;
+    }
+    switch (shootMode) {
+      case SCORE -> shootMode = ShootMode.PASS;
+      case PASS -> shootMode = ShootMode.FREE;
+      case FREE -> shootMode = ShootMode.SCORE;
+    }
   }
 
   public ControlMode getControlMode() {
@@ -66,7 +80,8 @@ public class SuperStructure extends SubsystemBase {
   }
 
   public Command getHybridShootCommand(Button shootButton) {
-    return new HybridShootCommand(shootButton, shootMode);
+    ShootMode effectiveMode = shootMode == ShootMode.FREE ? ShootMode.SCORE : shootMode;
+    return new HybridShootCommand(shootButton, effectiveMode);
   }
 
   public Command getShootCommand(Button shootButton, Button resetButton) {
@@ -91,6 +106,11 @@ public class SuperStructure extends SubsystemBase {
       }
     }
     SmartDashboard.putData("SuperStructure/Field", field);
+    SmartDashboard.putString("SuperStructure/ShootMode", shootMode.toString());
+    if (controlMode == ControlMode.MANUAL && currentDrive != null) {
+      ManualShotRecommender.updateSmartDashboard(
+          currentDrive, TurretSubsystem.getInstance(), shootMode);
+    }
     Logger.recordOutput("SuperStructure/ControlMode", controlMode);
     Logger.recordOutput("SuperStructure/ShootMode", shootMode);
   }
