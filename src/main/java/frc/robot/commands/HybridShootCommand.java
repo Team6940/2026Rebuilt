@@ -91,15 +91,19 @@ public class HybridShootCommand extends Command {
     turret.setOperatorInputScalar(-operatorController.getRightX());
 
     boolean shootingEnabled = operatorController.getButton(shootButton);
-    Logger.recordOutput("HybridShoot/ShootMode", shootMode.toString());
-    Logger.recordOutput("HybridShoot/DistanceMeters", distanceMeters);
-    Logger.recordOutput("HybridShoot/RadialVelocity", radialVelocity);
-    Logger.recordOutput("HybridShoot/TangentialVelocity", tangentialVelocity);
-    Logger.recordOutput("HybridShoot/TargetRps", targetRps);
-    Logger.recordOutput("HybridShoot/HoodDegs", hoodDegs);
-    Logger.recordOutput("HybridShoot/LeadYawDegs", leadYawDegs);
-    Logger.recordOutput("HybridShoot/FieldTargetDegs", fieldTargetAngle.getDegrees());
-    Logger.recordOutput("HybridShoot/ShootingEnabled", shootingEnabled);
+    Logger.recordOutput("Cmds/HybridShoot/ShootMode", shootMode.toString());
+    Logger.recordOutput("Cmds/HybridShoot/DistanceMeters", distanceMeters);
+    Logger.recordOutput("Cmds/HybridShoot/RadialVelocityMPS", radialVelocity);
+    Logger.recordOutput("Cmds/HybridShoot/TangentialVelocityMPS", tangentialVelocity);
+    Logger.recordOutput("Cmds/HybridShoot/TargetRPS", targetRps);
+    Logger.recordOutput("Cmds/HybridShoot/ActualRPS", shooter.getShooterRPS());
+    Logger.recordOutput("Cmds/HybridShoot/ShooterAtTarget", shooter.isAtTargetRps());
+    Logger.recordOutput("Cmds/HybridShoot/HoodDegs", hoodDegs);
+    Logger.recordOutput("Cmds/HybridShoot/LeadYawDegs", leadYawDegs);
+    Logger.recordOutput("Cmds/HybridShoot/FieldTargetDegs", fieldTargetAngle.getDegrees());
+    Logger.recordOutput("Cmds/HybridShoot/TurretRealPositionDegs", turret.getCurrentPositionDegs());
+    Logger.recordOutput("Cmds/HybridShoot/TurretAtTarget", turret.isAtTargetPosition());
+    Logger.recordOutput("Cmds/HybridShoot/ShootingEnabled", shootingEnabled);
 
     if (shootingEnabled) {
       shooter.setRPS(targetRps);

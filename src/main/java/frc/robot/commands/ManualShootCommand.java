@@ -12,6 +12,7 @@ import frc.robot.subsystems.ImprovedCommandXboxController;
 import frc.robot.subsystems.ImprovedCommandXboxController.Button;
 import frc.robot.subsystems.Shooter.ShooterSubsystem;
 import frc.robot.subsystems.Turret.TurretSubsystem;
+import org.littletonrobotics.junction.Logger;
 
 public class ManualShootCommand extends Command {
   private final HoodSubsystem hood = HoodSubsystem.getInstance();
@@ -65,6 +66,17 @@ public class ManualShootCommand extends Command {
       hood.setOperatorInputScalar(0.0);
       turret.setOperatorInputScalar(0.0);
     }
+
+    Logger.recordOutput("Cmds/ManualShoot/TargetRPS", targetRps);
+    Logger.recordOutput("Cmds/ManualShoot/ActualRPS", shooter.getShooterRPS());
+    Logger.recordOutput("Cmds/ManualShoot/ShooterAtTarget", shooter.isAtTargetRps());
+    Logger.recordOutput("Cmds/ManualShoot/TurretPositionDegs", turret.getCurrentPositionDegs());
+    Logger.recordOutput("Cmds/ManualShoot/TurretAtTarget", turret.isAtTargetPosition());
+    Logger.recordOutput("Cmds/ManualShoot/HoodScalar", -operatorController.getLeftY());
+    Logger.recordOutput("Cmds/ManualShoot/TurretScalar", -operatorController.getRightX());
+    Logger.recordOutput(
+        "Cmds/ManualShoot/ShootingEnabled", operatorController.getButton(shootButton));
+    Logger.recordOutput("Cmds/ManualShoot/ResetPressed", operatorController.getButton(resetButton));
   }
 
   @Override
