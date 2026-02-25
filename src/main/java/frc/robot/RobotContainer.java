@@ -53,13 +53,13 @@ public class RobotContainer {
   // Subsystems
   public static final String limelight = "limelight";
   private final Drive drive;
-  private final FeederSubsystem feeder = FeederSubsystem.getInstance();
-  private final HoodSubsystem hood = HoodSubsystem.getInstance();
-  private final IntakeSubsystem intake = IntakeSubsystem.getInstance();
-  private final ShooterSubsystem shooter = ShooterSubsystem.getInstance();
-  private final StretcherSubsystem stretcher = StretcherSubsystem.getInstance();
-  private final TurretSubsystem turret = TurretSubsystem.getInstance();
-  private final SuperStructure superStructure = SuperStructure.getInstance();
+//   private final FeederSubsystem feeder = FeederSubsystem.getInstance();
+//   private final HoodSubsystem hood = HoodSubsystem.getInstance();
+//   private final IntakeSubsystem intake = IntakeSubsystem.getInstance();
+//   private final ShooterSubsystem shooter = ShooterSubsystem.getInstance();
+//   private final StretcherSubsystem stretcher = StretcherSubsystem.getInstance();
+//   private final TurretSubsystem turret = TurretSubsystem.getInstance();
+//   private final SuperStructure superStructure = SuperStructure.getInstance();
   // Simulated subsystems
   private SwerveDriveSimulation driveSimulation = null;
 
@@ -139,8 +139,8 @@ public class RobotContainer {
   /**
     ****** THE CONTROL LOGIC IS SUCH ******
 
-    DRIVER CONROLLER：
-        * B： RESET GYRO
+    DRIVER CONROLLER:
+        * B：RESET GYRO
         * X: STOP WITH X
         * RB: INTAKE
         * LB: TRIGGER SHOOT MODE
@@ -192,21 +192,21 @@ public class RobotContainer {
                             new Pose2d(drive.getPose().getTranslation(), new Rotation2d())),
                     drive)
                 .ignoringDisable(true));
-    driverController
-        .rightBumper()
-        .toggleOnTrue(
-            Commands.defer(() -> superStructure.getIntakeCommand(), Set.of(stretcher, intake)));
+    // driverController
+    //     .rightBumper()
+    //     .toggleOnTrue(
+    //         Commands.defer(() -> superStructure.getIntakeCommand(), Set.of(stretcher, intake)));
 
-    driverController
-        .leftBumper()
-        .whileTrue(
-            Commands.defer(
-                () -> superStructure.getShootCommand(Button.kRightTrigger, Button.kRightBumper),
-                Set.of(feeder, hood, shooter, turret)));
-    driverController
-        .povDown()
-        .onTrue(superStructure.runOnce(() -> superStructure.toggleControlMode()));
-    driverController.povUp().onTrue(superStructure.runOnce(() -> superStructure.toggleShootMode()));
+    // driverController
+    //     .leftBumper()
+    //     .whileTrue(
+    //         Commands.defer(
+    //             () -> superStructure.getShootCommand(Button.kRightTrigger, Button.kRightBumper),
+    //             Set.of(feeder, hood, shooter, turret)));
+    // driverController
+    //     .povDown()
+    //     .onTrue(superStructure.runOnce(() -> superStructure.toggleControlMode()));
+    // driverController.povUp().onTrue(superStructure.runOnce(() -> superStructure.toggleShootMode()));
   }
 
   /**
