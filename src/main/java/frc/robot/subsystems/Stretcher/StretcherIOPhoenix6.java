@@ -11,7 +11,7 @@ import frc.robot.Constants.MotorIDs;
 import frc.robot.Constants.StretcherConstants;
 
 public class StretcherIOPhoenix6 implements StretcherIO {
-  private static TalonFX motor;
+  private static TalonFX motor = new TalonFX(MotorIDs.StretcherMotorID, CANBus.roboRIO());
 
   private static MotionMagicVoltage m_request = new MotionMagicVoltage(0.).withEnableFOC(true);
 
@@ -20,7 +20,6 @@ public class StretcherIOPhoenix6 implements StretcherIO {
   }
 
   private void motorConfig() {
-    motor = new TalonFX(MotorIDs.StretcherMotorID, CANBus.roboRIO());
     TalonFXConfiguration config = new TalonFXConfiguration();
     config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
     config.Feedback.SensorToMechanismRatio = StretcherConstants.StretcherRatio;

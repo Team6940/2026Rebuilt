@@ -143,17 +143,38 @@ public class RobotContainer {
   }
 
   /**
-   * ***** THE CONTROL LOGIC IS SUCH ******
-   *
-   * <p>DRIVER CONROLLER： B： RESET GYRO X: STOP WITH X RB: INTAKE LB: TRIGGER SHOOT MODE PovDown:
-   * TOGGLE SHOOT MODE MANUAL/HYBRID PovUp: TOGGLE CONTROL MODE PASS/SCORE
-   *
-   * <p>OPERATOR CONTROLLER: RT: SHOOT RB: RESET SCORING UNIT HYBRID SHOOTING: LEFT STICK Y: HOOD
-   * SCALAR RIGHT STICK X: TURRET SCALAR MANUAL SHOOTING (CURRENTLY UNUSED): LEFT STICK Y: HOOD
-   * SCALAR RIGHT STICK X: TURRET SCALAR A: SET RPS 30 B: SET RPS 35 X: SET RPS 40 Y: SET RPS 45
-   * MANUAL FIELD-RELATIVE SHOOTING: LEFT STICK: AIMING (TURRET SETPOINT IS CALCULATED BASED ON
-   * ROBOT HEADING AND STICK ANGLE) RIGHT STICK Y: HOOD SCALAR A: SET RPS 30 B: SET RPS 35 X: SET
-   * RPS 40 Y: SET RPS 45 LEFT BUMPER: INCREASE RPS BY 5 LEFT TRIGGER: DECREASE RPS BY 5
+    ****** THE CONTROL LOGIC IS SUCH ******
+
+    DRIVER CONROLLER:
+        * B：RESET GYRO
+        * X: STOP WITH X
+        * RB: INTAKE
+        * LB: TRIGGER SHOOT MODE
+        * PovDown: TOGGLE SHOOT MODE MANUAL/HYBRID
+        * PovUp: TOGGLE CONTROL MODE PASS/SCORE
+
+    OPERATOR CONTROLLER:
+        * RT: SHOOT
+        * RB: RESET SCORING UNIT
+        HYBRID SHOOTING:
+            * LEFT STICK Y: HOOD SCALAR
+            * RIGHT STICK X: TURRET SCALAR
+        MANUAL SHOOTING (CURRENTLY UNUSED):
+            * LEFT STICK Y: HOOD SCALAR
+            * RIGHT STICK X: TURRET SCALAR
+            * A: SET RPS 30
+            * B: SET RPS 35
+            * X: SET RPS 40
+            * Y: SET RPS 45
+        MANUAL FIELD-RELATIVE SHOOTING:
+            * LEFT STICK: AIMING (TURRET SETPOINT IS CALCULATED BASED ON ROBOT HEADING AND STICK ANGLE)
+            * RIGHT STICK Y: HOOD SCALAR
+            * A: SET RPS 30
+            * B: SET RPS 35
+            * X: SET RPS 40
+            * Y: SET RPS 45
+            * LEFT BUMPER: INCREASE RPS BY 5
+            * LEFT TRIGGER: DECREASE RPS BY 5
    */
   private void configureButtonBindings() {
     // drive.setDefaultCommand(
@@ -198,10 +219,35 @@ public class RobotContainer {
                     () -> -driverController.getLeftY(),
                     () -> -driverController.getLeftX(),
                     () -> -driverController.getRightX())));
+    driverController
+        .x()
+        .onTrue(
+            Commands.runOnce(
+                drive::stopWithX, drive));
+    driverController
+        .b()
+        .onTrue(
+            Commands.runOnce(
+                    () ->
+                        drive.setPose(
+                            new Pose2d(drive.getPose().getTranslation(), new Rotation2d())),
+                    drive)
+                .ignoringDisable(true));
     // driverController
-    //     .a()
-    //     .onTrue(new InstantCommand(() -> shooter.setRPS(6.)))
-    //     .onFalse(new InstantCommand(() -> shooter.setRPS(0.)));
+    //     .rightBumper()
+    //     .toggleOnTrue(
+    //         Commands.defer(() -> superStructure.getIntakeCommand(), Set.of(stretcher, intake)));
+
+    // driverController
+    //     .leftBumper()
+    //     .whileTrue(
+    //         Commands.defer(
+    //             () -> superStructure.getShootCommand(Button.kRightTrigger, Button.kRightBumper),
+    //             Set.of(feeder, hood, shooter, turret)));
+    // driverController
+    //     .povDown()
+    //     .onTrue(superStructure.runOnce(() -> superStructure.toggleControlMode()));
+    // driverController.povUp().onTrue(superStructure.runOnce(() -> superStructure.toggleShootMode()));
   }
 
   /**
