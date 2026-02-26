@@ -11,6 +11,7 @@ import frc.robot.subsystems.SuperStructure.ShootMode;
 import frc.robot.subsystems.Turret.TurretSubsystem;
 
 public final class ManualShotRecommender {
+  private ManualShotRecommender() {}
   private static final double LEAD_YAW_COMPENSATION_INDEX = 0.1;
   private static final double[] MANUAL_RPS_PRESETS = {
     ShooterConstants.ManualRpsA,
