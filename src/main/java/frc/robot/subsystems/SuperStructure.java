@@ -111,6 +111,12 @@ public class SuperStructure extends SubsystemBase {
         SmartDashboard.putData("Swerve Drive", new SwerveDriveSendable(currentDrive));
         swerveSendablePublished = true;
       }
+    } else {
+      // Drive instance is no longer available; remove stale sendable and reset flag.
+      if (swerveSendablePublished) {
+        SmartDashboard.delete("Swerve Drive");
+        swerveSendablePublished = false;
+      }
     }
     SmartDashboard.putData("SuperStructure/Field", field);
     SmartDashboard.putString("SuperStructure/ShootMode", shootMode.toString());
