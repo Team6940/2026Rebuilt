@@ -54,8 +54,8 @@ public class SuperStructure extends SubsystemBase {
   }
 
   public Command getManualShootCommand(Button shootButton, Button resetButton) {
-    return new ManualShootCommand(shootButton, resetButton);
-    // return new ManualShootFieldRelativeCommand(shootButton, resetButton);
+    //return new ManualShootCommand(shootButton, resetButton);
+    return new ManualShootFieldRelativeCommand(shootButton, resetButton);
   }
 
   public Command getHybridShootCommand(Button shootButton) {
