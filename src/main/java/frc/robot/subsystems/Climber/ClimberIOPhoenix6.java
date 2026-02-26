@@ -6,7 +6,6 @@ import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
-import edu.wpi.first.math.util.Units;
 import frc.robot.Constants.ClimberConstants;
 import frc.robot.Constants.MotorIDs;
 
@@ -39,7 +38,7 @@ public class ClimberIOPhoenix6 implements ClimberIO {
     config.MotionMagic.MotionMagicAcceleration = ClimberConstants.Acceleration;
 
     motor.getConfigurator().apply(config);
-    motor.setPosition(Units.degreesToRotations(ClimberConstants.IdlePosition));
+    motor.setPosition(ClimberConstants.IdlePosition);
   }
 
   @Override
@@ -48,13 +47,13 @@ public class ClimberIOPhoenix6 implements ClimberIO {
   }
 
   @Override
-  public void setPosition(double positionDegrees) {
-    motor.setControl(request.withPosition(Units.degreesToRotations(positionDegrees)));
+  public void setRotation(double positionRotations) {
+    motor.setControl(request.withPosition(positionRotations));
   }
 
   @Override
-  public void resetPosition(double positionDegrees) {
-    motor.setPosition(Units.degreesToRotations(positionDegrees));
+  public void resetPosition(double positionRotations) {
+    motor.setPosition(positionRotations);
   }
 
   @Override
@@ -66,7 +65,6 @@ public class ClimberIOPhoenix6 implements ClimberIO {
 
     inputs.motorVoltageVolts = motor.getMotorVoltage().getValueAsDouble();
     inputs.motorCurrentAmps = motor.getSupplyCurrent().getValueAsDouble();
-    inputs.climberPositionDegrees =
-        Units.rotationsToDegrees(motor.getPosition().getValueAsDouble());
+    inputs.climberPositionRotations = motor.getPosition().getValueAsDouble();
   }
 }

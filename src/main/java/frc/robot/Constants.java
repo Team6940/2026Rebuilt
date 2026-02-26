@@ -750,15 +750,15 @@ public final class Constants {
     public static final double MaxVelocity = 4.0; // Rotations per second
     public static final double Acceleration = 8.0; // Rotations per second squared
 
-    // Positions (Degrees)
-    public static final double ClimberPositionToleranceDegs = 5.0;
-    public static final double MinDegs = 0.0;
-    public static final double MaxDegs = 180.0;
+    // Positions (Rotations)
+    public static final double ClimberPositionToleranceRotations = 5.0 / 360.0;
+    public static final double MinRotations = 0.0;
+    public static final double MaxRotations = 0.5; // 180 degrees = 0.5 rotations
     public static final double IdlePosition = 0.0;
 
-    // Preset positions
+    // Preset positions (Rotations)
     public static final double RetractedPosition = 0.0;
-    public static final double ExtendedPosition = 90.;
+    public static final double ExtendedPosition = 0.25; // 90 degrees = 0.25 rotations
   }
 
   public static final class PoseEstimatorConstants {
