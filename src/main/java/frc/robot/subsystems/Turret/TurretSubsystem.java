@@ -6,6 +6,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.TurretConstants;
 import frc.robot.Robot;
+import frc.robot.util.SetpointLeadCompensator;
 import org.littletonrobotics.junction.Logger;
 
 public class TurretSubsystem extends SubsystemBase {
@@ -27,8 +28,13 @@ public class TurretSubsystem extends SubsystemBase {
   private double autoSetpointDegs = TurretConstants.IdlePosition;
   private double manualSetpointDegs = TurretConstants.IdlePosition;
   private double targetPositionDegs = TurretConstants.IdlePosition;
+  private double rawSetpointDegs = TurretConstants.IdlePosition;
   private double operatorInputScalar = 0.0;
   private double encoderCalculatedPositionDegs = TurretConstants.IdlePosition;
+
+  // Lead compensator: applied to the final setpoint regardless of mode
+  private static final double TURRET_LEAD_INDEX = 0.08; // seconds; tune this
+  private final SetpointLeadCompensator leadComp = new SetpointLeadCompensator(TURRET_LEAD_INDEX);
 
   private Rotation2d fieldRelativeRotation2d = new Rotation2d();
   private Pose2d lastRobotPose = new Pose2d();
@@ -229,9 +235,11 @@ public class TurretSubsystem extends SubsystemBase {
     Logger.processInputs("Turret", inputs);
     Logger.recordOutput("Turret/Mode", mode.toString());
     Logger.recordOutput("Turret/TargetPositionDegs", targetPositionDegs);
+    Logger.recordOutput("Turret/RawSetpointDegs", rawSetpointDegs);
     Logger.recordOutput("Turret/IsAtTarget", isAtTargetPosition());
     Logger.recordOutput("Turret/AutoSetpointDegs", autoSetpointDegs);
     Logger.recordOutput("Turret/ManualSetpointDegs", manualSetpointDegs);
+    Logger.recordOutput("Turret/LeadDerivativeDegPerSec", leadComp.getFilteredDerivative());
     Logger.recordOutput("Turret/FieldTargetDegs", fieldRelativeRotation2d.getDegrees());
     Logger.recordOutput("Turret/RobotHeadingDegs", lastRobotPose.getRotation().getDegrees());
     Logger.recordOutput("Turret/OperatorInputScalar", operatorInputScalar);
@@ -239,14 +247,16 @@ public class TurretSubsystem extends SubsystemBase {
   }
 
   private void handleHybrid() {
-    targetPositionDegs =
+    rawSetpointDegs =
         clamp(autoSetpointDegs + operatorInputScalar * TurretConstants.TurretHybridRangeDegs);
+    targetPositionDegs = leadComp.calculate(rawSetpointDegs);
     io.setPosition(targetPositionDegs);
   }
 
   private void handleManual() {
     nudgeManualSetpoint(operatorInputScalar);
-    targetPositionDegs = clamp(manualSetpointDegs);
+    rawSetpointDegs = clamp(manualSetpointDegs);
+    targetPositionDegs = leadComp.calculate(rawSetpointDegs);
     io.setPosition(targetPositionDegs);
   }
 
