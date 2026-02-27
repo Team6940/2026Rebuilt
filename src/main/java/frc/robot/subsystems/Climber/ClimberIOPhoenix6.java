@@ -10,7 +10,7 @@ import frc.robot.Constants.ClimberConstants;
 import frc.robot.Constants.MotorIDs;
 
 public class ClimberIOPhoenix6 implements ClimberIO {
-  private static TalonFX motor = new TalonFX(MotorIDs.ClimberMotorID, CANBus.roboRIO());
+  private static TalonFX motor = new TalonFX(MotorIDs.ClimberMotorID, new CANBus("canivore"));
   private static final MotionMagicVoltage request = new MotionMagicVoltage(0.0).withEnableFOC(true);
 
   public ClimberIOPhoenix6() {

@@ -1,79 +1,99 @@
 package frc.robot.subsystems.Stretcher;
 
-import org.littletonrobotics.junction.Logger;
-
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.Robot;
-import frc.robot.Library.team6940.MUtils2025;
 import frc.robot.Constants.StretcherConstants;
+import frc.robot.Robot;
+import org.littletonrobotics.junction.Logger;
 
+public class StretcherSubsystem extends SubsystemBase {
+  public static StretcherSubsystem m_instance = null;
 
+  public static StretcherSubsystem getInstance() {
+    return m_instance == null ? m_instance = new StretcherSubsystem() : m_instance;
+  }
 
-public class StretcherSubsystem extends SubsystemBase{
-    public static StretcherSubsystem m_instance = null;
+  private final StretcherIO io;
+  private final StretcherIOInputsAutoLogged inputs = new StretcherIOInputsAutoLogged();
 
-    public static StretcherSubsystem getInstance() {
-        return m_instance == null ? m_instance = new StretcherSubsystem() : m_instance;
+  /** Current commanded target position in rotations. */
+  private double targetPositionRotations = StretcherConstants.IdlePosition;
+
+  public StretcherSubsystem() {
+    if (Robot.isReal()) {
+      io = new StretcherIOPhoenix6();
+    } else {
+      // TODO: Implement simulation code here
+      io = new StretcherIO() {};
     }
+  }
 
-    private final StretcherIO io;
-    private final StretcherIOInputsAutoLogged inputs = new StretcherIOInputsAutoLogged();
-    private double targetPosition = 0.;
+  // ── Public API ────────────────────────────────────────────────────────────
 
-    public StretcherSubsystem() {
-        if (Robot.isReal()) {
-            io = new StretcherIOPhoenix6();
-        } else {
-            // TODO: Implement simulation code here
-            io = new StretcherIO(){};
-        }
-    }
+  /**
+   * Commands the stretcher to a target position.
+   *
+   * @param positionRotations Target arm position in rotations (clamped to
+   *     [MinRotations, MaxRotations]).
+   */
+  public void setPosition(double positionRotations) {
+    targetPositionRotations =
+        MathUtil.clamp(
+            positionRotations, StretcherConstants.MinRotations, StretcherConstants.MaxRotations);
+    io.setPosition(targetPositionRotations);
+  }
 
-    public void zeroStretcherPosition() {
-        io.zeroStretcherPosition();
-    }
+  /** Extends the stretcher to the intake position. */
+  public void extend() {
+    setPosition(StretcherConstants.ExtendedPosition);
+  }
 
-    /**
-     * 
-     * @param position radians
-     */
-    public void setPosition(double position) {
-        targetPosition = MUtils2025.numberLimit(StretcherConstants.MinDegs, StretcherConstants.MaxDegs, position);
-        io.setPosition(targetPosition);
-    }
+  /** Retracts the stretcher to the stowed position. */
+  public void retract() {
+    setPosition(StretcherConstants.RetractedPosition);
+  }
 
-    boolean IsAtTargetPosition() {
-        return MathUtil.isNear(targetPosition, inputs.stretcherPositionRadians, StretcherConstants.StretcherPositionToleranceDegs);
-    }
+  /** Commands the stretcher to the idle (zero) position. */
+  public void goIdle() {
+    setPosition(StretcherConstants.IdlePosition);
+  }
 
-    public double getTargetPosition() {
-        return targetPosition;
-    }
+  public void zeroStretcherPosition() {
+    io.zeroStretcherPosition();
+  }
 
-    public void stop() {
-        setPosition(0.);
-    }
+  public void setVoltage(double voltage) {
+    io.setVoltage(voltage);
+  }
 
-    public void setVoltage(double voltage) {
-        io.setVoltage(voltage);
-    }
+  /** Returns the current measured arm position in rotations. */
+  public double getCurrentPositionRotations() {
+    return inputs.stretcherPositionRotations;
+  }
 
-    public void processLog() {
-        io.updateInputs(inputs);
-        Logger.processInputs("Stretcher", inputs);
-        Logger.recordOutput("Stretcher/TargetPosition", targetPosition);
-        // TODO Logger
-    }
+  /** Returns the current target position in rotations. */
+  public double getTargetPositionRotations() {
+    return targetPositionRotations;
+  }
 
-    @Override
-    public void periodic() {
-        processLog();
-        processDashboard();
-    }
+  /** Returns true when the arm is within tolerance of the target position. */
+  public boolean isAtTargetPosition() {
+    return MathUtil.isNear(
+        targetPositionRotations,
+        inputs.stretcherPositionRotations,
+        StretcherConstants.StretcherPositionToleranceRotations);
+  }
 
-    private void processDashboard() {
-        // TODO: Implement dashboard code here
-    }
+  // ── Periodic ──────────────────────────────────────────────────────────────
+
+  @Override
+  public void periodic() {
+    io.updateInputs(inputs);
+    Logger.processInputs("Stretcher", inputs);
+    Logger.recordOutput("Stretcher/TargetPositionRotations", targetPositionRotations);
+    Logger.recordOutput("Stretcher/ActualPositionRotations", inputs.stretcherPositionRotations);
+    Logger.recordOutput("Stretcher/IsAtTarget", isAtTargetPosition());
+    Logger.recordOutput("Stretcher/MotorConnected", inputs.motorConnected);
+  }
 }
 

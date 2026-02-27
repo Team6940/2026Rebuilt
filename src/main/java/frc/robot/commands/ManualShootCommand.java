@@ -9,8 +9,7 @@ import frc.robot.RobotContainer;
 import frc.robot.subsystems.Feeder.FeederSubsystem;
 import frc.robot.subsystems.Hood.HoodSubsystem;
 import frc.robot.subsystems.ImprovedCommandXboxController;
-import frc.robot.subsystems.ImprovedCommandXboxController.Button;
-import frc.robot.subsystems.Shooter.ShooterSubsystem;
+import frc.robot.subsystems.ImprovedCommandXboxController.Button;import frc.robot.subsystems.Shooter.ShooterSubsystem;
 import frc.robot.subsystems.Turret.TurretSubsystem;
 import org.littletonrobotics.junction.Logger;
 
@@ -41,8 +40,10 @@ public class ManualShootCommand extends Command {
 
   @Override
   public void execute() {
-    hood.setOperatorInputScalar(-operatorController.getLeftY());
-    turret.setOperatorInputScalar(-operatorController.getRightX());
+    hood.setOperatorInputScalar(
+        ImprovedCommandXboxController.applyInputCurve(-operatorController.getLeftY()));
+    turret.setOperatorInputScalar(
+        ImprovedCommandXboxController.applyInputCurve(-operatorController.getRightX()));
     if (operatorController.getButtonPressed(Button.kA)) {
       targetRps = ShooterConstants.ManualRpsA;
     } else if (operatorController.getButtonPressed(Button.kB)) {
