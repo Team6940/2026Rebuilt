@@ -58,8 +58,8 @@ import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
  */
 public class RobotContainer {
   // Subsystems
-  public static final String limelightLeft = "limelight-3g";
-  public static final String limelightRight = "limelight-4";
+  public static final String limelightLeft = "limelight-left";
+  public static final String limelightRight = "limelight-right";
   private final Drive drive;
   private final FeederSubsystem feeder = FeederSubsystem.getInstance();
   private final HoodSubsystem hood = HoodSubsystem.getInstance();
@@ -67,7 +67,7 @@ public class RobotContainer {
   private final ShooterSubsystem shooter = ShooterSubsystem.getInstance();
   private final StretcherSubsystem stretcher = StretcherSubsystem.getInstance();
   private final TurretSubsystem turret = TurretSubsystem.getInstance();
-  // private final ClimberSubsystem climber = ClimberSubsystem.getInstance();
+  private final ClimberSubsystem climber = ClimberSubsystem.getInstance();
   private final SuperStructure superStructure = SuperStructure.getInstance();
   // Simulated subsystems
   private SwerveDriveSimulation driveSimulation = null;
@@ -199,10 +199,10 @@ public class RobotContainer {
     drive.setDefaultCommand(
         drive.run(
             () ->
-                drive.driveFieldCentric(
+                drive.driveFieldCentricWithMaxSpeed(
                     () -> -driverController.getLeftY(),
                     () -> -driverController.getLeftX(),
-                    () -> -driverController.getRightX())));
+                    () -> -driverController.getRightX(),2.)));
 
     // driverController
     //     .a()
@@ -226,10 +226,19 @@ public class RobotContainer {
     //     .x()
     //     .onTrue(new InstantCommand(() -> intake.setRPS(IntakeConstants.IntakingRPS)))
     //     .onFalse(new InstantCommand(() -> intake.setRPS(0.)));
-    // driverController
-    //     .rightBumper()
-    //     .toggleOnTrue(
-    //         Commands.defer(() -> superStructure.getIntakeCommand(), Set.of(stretcher, intake)));
+    driverController
+        .rightBumper()
+        .toggleOnTrue(
+            Commands.defer(() -> superStructure.getIntakeCommand(), Set.of(stretcher, intake)));
+    driverController
+        .b()
+        .onTrue(
+            Commands.runOnce(
+                    () ->
+                        drive.setPose(
+                            new Pose2d(drive.getPose().getTranslation(), new Rotation2d())),
+                    drive)
+                .ignoringDisable(true));
     operatorController
         .leftBumper()
         .whileTrue(

@@ -27,7 +27,7 @@ public class ManualShootFieldRelativeCommand extends Command {
   private final ImprovedCommandXboxController operatorController =
       RobotContainer.operatorController;
 
-  private double targetRps = ShooterConstants.ManualRpsA;
+  private double targetRps = ShooterConstants.ManualRpsY;
   private final Button shootButton;
   private final Button resetButton;
   private double lastTurretSetpointDegs = TurretConstants.IdlePosition;

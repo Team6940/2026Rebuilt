@@ -618,15 +618,15 @@ public final class Constants {
         SensorDirectionValue.CounterClockwise_Positive;
 
     // PID Gains
-    public static final double kP = 24.;
+    public static final double kP = 48.;
     public static final double kI = 0.0;
-    public static final double kD = 0.2;
+    public static final double kD = 2.;
     public static final double kV = 0.0;
     public static final double kS = 0.3;
 
     // Motion Magic Gains
-    public static final double MaxVelocity = 15.0; // Rotations per second
-    public static final double Acceleration = 30.0; // Rotations per second squared
+    public static final double MaxVelocity = 40.0; // Rotations per second
+    public static final double Acceleration = 60.0; // Rotations per second squared
 
     // Positions (Degrees)
     public static final double TurretPositionToleranceDegs = 2.0;
@@ -662,7 +662,7 @@ public final class Constants {
     public static final double MinRotations = 0.; // CCW Positive
     public static final double MaxRotations = 3.11;
 
-    public static final double ExtendedPosition = 3.0;
+    public static final double ExtendedPosition = 2.8;
     public static final double RetractedPosition = 0.08;
 
     public static final double IdlePosition = 0.0;
@@ -731,11 +731,11 @@ public final class Constants {
 
     // Default RPS values
     public static final double DefaultTurntableRPS = 2.3;
-    public static final double DefaultFeedRPS = 70.0;
+    public static final double DefaultFeedRPS = 100.0;
   }
 
   public final class ClimberConstants {
-    public static final double ClimberRatio = 1.0 / 1.0; // Sensor rotations to mechanism rotations
+    public static final double ClimberRatio = 45.; // Sensor rotations to mechanism rotations
     public static final InvertedValue Inverted = InvertedValue.Clockwise_Positive;
     public static final double ClimberSupplyCurrentLimit = 60.0;
 
