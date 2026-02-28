@@ -618,9 +618,9 @@ public final class Constants {
         SensorDirectionValue.CounterClockwise_Positive;
 
     // PID Gains
-    public static final double kP = 48.;
+    public static final double kP = 36.;
     public static final double kI = 0.0;
-    public static final double kD = 3.;
+    public static final double kD = 1.2;
     public static final double kV = 0.0;
     public static final double kS = 0.3;
 

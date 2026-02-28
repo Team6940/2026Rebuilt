@@ -1,14 +1,15 @@
 package frc.robot.util;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj.Timer;
 
 /**
  * Computes a lead-compensated setpoint by estimating the derivative (rate of change) of the
  * setpoint over time and adding (derivative * leadIndex) to the raw setpoint.
  *
- * <p>This prevents mechanical "layback" — the condition where hardware lags behind a rapidly
- * moving setpoint because it is always chasing a target that has already moved. By commanding an
- * over-shot target in the direction of motion, the hardware converges on the true setpoint faster.
+ * <p>This prevents mechanical "layback" — the condition where hardware lags behind a rapidly moving
+ * setpoint because it is always chasing a target that has already moved. By commanding an over-shot
+ * target in the direction of motion, the hardware converges on the true setpoint faster.
  *
  * <p>Usage:
  *
@@ -22,7 +23,11 @@ public class SetpointLeadCompensator {
   private double lastSetpoint = Double.NaN;
   private double lastTimestamp = Double.NaN;
   private double filteredDerivative = 0.0;
-  /** Additional exponential smoother applied to the low-pass filtered derivative to make it more stable. */
+
+  /**
+   * Additional exponential smoother applied to the low-pass filtered derivative to make it more
+   * stable.
+   */
   private double stableDerivative = 0.0;
 
   /** Lead multiplier: commanded = setpoint + derivative * leadIndex */
@@ -41,8 +46,8 @@ public class SetpointLeadCompensator {
   private double minDerivativeForLead = 15.;
 
   /**
-   * @param leadIndex Multiplier applied to the setpoint derivative (seconds). Tune this so that
-   *     the lead correction roughly equals the hardware's closed-loop lag.
+   * @param leadIndex Multiplier applied to the setpoint derivative (seconds). Tune this so that the
+   *     lead correction roughly equals the hardware's closed-loop lag.
    * @param filterAlpha Low-pass smoothing on the derivative [0, 1). Recommended: 0.6–0.8.
    */
   public SetpointLeadCompensator(double leadIndex, double filterAlpha) {
@@ -104,8 +109,9 @@ public class SetpointLeadCompensator {
       return rawSetpoint + stableDerivative * leadIndex;
     }
 
-    // Finite-difference derivative
-    double rawDerivative = (rawSetpoint - lastSetpoint) / dt;
+    // Finite-difference derivative (wrapped to avoid spikes across the angle boundary).
+    double delta = MathUtil.inputModulus(rawSetpoint - lastSetpoint, -180.0, 180.0);
+    double rawDerivative = delta / dt;
 
     // Low-pass filter to reduce noise amplification
     filteredDerivative = filterAlpha * filteredDerivative + (1.0 - filterAlpha) * rawDerivative;
@@ -143,7 +149,8 @@ public class SetpointLeadCompensator {
 
   /** Returns the last computed (filtered) derivative for logging. */
   public double getFilteredDerivative() {
-    // Return the stabilized derivative for logging/telemetry (smoother than the raw filtered value).
+    // Return the stabilized derivative for logging/telemetry (smoother than the raw filtered
+    // value).
     return stableDerivative;
   }
 
