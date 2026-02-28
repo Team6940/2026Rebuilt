@@ -14,13 +14,15 @@ public class ClimbRetractCommand extends Command {
 
   @Override
   public void initialize() {
+    turret.setModeManual();
+    turret.setManualSetpoint(90);
   }
 
   @Override
   public void execute() {
     climber.setRetracted();
   }
-  
+
   @Override
   public void end(boolean interrupted) {
   }

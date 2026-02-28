@@ -14,6 +14,7 @@ public class ClimbExtendCommand extends Command {
 
   @Override
   public void initialize() {
+    turret.setModeManual();
   }
 
   @Override
