@@ -58,8 +58,8 @@ import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
  */
 public class RobotContainer {
   // Subsystems
-  public static final String limelightLeft = "limelight-left";
-  public static final String limelightRight = "limelight-right";
+  public static final String limelightLeft = "limelight-l";
+  public static final String limelightRight = "limelight-r";
   private final Drive drive;
   private final FeederSubsystem feeder = FeederSubsystem.getInstance();
   private final HoodSubsystem hood = HoodSubsystem.getInstance();
