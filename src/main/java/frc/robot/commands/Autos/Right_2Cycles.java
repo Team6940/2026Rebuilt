@@ -5,6 +5,7 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
+import frc.robot.commands.ClimbCommand;
 import frc.robot.commands.HybridShootCommand;
 import frc.robot.commands.IntakeCommand;
 import frc.robot.subsystems.Drive.Drive;
@@ -48,5 +49,6 @@ public class Right_2Cycles extends SequentialCommandGroup {
     addCommands(drive.followPPPath("RightN2-RightS"));
     addCommands(new HybridShootCommand(Button.kAutoButton, ShootMode.SCORE));
     addCommands(drive.followPPPath("RightS-RightC"));
+    addCommands(new ClimbCommand());
   }
 }

@@ -5,6 +5,7 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
+import frc.robot.commands.ClimbCommand;
 import frc.robot.commands.HybridShootCommand;
 import frc.robot.commands.IntakeCommand;
 import frc.robot.subsystems.Drive.Drive;
@@ -41,5 +42,6 @@ public class Mid_Depot extends SequentialCommandGroup {
             .deadlineFor(new WaitCommand(1.).andThen(new IntakeCommand())));
     addCommands(drive.followPPPath("LeftDepot-LeftC"));
     addCommands(new HybridShootCommand(Button.kAutoButton, ShootMode.SCORE));
+    addCommands(new ClimbCommand());
   }
 }
