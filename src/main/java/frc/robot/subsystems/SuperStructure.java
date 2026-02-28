@@ -6,7 +6,8 @@ import frc.robot.commands.HybridShootCommand;
 import frc.robot.commands.IntakeCommand;
 import frc.robot.commands.ManualShootFieldRelativeCommand;
 import frc.robot.commands.ManualShootCommand;
-import frc.robot.commands.ClimbCommand;
+import frc.robot.commands.ClimbExtendCommand;
+import frc.robot.commands.ClimbRetractCommand;
 import frc.robot.subsystems.ImprovedCommandXboxController.Button;
 import org.littletonrobotics.junction.Logger;
 
@@ -74,8 +75,11 @@ public class SuperStructure extends SubsystemBase {
     return new IntakeCommand();
   }
 
-  public Command getClimbCommand() {
-    return new ClimbCommand();
+  public Command getClimbExtendCommand() {
+    return new ClimbExtendCommand();
+  }
+  public Command getClimbRetractCommand() {
+    return new ClimbRetractCommand();
   }
 
   @Override

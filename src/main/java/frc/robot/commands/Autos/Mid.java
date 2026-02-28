@@ -4,14 +4,19 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
-import frc.robot.commands.ClimbCommand;
+import frc.robot.commands.ClimbExtendCommand;
+import frc.robot.commands.ClimbRetractCommand;
 import frc.robot.commands.HybridShootCommand;
 import frc.robot.subsystems.Drive.Drive;
+import frc.robot.subsystems.Turret.TurretSubsystem;
 import frc.robot.subsystems.ImprovedCommandXboxController.Button;
 import frc.robot.subsystems.SuperStructure.ShootMode;
+import frc.robot.subsystems.Climber.ClimberSubsystem;
 
 public class Mid extends SequentialCommandGroup {
   Drive drive = Drive.getInstance();
+  ClimberSubsystem climber = ClimberSubsystem.getInstance();
+  TurretSubsystem turret = TurretSubsystem.getInstance();
 
   public Mid() {
     if (DriverStation.getAlliance().isPresent()
@@ -34,7 +39,7 @@ public class Mid extends SequentialCommandGroup {
     }
 
     addCommands(new HybridShootCommand(Button.kAutoButton, ShootMode.SCORE));
-    addCommands(drive.followPPPath("Mid-LeftC"));
-    addCommands(new ClimbCommand());
+    addCommands(drive.followPPPath("Mid-LeftC").alongWith(new ClimbExtendCommand()));
+    addCommands(new ClimbRetractCommand());
   }
 }
