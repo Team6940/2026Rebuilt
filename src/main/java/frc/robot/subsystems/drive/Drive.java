@@ -577,6 +577,16 @@ public class Drive extends SubsystemBase {
     return states;
   }
 
+  /** Returns the current module turn angle in radians. */
+  public double getModuleAngleRad(int moduleIndex) {
+    return modules[moduleIndex].getAngle().getRadians();
+  }
+
+  /** Returns the current module drive velocity in meters per second. */
+  public double getModuleVelocityMps(int moduleIndex) {
+    return modules[moduleIndex].getVelocityMetersPerSec();
+  }
+
   /** Returns the module positions (turn angles and drive positions) for all of the modules. */
   private SwerveModulePosition[] getModulePositions() {
     SwerveModulePosition[] states = new SwerveModulePosition[4];

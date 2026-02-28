@@ -14,6 +14,9 @@
 package frc.robot;
 
 import com.pathplanner.lib.auto.AutoBuilder;
+import edu.wpi.first.cameraserver.CameraServer;
+import edu.wpi.first.cscore.HttpCamera;
+import edu.wpi.first.cscore.VideoSource;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -44,9 +47,9 @@ import frc.robot.subsystems.Shooter.ShooterSubsystem;
 import frc.robot.subsystems.Stretcher.StretcherSubsystem;
 import frc.robot.subsystems.SuperStructure;
 import frc.robot.subsystems.Turret.TurretSubsystem;
-import java.util.Set;
 import org.ironmaple.simulation.SimulatedArena;
 import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
+import org.ironmaple.simulation.seasonspecific.rebuilt2026.Arena2026Rebuilt;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
@@ -97,7 +100,7 @@ public class RobotContainer {
 
       case SIM:
         // Sim robot, instantiate physics sim IO implementations
-
+        SimulatedArena.overrideInstance(new Arena2026Rebuilt(false));
         driveSimulation =
             new SwerveDriveSimulation(Drive.mapleSimConfig, new Pose2d(3, 3, new Rotation2d()));
         SimulatedArena.getInstance().addDriveTrainSimulation(driveSimulation);
@@ -145,6 +148,22 @@ public class RobotContainer {
 
     // configureButtonBindings();
     testBindings();
+    configureLimelightStreams();
+   
+  }
+
+  private void configureLimelightStreams() {
+    // Elastic only supports camera streams published by the roboRIO CameraServer.
+    // Swap to fixed IPs for competition if mDNS (.local) is unreliable.
+    addLimelightCamera(limelightLeft, "http://10.69.40.11:5800/stream.mjpg", 1181);
+    addLimelightCamera(limelightRight, "http://10.69.40.12:5800/stream.mjpg", 1182);
+  }
+
+  private void addLimelightCamera(String name, String streamUrl, int mjpegPort) {
+    HttpCamera camera = new HttpCamera(name, streamUrl, HttpCamera.HttpCameraKind.kMJPGStreamer);
+    camera.setConnectionStrategy(VideoSource.ConnectionStrategy.kKeepOpen);
+    CameraServer.addCamera(camera);
+    CameraServer.addServer(name, mjpegPort).setSource(camera);
   }
 
   /**
