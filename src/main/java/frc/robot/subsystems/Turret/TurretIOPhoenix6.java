@@ -12,7 +12,6 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.math.util.Units;
 import frc.robot.Constants.MotorIDs;
 import frc.robot.Constants.TurretConstants;
-import frc.robot.subsystems.Turret.TurretIO.TurretIOInputs;
 
 public class TurretIOPhoenix6 implements TurretIO {
   private static final TalonFX motor = new TalonFX(MotorIDs.TurretMotorID, new CANBus("canivore"));

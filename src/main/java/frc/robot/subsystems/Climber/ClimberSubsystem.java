@@ -16,7 +16,7 @@ public class ClimberSubsystem extends SubsystemBase {
   private final ClimberIO io;
   private final ClimberIOInputsAutoLogged inputs = new ClimberIOInputsAutoLogged();
 
-  private double targetPositionDegs = ClimberConstants.IdlePosition;
+  private double targetPositionRotations = ClimberConstants.IdlePosition;
 
   public ClimberSubsystem() {
     if (Robot.isReal()) {
@@ -29,35 +29,35 @@ public class ClimberSubsystem extends SubsystemBase {
 
   public void resetPosition() {
     io.resetPosition(ClimberConstants.IdlePosition);
-    targetPositionDegs = ClimberConstants.IdlePosition;
+    targetPositionRotations = ClimberConstants.IdlePosition;
   }
 
-  public void setPosition(double positionDegrees) {
-    targetPositionDegs = clamp(positionDegrees);
-    io.setPosition(targetPositionDegs);
+  public void setRotation(double positionRotations) {
+    targetPositionRotations = clamp(positionRotations);
+    io.setRotation(targetPositionRotations);
   }
 
   public void setRetracted() {
-    setPosition(ClimberConstants.RetractedPosition);
+    setRotation(ClimberConstants.RetractedPosition);
   }
 
   public void setExtended() {
-    setPosition(ClimberConstants.ExtendedPosition);
+    setRotation(ClimberConstants.ExtendedPosition);
   }
 
-  public double getTargetPositionDegs() {
-    return targetPositionDegs;
+  public double getTargetPositionRotations() {
+    return targetPositionRotations;
   }
 
-  public double getCurrentPositionDegs() {
-    return inputs.climberPositionDegrees;
+  public double getCurrentPositionRotations() {
+    return inputs.climberPositionRotations;
   }
 
   public boolean isAtTargetPosition() {
     return MathUtil.isNear(
-        targetPositionDegs,
-        inputs.climberPositionDegrees,
-        ClimberConstants.ClimberPositionToleranceDegs);
+        targetPositionRotations,
+        inputs.climberPositionRotations,
+        ClimberConstants.ClimberPositionToleranceRotations);
   }
 
   public void setVoltage(double voltage) {
@@ -73,11 +73,11 @@ public class ClimberSubsystem extends SubsystemBase {
     io.updateInputs(inputs);
 
     Logger.processInputs("Climber", inputs);
-    Logger.recordOutput("Climber/TargetPositionDegs", targetPositionDegs);
+    Logger.recordOutput("Climber/TargetPositionRotations", targetPositionRotations);
     Logger.recordOutput("Climber/IsAtTarget", isAtTargetPosition());
   }
 
-  private double clamp(double positionDegrees) {
-    return MathUtil.clamp(positionDegrees, ClimberConstants.MinDegs, ClimberConstants.MaxDegs);
+  private double clamp(double positionRotations) {
+    return MathUtil.clamp(positionRotations, ClimberConstants.MinRotations, ClimberConstants.MaxRotations);
   }
 }

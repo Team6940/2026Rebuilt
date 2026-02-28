@@ -202,7 +202,8 @@ public class RobotContainer {
                 drive.driveFieldCentricWithMaxSpeed(
                     () -> -driverController.getLeftY(),
                     () -> -driverController.getLeftX(),
-                    () -> -driverController.getRightX(),2.)));
+                    () -> -driverController.getRightX(),
+                    2.)));
 
     // driverController
     //     .a()
@@ -258,8 +259,6 @@ public class RobotContainer {
                 () ->
                     superStructure.getManualShootCommand(Button.kRightTrigger, Button.kRightBumper),
                 Set.of(turret, shooter, hood, feeder)));
-
-
     // operatorController
     //     .leftBumper()
     //     .whileTrue(new ManualShootCommand(Button.kRightTrigger, Button.kRightBumper));

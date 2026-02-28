@@ -27,7 +27,7 @@ public class ManualShootFieldRelativeCommand extends Command {
   private final ImprovedCommandXboxController operatorController =
       RobotContainer.operatorController;
 
-  private double targetRps = ShooterConstants.ManualRpsA;
+  private double targetRps = ShooterConstants.ManualRpsY;
   private final Button shootButton;
   private final Button resetButton;
   private double lastTurretSetpointDegs = TurretConstants.IdlePosition;
@@ -55,7 +55,8 @@ public class ManualShootFieldRelativeCommand extends Command {
         0.); // This is for safety reasons. Generally we CANNOT directly control setpoints, instead,
     // setpoints should only be decided inside the subsystem itself by using set scalar.
     // In this situation, we manage setpoints directly so scalar should ALWAYS be 0.
-    hood.setOperatorInputScalar(-operatorController.getLeftY());
+    hood.setOperatorInputScalar(
+        ImprovedCommandXboxController.applyInputCurve(-operatorController.getLeftY()));
 
     double controllerX = -operatorController.getRightX();
     double controllerY = -operatorController.getRightY();
@@ -108,7 +109,8 @@ public class ManualShootFieldRelativeCommand extends Command {
     Logger.recordOutput("Cmds/ManualShootFieldRelative/TargetRPS", targetRps);
     Logger.recordOutput("Cmds/ManualShootFieldRelative/ActualRPS", shooter.getShooterRPS());
     Logger.recordOutput("Cmds/ManualShootFieldRelative/ShooterAtTarget", shooter.isAtTargetRps());
-    Logger.recordOutput("Cmds/ManualShootFieldRelative/TurretSetpointDegs", lastTurretSetpointDegs);
+    Logger.recordOutput(
+        "Cmds/ManualShootFieldRelative/TurretSetpointDegs(ChosenDegs)", lastTurretSetpointDegs);
     Logger.recordOutput(
         "Cmds/ManualShootFieldRelative/TurretPositionDegs", turret.getCurrentPositionDegs());
     Logger.recordOutput(

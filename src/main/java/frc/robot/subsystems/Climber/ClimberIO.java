@@ -5,9 +5,9 @@ import org.littletonrobotics.junction.AutoLog;
 public interface ClimberIO {
   public default void setVoltage(double voltage) {}
 
-  public default void setPosition(double positionDegrees) {}
+  public default void setRotation(double positionRotations) {}
 
-  public default void resetPosition(double positionDegrees) {}
+  public default void resetPosition(double positionRotations) {}
 
   public default void zeroClimberPosition() {
     resetPosition(0.0);
@@ -20,7 +20,7 @@ public interface ClimberIO {
     public double motorVoltageVolts;
     public double motorCurrentAmps;
 
-    public double climberPositionDegrees;
+    public double climberPositionRotations;
   }
 
   public default void updateInputs(ClimberIOInputs inputs) {}

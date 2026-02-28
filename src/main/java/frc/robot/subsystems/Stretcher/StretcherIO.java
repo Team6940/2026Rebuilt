@@ -20,11 +20,11 @@ public interface StretcherIO {
     public class StretcherIOInputs {
         public boolean motorConnected = false;
 
-        public double motorVoltageVolts;
-        public double motorCurrentAmps;
+        public double motorVoltageVolts = 0.0;
+        public double motorCurrentAmps = 0.0;
 
-        public double stretcherPositionRadians = 0.;
-        public double stretcherRotationDegrees = 0.;
+        /** Current position in rotations. */
+        public double stretcherPositionRotations = 0.0;
     }
 
     default public void updateInputs(StretcherIOInputs inputs) {
