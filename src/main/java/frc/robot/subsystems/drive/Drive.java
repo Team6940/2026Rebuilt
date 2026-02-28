@@ -310,6 +310,7 @@ public class Drive extends SubsystemBase {
 
     // Logging data
     processLog();
+    //updateOdometry();
   }
 
   public void processLog() {

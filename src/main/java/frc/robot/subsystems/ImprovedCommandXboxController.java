@@ -1,6 +1,7 @@
 package frc.robot.subsystems;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import frc.robot.Constants.OperatorConstants;
 
 public class ImprovedCommandXboxController extends CommandXboxController {
     /** Represents a digital button on an XboxController. */
@@ -161,4 +162,17 @@ public class ImprovedCommandXboxController extends CommandXboxController {
     // public ChassisSpeeds getDesiredRelativeSpeeds(){
     //     return new ChassisSpeeds(this.getLeftY(), this.getLeftX(), -this.getRightX() * 10.);
     // }
+
+    /**
+     * Applies a deadband and a power curve to a raw joystick axis value, preserving sign.
+     * <p>Formula: {@code sign(raw) * pow(|applyDeadband(raw)|, power)}
+     * <p>Uses {@link OperatorConstants#DEADBAND} and {@link OperatorConstants#INPUT_POWER}.
+     *
+     * @param raw The raw axis value in the range [-1, 1].
+     * @return The shaped value in the range [-1, 1].
+     */
+    public static double applyInputCurve(double raw) {
+        double db = MathUtil.applyDeadband(raw, OperatorConstants.DEADBAND);
+        return Math.copySign(Math.pow(Math.abs(db), OperatorConstants.INPUT_POWER), db);
+    }
 }

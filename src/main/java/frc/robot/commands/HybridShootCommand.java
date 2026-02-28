@@ -87,8 +87,10 @@ public class HybridShootCommand extends Command {
     hood.setAutoSetpoint(hoodDegs);
     turret.setAutoSetpointFieldRelativeRotation2d(fieldTargetAngle, drive.getPose());
 
-    hood.setOperatorInputScalar(-operatorController.getLeftY());
-    turret.setOperatorInputScalar(-operatorController.getRightX());
+    hood.setOperatorInputScalar(
+        ImprovedCommandXboxController.applyInputCurve(-operatorController.getLeftY()));
+    turret.setOperatorInputScalar(
+        ImprovedCommandXboxController.applyInputCurve(-operatorController.getRightX()));
 
     boolean shootingEnabled = operatorController.getButton(shootButton);
     Logger.recordOutput("Cmds/HybridShoot/ShootMode", shootMode.toString());
