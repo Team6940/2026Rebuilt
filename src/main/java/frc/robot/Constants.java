@@ -74,29 +74,29 @@ public final class Constants {
     public static final int kBackRightEncoderId = 12;
 
     /*   Stretcher   */
-    public static final int StretcherMotorID = 14;
+    public static final int StretcherMotorID = 23;
 
     /*   Intake   */
-    public static final int IntakeMotorID = 15;
+    public static final int IntakeMotorID = 22;
 
     /*   Shooter   */
-    public static final int ShooterMotorID = 16;
-    public static final int ShooterFollowerMotorID = 19;
+    public static final int ShooterMotorID = 33;
+    public static final int ShooterFollowerMotorID = 34;
 
     /*   Hood   */
-    public static final int HoodMotorID = 17;
+    public static final int HoodMotorID = 32;
 
     /*   Turret   */
-    public static final int TurretMotorID = 18;
-    public static final int TurretEncoderID = 20;
-    public static final int TurretEncoder2ID = 22;
+    public static final int TurretMotorID = 31;
+    public static final int TurretEncoderID = 36;
+    public static final int TurretEncoder2ID = 35;
 
     /*   Feeder   */
-    public static final int FeederTurntableMotorID = 20;
-    public static final int FeederFeedMotorID = 21;
+    public static final int FeederTurntableMotorID = 21;
+    public static final int FeederFeedMotorID = 30;
 
     /*   Climber   */
-    public static final int ClimberMotorID = 23;
+    public static final int ClimberMotorID = 37;
   }
 
   public final class DriveConstants {
@@ -123,6 +123,16 @@ public final class Constants {
     public static final double PP_TRANSLATION_KD = 0.4;
     public static final double PP_ROTATION_KP = 5.;
     public static final double PP_ROTATION_KD = 0.4;
+  }
+
+  public final class OperatorConstants {
+    /** Joystick deadband applied before scaling operator inputs. */
+    public static final double DEADBAND = 0.05;
+    /**
+     * Power exponent for the input curve. Values > 1 give finer control near center and bolder
+     * response near full deflection. 2.0 = quadratic (recommended starting point).
+     */
+    public static final double INPUT_POWER = 2.0;
   }
 
   public final class ProjectileConstants {
@@ -540,47 +550,47 @@ public final class Constants {
   }
 
   public final class IntakeConstants {
-    public static final double IntakeRatio = 1.0 / 1.0; // Sensor rotations to mechanism rotations
+    public static final double IntakeRatio = 26. / 12.; // Sensor rotations to mechanism rotations
     public static final InvertedValue IntakeInverted = InvertedValue.Clockwise_Positive;
     public static final double IntakeSupplyCurrentLimit = 40.0;
 
     // PID Gains
-    public static final double kP = 0.5;
+    public static final double kP = 0.1;
     public static final double kI = 0.0;
     public static final double kD = 0.0;
-    public static final double kV = 0.1;
-    public static final double kS = 0.0;
+    public static final double kV = 0.18;
+    public static final double kS = 0.45;
 
     public static final double IntakeVelocityToleranceRPS = 0.5;
 
-    public static final double IntakingRPS = 10.0;
+    public static final double IntakingRPS = 35.0;
     public static final double ReversingRPS = 0;
   }
 
   public final class HoodConstants {
-    public static final double HoodRatio = 1.0 / 1.0;
-    public static final InvertedValue Inverted = InvertedValue.Clockwise_Positive;
+    public static final double HoodRatio = 182. / 12. * 50. / 8.;
+    public static final InvertedValue Inverted = InvertedValue.CounterClockwise_Positive;
     public static final double HoodSupplyCurrentLimit = 40.0;
 
     // PID Gains
-    public static final double kP = 1.0;
+    public static final double kP = 360.;
     public static final double kI = 0.0;
     public static final double kD = 0.0;
     public static final double kV = 0.0;
-    public static final double kS = 0.0;
+    public static final double kS = 0.29;
 
     // Motion Magic Gains
-    public static final double MaxVelocity = 4.0; // Rotations per second
-    public static final double Acceleration = 8.0; // Rotations per second squared
+    public static final double MaxVelocity = 10.0; // Rotations per second
+    public static final double Acceleration = 20.0; // Rotations per second squared
 
     // Positions (Degrees)
-    public static final double HoodPositionToleranceDegs = 2.0;
-    public static final double MinDegs = -10.0;
-    public static final double MaxDegs = 90.0;
-    public static final double IdlePosition = 0.0;
+    public static final double HoodPositionToleranceDegs = 1.0;
+    public static final double MinDegs = 17.842;
+    public static final double MaxDegs = 44.5;
+    public static final double IdlePosition = 17.842;
 
     // Manual control tuning
-    public static final double HoodManualSensitivity = 1.0;
+    public static final double HoodManualSensitivity = 2.0;
     public static final double HoodHybridRangeDegs = 15.0;
 
     // Passing mode constants (static values for tower passing)
@@ -589,76 +599,73 @@ public final class Constants {
 
   public final class TurretConstants {
     // Gear tooth counts for dual-encoder absolute angle calculation
-    public static final double GEAR_TURRET = 70.0;
-    public static final double GEAR_1 = 36.0;
-    public static final double GEAR_2 = 34.0;
+    public static final double GEAR_TURRET = 115.;
+    public static final double GEAR_1 = 23.;
+    public static final double GEAR_2 = 27.;
 
-    public static final double TurretRatio = 1.0;
-    public static final InvertedValue Inverted = InvertedValue.Clockwise_Positive;
+    public static final double TurretRatio = 115. / 23. * 48. / 14.;
+    public static final InvertedValue Inverted = InvertedValue.CounterClockwise_Positive;
     public static final double TurretSupplyCurrentLimit = 40.0;
 
     // Encoder 1
-    public static final double TurretEncoderOffsetDegrees = 0.0;
+    public static final double TurretEncoderOffsetDegrees = -228.779;
     public static final SensorDirectionValue TurretEncoderDirection =
-        SensorDirectionValue.Clockwise_Positive;
+        SensorDirectionValue.CounterClockwise_Positive;
 
     // Encoder 2
-    public static final double TurretEncoder2OffsetDegrees = 0.0;
+    public static final double TurretEncoder2OffsetDegrees = -323.613;
     public static final SensorDirectionValue TurretEncoder2Direction =
-        SensorDirectionValue.Clockwise_Positive;
+        SensorDirectionValue.CounterClockwise_Positive;
 
     // PID Gains
-    public static final double kP = 1.0;
+    public static final double kP = 36.;
     public static final double kI = 0.0;
-    public static final double kD = 0.0;
+    public static final double kD = 1.2;
     public static final double kV = 0.0;
-    public static final double kS = 0.0;
+    public static final double kS = 0.3;
 
     // Motion Magic Gains
-    public static final double MaxVelocity = 4.0; // Rotations per second
-    public static final double Acceleration = 8.0; // Rotations per second squared
+    public static final double MaxVelocity = 40.0; // Rotations per second
+    public static final double Acceleration = 60.0; // Rotations per second squared
 
     // Positions (Degrees)
     public static final double TurretPositionToleranceDegs = 2.0;
-    public static final double MinDegs = -180.0;
-    public static final double MaxDegs = 180.0;
-    public static final double IdlePosition = 0.0;
+    public static final double MinDegs = -220.0;
+    public static final double MaxDegs = 225.0;
+    public static final double IdlePosition = 20.0;
 
     // Manual control tuning
-    public static final double TurretManualSensitivity = 1.0;
+    public static final double TurretManualSensitivity = 5.0;
     public static final double TurretHybridRangeDegs = 30.0;
   }
 
   public final class StretcherConstants {
-    public static final double StretcherRatio =
-        1.0 / 1.0; // Sensor rotations to mechanism rotations
-    public static final InvertedValue Inverted = InvertedValue.Clockwise_Positive;
-    public static final double StretcherVelocityToleranceRPS = 0.2;
+    public static final double StretcherRatio = 27. * 26. / 46.;// Sensor rotations to mechanism rotations
+    public static final InvertedValue Inverted = InvertedValue.CounterClockwise_Positive;
     public static final double StretcherSupplyCurrentLimit = 40.0;
 
     // PID Gains
-    public static final double kP = 1.0;
+    public static final double kP = 96.;
     public static final double kI = 0.0;
     public static final double kD = 0.0;
-    public static final double kV = 0.2;
-    public static final double kS = 0.0;
+    public static final double kV = 0.0;
+    public static final double kS = 0.34;
     // public static final double kG = 0.3;
 
     // Motion Magic Gains
-    public static final double MaxVelocity = 4.0; // Rotations per second
-    public static final double Acceleration = 8.0; // Rotations per second squared
-    // public static final double Deadband = 0.24;
+    public static final double MaxVelocity = 20.0; // Rotations per second
+    public static final double Acceleration = 48.0; // Rotations per second squared
 
-    // Positions(Degrees)
-    public static final double StretcherPositionToleranceDegs = 3.;
+    // Positions (Rotations) — original degree values divided by 360
+    public static final double StretcherPositionToleranceRotations = 3.0 / 360.0;
 
-    public static final double MinDegs = -66.; // degrees CCW Positive
-    public static final double MaxDegs = 90.;
+    public static final double MinRotations = 0.; // CCW Positive
+    public static final double MaxRotations = 3.11;
 
-    public static final double ExtendedPosition = -61.;
-    public static final double RetractedPosition = 90.;
+    public static final double ExtendedPosition = 2.8;
+    public static final double RetractedPosition = 0.08;
 
-    public static final double IdlePosition = 0.;
+    public static final double IdlePosition = 0.0;
   }
 
   public final class ShooterConstants {
@@ -668,11 +675,11 @@ public final class Constants {
     public static final MotorAlignmentValue FollowerAlignment = MotorAlignmentValue.Aligned;
 
     // PID Gains
-    public static final double kP = 6.5;
+    public static final double kP = 14.;
     public static final double kI = 0.0;
-    public static final double kD = 0.05;
-    public static final double kV = 0.1;
-    public static final double kS = 5.5;
+    public static final double kD = 0.0;
+    public static final double kV = 0.115;
+    public static final double kS = 21.;
 
     // Torque-current feedforward (Amps per RPS)
     public static final double kTorqueFFPerRPS = 0.0;
@@ -684,10 +691,10 @@ public final class Constants {
     public static final double ShooterSupplyCurrentLimit = 80.0;
 
     // Manual shooter presets (ABXY)
-    public static final double ManualRpsA = 30.0;
-    public static final double ManualRpsB = 35.0;
-    public static final double ManualRpsX = 40.0;
-    public static final double ManualRpsY = 45.0;
+    public static final double ManualRpsA = 20.;
+    public static final double ManualRpsB = 40.;
+    public static final double ManualRpsX = 55.;
+    public static final double ManualRpsY = 70.;
 
     // Passing mode constants (static values for tower passing)
     public static final double PassRps = 40.0;
@@ -695,64 +702,63 @@ public final class Constants {
 
   public final class FeederConstants {
     // Turntable Constants
-    public static final double TurntableRatio =
-        1.0 / 1.0; // Sensor rotations to mechanism rotations
-    public static final InvertedValue TurntableInverted = InvertedValue.Clockwise_Positive;
+    public static final double TurntableRatio = 31.2; // Sensor rotations to mechanism rotations
+    public static final InvertedValue TurntableInverted = InvertedValue.CounterClockwise_Positive;
     public static final double TurntableSupplyCurrentLimit = 40.0;
 
     // Turntable motor PID Gains
-    public static final double TurntablekP = 0.5;
+    public static final double TurntablekP = 0.4;
     public static final double TurntablekI = 0.0;
     public static final double TurntablekD = 0.0;
-    public static final double TurntablekV = 0.1;
-    public static final double TurntablekS = 0.0;
+    public static final double TurntablekV = 4.;
+    public static final double TurntablekS = 0.392;
 
     public static final double TurntableVelocityToleranceRPS = 0.5;
 
     // Feed (upward feeding) Constants
     public static final double FeedRatio = 1.0 / 1.0; // Sensor rotations to mechanism rotations
-    public static final InvertedValue FeedInverted = InvertedValue.Clockwise_Positive;
+    public static final InvertedValue FeedInverted = InvertedValue.CounterClockwise_Positive;
     public static final double FeedSupplyCurrentLimit = 40.0;
 
     // Feed motor PID Gains
-    public static final double FeedkP = 0.5;
+    public static final double FeedkP = 0.15;
     public static final double FeedkI = 0.0;
     public static final double FeedkD = 0.0;
-    public static final double FeedkV = 0.1;
-    public static final double FeedkS = 0.0;
+    public static final double FeedkV = 0.105;
+    public static final double FeedkS = 0.452;
 
     public static final double FeedVelocityToleranceRPS = 0.5;
 
     // Default RPS values
-    public static final double DefaultTurntableRPS = 5.0;
-    public static final double DefaultFeedRPS = 10.0;
+    public static final double DefaultTurntableRPS = 2.3;
+    public static final double DefaultFeedRPS = 100.0;
   }
 
   public final class ClimberConstants {
-    public static final double ClimberRatio = 1.0 / 1.0; // Sensor rotations to mechanism rotations
+    public static final double ClimberRatio = 45.; // Sensor rotations to mechanism rotations
     public static final InvertedValue Inverted = InvertedValue.Clockwise_Positive;
     public static final double ClimberSupplyCurrentLimit = 60.0;
 
     // PID Gains
-    public static final double kP = 1.0;
+    public static final double kP = 40.0;
     public static final double kI = 0.0;
     public static final double kD = 0.0;
     public static final double kV = 0.0;
-    public static final double kS = 0.0;
+    public static final double kS = 0.2;
 
     // Motion Magic Gains
-    public static final double MaxVelocity = 4.0; // Rotations per second
-    public static final double Acceleration = 8.0; // Rotations per second squared
+    public static final double MaxVelocity = 16.; // Rotations per second
+    public static final double Acceleration = 32.; // Rotations per second squared
 
-    // Positions (Degrees)
-    public static final double ClimberPositionToleranceDegs = 5.0;
-    public static final double MinDegs = 0.0;
-    public static final double MaxDegs = 180.0;
+    // Positions (Rotations)
+    public static final double ClimberPositionToleranceRotations = 5.0 / 360.0;
+    public static final double MinRotations = -0.2;
+    public static final double MaxRotations = 1.8; // 180 degrees = 0.5 rotations
     public static final double IdlePosition = 0.0;
 
-    // Preset positions
+    // Preset positions (Rotations)
     public static final double RetractedPosition = 0.0;
-    public static final double ExtendedPosition = 90.;
+    public static final double ExtendedPosition = 1.8; // 90 degrees = 0.25 rotations
   }
 
   public static final class PoseEstimatorConstants {

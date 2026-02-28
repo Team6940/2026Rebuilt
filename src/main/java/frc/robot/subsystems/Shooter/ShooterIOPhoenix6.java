@@ -9,7 +9,6 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import frc.robot.Constants.MotorIDs;
 import frc.robot.Constants.ShooterConstants;
-import frc.robot.subsystems.Shooter.ShooterIO.ShooterIOInputs;
 
 public class ShooterIOPhoenix6 implements ShooterIO {
 

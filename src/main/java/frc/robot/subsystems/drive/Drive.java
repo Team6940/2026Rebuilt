@@ -310,6 +310,7 @@ public class Drive extends SubsystemBase {
 
     // Logging data
     processLog();
+    updateOdometry();
   }
 
   public void processLog() {
@@ -321,15 +322,33 @@ public class Drive extends SubsystemBase {
   }
 
   public void updateOdometry() {
-    updateSingleLimelight(RobotContainer.limelightLeft);
-    updateSingleLimelight(RobotContainer.limelightRight);
+    LimelightHelpers.PoseEstimate left = getAcceptedLimelightEstimate(RobotContainer.limelightLeft);
+    LimelightHelpers.PoseEstimate right =
+        getAcceptedLimelightEstimate(RobotContainer.limelightRight);
+
+    LimelightHelpers.PoseEstimate chosen = null;
+    if (left != null && right != null) {
+      chosen = left.avgTagDist <= right.avgTagDist ? left : right;
+    } else if (left != null) {
+      chosen = left;
+    } else if (right != null) {
+      chosen = right;
+    }
+
+    if (chosen != null) {
+      double stdDev = PoseEstimatorConstants.tAtoDev.get(chosen.avgTagArea);
+      addVisionMeasurement(
+          chosen.pose, chosen.timestampSeconds, VecBuilder.fill(stdDev, stdDev, 100000000));
+      // according to docs, 6328 template needs no fpgaToCurrentTime
+      // conversion
+    }
   }
 
   /**
    * Sends gyro orientation to a single Limelight and fuses its MegaTag2 pose estimate into the pose
    * estimator if the estimate passes all quality gates.
    */
-  private void updateSingleLimelight(String limelightName) {
+  private LimelightHelpers.PoseEstimate getAcceptedLimelightEstimate(String limelightName) {
     LimelightHelpers.SetRobotOrientation(
         limelightName,
         gyroInputs.yawPosition.getDegrees(),
@@ -345,7 +364,7 @@ public class Drive extends SubsystemBase {
     if (mt2 == null) {
       DriverStation.reportWarning(limelightName + " Disconnected!", false);
       Logger.recordOutput("Vision/" + limelightName + "/Connected", false);
-      return;
+      return null;
     }
 
     Logger.recordOutput("Vision/" + limelightName + "/Connected", true);
@@ -362,13 +381,11 @@ public class Drive extends SubsystemBase {
 
     Logger.recordOutput("Vision/" + limelightName + "/Accepted", accepted);
 
-    if (accepted) {
-      double stdDev = PoseEstimatorConstants.tAtoDev.get(mt2.avgTagArea);
-      addVisionMeasurement(
-          mt2.pose, mt2.timestampSeconds, VecBuilder.fill(stdDev, stdDev, 100000000));
-      // according to docs, 6328 template needs no fpgaToCurrentTime
-      // conversion
+    if (!accepted) {
+      return null;
     }
+
+    return mt2;
   }
 
   public static Translation2d getLinearVelocityFromJoysticks(double x, double y) {

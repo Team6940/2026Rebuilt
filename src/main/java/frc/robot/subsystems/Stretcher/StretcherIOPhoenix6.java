@@ -6,7 +6,6 @@ import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
-import edu.wpi.first.math.util.Units;
 import frc.robot.Constants.MotorIDs;
 import frc.robot.Constants.StretcherConstants;
 
@@ -45,9 +44,7 @@ public class StretcherIOPhoenix6 implements StretcherIO {
     // config.MotorOutput.DutyCycleNeutralDeadband = StretcherConstants.Deadband;
     motor.getConfigurator().apply(config);
 
-    motor.setPosition(
-        Units.degreesToRotations(
-            StretcherConstants.IdlePosition)); // 1/4rotation, which means 90degs
+    motor.setPosition(StretcherConstants.IdlePosition); // initialize to idle (0 rotations)
     // zeroStretcherPosition();
   }
 
@@ -57,16 +54,13 @@ public class StretcherIOPhoenix6 implements StretcherIO {
   }
 
   @Override
-  public void setPosition(double position) {
-    // if (position == 0) {
-    //     motor.stopMotor();
-    // }
-    motor.setControl(m_request.withPosition(Units.degreesToRotations(position)));
+  public void setPosition(double positionRotations) {
+    motor.setControl(m_request.withPosition(positionRotations));
   }
 
   @Override
-  public void resetPosition(double position) {
-    motor.setPosition(Units.degreesToRotations(position));
+  public void resetPosition(double positionRotations) {
+    motor.setPosition(positionRotations);
   }
 
   @Override
@@ -78,8 +72,6 @@ public class StretcherIOPhoenix6 implements StretcherIO {
 
     inputs.motorVoltageVolts = motor.getMotorVoltage().getValueAsDouble();
     inputs.motorCurrentAmps = motor.getSupplyCurrent().getValueAsDouble();
-    inputs.stretcherRotationDegrees =
-        Units.rotationsToDegrees(motor.getPosition().getValueAsDouble());
-    inputs.stretcherPositionRadians = inputs.stretcherRotationDegrees * Math.PI / 180.0;
+    inputs.stretcherPositionRotations = motor.getPosition().getValueAsDouble();
   }
 }

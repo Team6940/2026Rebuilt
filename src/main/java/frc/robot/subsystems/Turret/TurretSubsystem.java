@@ -6,6 +6,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.TurretConstants;
 import frc.robot.Robot;
+import frc.robot.util.SetpointLeadCompensator;
 import org.littletonrobotics.junction.Logger;
 
 public class TurretSubsystem extends SubsystemBase {
@@ -27,8 +28,13 @@ public class TurretSubsystem extends SubsystemBase {
   private double autoSetpointDegs = TurretConstants.IdlePosition;
   private double manualSetpointDegs = TurretConstants.IdlePosition;
   private double targetPositionDegs = TurretConstants.IdlePosition;
+  private double rawSetpointDegs = TurretConstants.IdlePosition;
   private double operatorInputScalar = 0.0;
   private double encoderCalculatedPositionDegs = TurretConstants.IdlePosition;
+
+  // Lead compensator: applied to the final setpoint regardless of mode
+  private static final double TURRET_LEAD_INDEX = 0.08; // seconds; tune this
+  private final SetpointLeadCompensator leadComp = new SetpointLeadCompensator(TURRET_LEAD_INDEX);
 
   private Rotation2d fieldRelativeRotation2d = new Rotation2d();
   private Pose2d lastRobotPose = new Pose2d();
@@ -169,35 +175,36 @@ public class TurretSubsystem extends SubsystemBase {
     return robotPose.getRotation().plus(Rotation2d.fromDegrees(inputs.turretPositionDegrees));
   }
 
-//   /**
-//  * Computes the turret angle that would point to the desired field-relative angle, 
-//  * based on the robot's current pose and turret position.
-//  * Feat with a margin of to prevent jittering when the target is near the edge of the turret's range.
-//  *
-//  * @param desiredFieldAngle the field-relative angle we want the turret to point to
-//  * @param robotPose
-//  */
-// public double getTurretFieldAngle(
-//     Rotation2d desiredFieldAngle,
-//     Pose2d robotPose) {
-//     double currentTurretDeg = inputs.turretPositionDegrees;
-//     Rotation2d currentFieldAngle = getTurretFieldAngle(robotPose);
-//     double fieldError = desiredFieldAngle.minus(currentFieldAngle).getDegrees();
-//     double deltaSmall = normalizeAngle(fieldError);
-//     double candidateSmall = currentTurretDeg + deltaSmall;
-//     double margin = 1.0; // 1° margin
-//     double limitMin = -180.0 + margin;
-//     double limitMax = 180.0 - margin;
-//     if (candidateSmall >= limitMin && candidateSmall <= limitMax) {
-//         return currentTurretDeg + deltaSmall;
-//     }
-//     double deltaLarge = (deltaSmall > 0) ? deltaSmall - 360.0 : deltaSmall + 360.0;
-//     double candidateLarge = currentTurretDeg + deltaLarge;
-//     if (candidateLarge >= limitMin && candidateLarge <= limitMax) {
-//         return currentTurretDeg + deltaLarge;
-//     }
-//     return currentTurretDeg;
-// }
+  //   /**
+  //  * Computes the turret angle that would point to the desired field-relative angle,
+  //  * based on the robot's current pose and turret position.
+  //  * Feat with a margin of to prevent jittering when the target is near the edge of the turret's
+  // range.
+  //  *
+  //  * @param desiredFieldAngle the field-relative angle we want the turret to point to
+  //  * @param robotPose
+  //  */
+  // public double getTurretFieldAngle(
+  //     Rotation2d desiredFieldAngle,
+  //     Pose2d robotPose) {
+  //     double currentTurretDeg = inputs.turretPositionDegrees;
+  //     Rotation2d currentFieldAngle = getTurretFieldAngle(robotPose);
+  //     double fieldError = desiredFieldAngle.minus(currentFieldAngle).getDegrees();
+  //     double deltaSmall = normalizeAngle(fieldError);
+  //     double candidateSmall = currentTurretDeg + deltaSmall;
+  //     double margin = 1.0; // 1° margin
+  //     double limitMin = -180.0 + margin;
+  //     double limitMax = 180.0 - margin;
+  //     if (candidateSmall >= limitMin && candidateSmall <= limitMax) {
+  //         return currentTurretDeg + deltaSmall;
+  //     }
+  //     double deltaLarge = (deltaSmall > 0) ? deltaSmall - 360.0 : deltaSmall + 360.0;
+  //     double candidateLarge = currentTurretDeg + deltaLarge;
+  //     if (candidateLarge >= limitMin && candidateLarge <= limitMax) {
+  //         return currentTurretDeg + deltaLarge;
+  //     }
+  //     return currentTurretDeg;
+  // }
 
   public boolean isAtTargetPosition() {
     return MathUtil.isNear(
@@ -223,15 +230,18 @@ public class TurretSubsystem extends SubsystemBase {
     switch (mode) {
       case HYBRID -> handleHybrid();
       case MANUAL -> handleManual();
-      // case MANUAL -> handleManualFieldRelative();
+        // case MANUAL -> handleManualFieldRelative();
     }
 
     Logger.processInputs("Turret", inputs);
     Logger.recordOutput("Turret/Mode", mode.toString());
     Logger.recordOutput("Turret/TargetPositionDegs", targetPositionDegs);
+    Logger.recordOutput("Turret/RawSetpointDegs", rawSetpointDegs);
     Logger.recordOutput("Turret/IsAtTarget", isAtTargetPosition());
     Logger.recordOutput("Turret/AutoSetpointDegs", autoSetpointDegs);
     Logger.recordOutput("Turret/ManualSetpointDegs", manualSetpointDegs);
+    Logger.recordOutput("Turret/LeadDerivativeDegPerSec", leadComp.getFilteredDerivative());
+    Logger.recordOutput("Turret/LeadCompDeltaDegs", targetPositionDegs - rawSetpointDegs);
     Logger.recordOutput("Turret/FieldTargetDegs", fieldRelativeRotation2d.getDegrees());
     Logger.recordOutput("Turret/RobotHeadingDegs", lastRobotPose.getRotation().getDegrees());
     Logger.recordOutput("Turret/OperatorInputScalar", operatorInputScalar);
@@ -239,14 +249,16 @@ public class TurretSubsystem extends SubsystemBase {
   }
 
   private void handleHybrid() {
-    targetPositionDegs =
+    rawSetpointDegs =
         clamp(autoSetpointDegs + operatorInputScalar * TurretConstants.TurretHybridRangeDegs);
+    targetPositionDegs = leadComp.calculate(rawSetpointDegs);
     io.setPosition(targetPositionDegs);
   }
 
   private void handleManual() {
     nudgeManualSetpoint(operatorInputScalar);
-    targetPositionDegs = clamp(manualSetpointDegs);
+    rawSetpointDegs = clamp(manualSetpointDegs);
+    targetPositionDegs = leadComp.calculate(rawSetpointDegs);
     io.setPosition(targetPositionDegs);
   }
 
@@ -254,7 +266,7 @@ public class TurretSubsystem extends SubsystemBase {
   //   targetPositionDegs = manualSetpointDegs;
   //   io.setPosition(targetPositionDegs);
   // }
-  
+
   private double clamp(double positionDegrees) {
     return MathUtil.clamp(positionDegrees, TurretConstants.MinDegs, TurretConstants.MaxDegs);
   }
