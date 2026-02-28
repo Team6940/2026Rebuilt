@@ -58,8 +58,8 @@ import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
  */
 public class RobotContainer {
   // Subsystems
-  public static final String limelightLeft = "limelight-l";
-  public static final String limelightRight = "limelight-r";
+  public static final String limelightLeft = "limelight-left";
+  public static final String limelightRight = "limelight-right";
   private final Drive drive;
   private final FeederSubsystem feeder = FeederSubsystem.getInstance();
   private final HoodSubsystem hood = HoodSubsystem.getInstance();
@@ -240,10 +240,19 @@ public class RobotContainer {
                             new Pose2d(drive.getPose().getTranslation(), new Rotation2d())),
                     drive)
                 .ignoringDisable(true));
+
     driverController
-        .a()
-        .onTrue(new InstantCommand(() -> climber.setExtended()))
-        .onFalse(new InstantCommand(() -> climber.setRetracted()));
+        .start()
+        .onTrue(
+            Commands.runOnce(
+                () -> superStructure.getClimbExtendCommand()));
+
+    driverController
+        .back()
+        .onTrue(
+            Commands.runOnce(
+                () -> superStructure.getClimbRetractCommand()));
+    
     operatorController
         .leftBumper()
         .whileTrue(
