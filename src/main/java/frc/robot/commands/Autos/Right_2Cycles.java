@@ -5,15 +5,20 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
-import frc.robot.commands.ClimbCommand;
+import frc.robot.commands.ClimbExtendCommand;
+import frc.robot.commands.ClimbRetractCommand;
 import frc.robot.commands.HybridShootCommand;
 import frc.robot.commands.IntakeCommand;
 import frc.robot.subsystems.Drive.Drive;
+import frc.robot.subsystems.Turret.TurretSubsystem;
 import frc.robot.subsystems.ImprovedCommandXboxController.Button;
 import frc.robot.subsystems.SuperStructure.ShootMode;
+import frc.robot.subsystems.Climber.ClimberSubsystem;
 
 public class Right_2Cycles extends SequentialCommandGroup {
   Drive drive = Drive.getInstance();
+  ClimberSubsystem climber = ClimberSubsystem.getInstance();
+  TurretSubsystem turret = TurretSubsystem.getInstance();
 
   public Right_2Cycles() {
     if (DriverStation.getAlliance().isPresent()
@@ -48,7 +53,7 @@ public class Right_2Cycles extends SequentialCommandGroup {
             .deadlineFor(new WaitCommand(1.).andThen(new IntakeCommand())));
     addCommands(drive.followPPPath("RightN2-RightS"));
     addCommands(new HybridShootCommand(Button.kAutoButton, ShootMode.SCORE));
-    addCommands(drive.followPPPath("RightS-RightC"));
-    addCommands(new ClimbCommand());
+    addCommands(drive.followPPPath("RightS-RightC").alongWith(new ClimbExtendCommand()));
+    addCommands(new ClimbRetractCommand());
   }
 }

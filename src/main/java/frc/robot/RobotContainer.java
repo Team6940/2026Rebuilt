@@ -245,12 +245,13 @@ public class RobotContainer {
         .start()
         .onTrue(
             Commands.runOnce(
-                () -> superStructure.getClimbCommand()));
+                () -> superStructure.getClimbExtendCommand()));
 
     driverController
         .back()
         .onTrue(
-            Commands.runOnce(() -> climber.setExtended()));
+            Commands.runOnce(
+                () -> superStructure.getClimbRetractCommand()));
     
     operatorController
         .leftBumper()
