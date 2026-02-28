@@ -620,7 +620,7 @@ public final class Constants {
     // PID Gains
     public static final double kP = 48.;
     public static final double kI = 0.0;
-    public static final double kD = 2.;
+    public static final double kD = 3.;
     public static final double kV = 0.0;
     public static final double kS = 0.3;
 
@@ -740,25 +740,25 @@ public final class Constants {
     public static final double ClimberSupplyCurrentLimit = 60.0;
 
     // PID Gains
-    public static final double kP = 1.0;
+    public static final double kP = 40.0;
     public static final double kI = 0.0;
     public static final double kD = 0.0;
     public static final double kV = 0.0;
-    public static final double kS = 0.0;
+    public static final double kS = 0.2;
 
     // Motion Magic Gains
-    public static final double MaxVelocity = 4.0; // Rotations per second
-    public static final double Acceleration = 8.0; // Rotations per second squared
+    public static final double MaxVelocity = 16.; // Rotations per second
+    public static final double Acceleration = 32.; // Rotations per second squared
 
     // Positions (Rotations)
     public static final double ClimberPositionToleranceRotations = 5.0 / 360.0;
-    public static final double MinRotations = 0.0;
-    public static final double MaxRotations = 0.5; // 180 degrees = 0.5 rotations
+    public static final double MinRotations = -0.2;
+    public static final double MaxRotations = 1.8; // 180 degrees = 0.5 rotations
     public static final double IdlePosition = 0.0;
 
     // Preset positions (Rotations)
     public static final double RetractedPosition = 0.0;
-    public static final double ExtendedPosition = 0.25; // 90 degrees = 0.25 rotations
+    public static final double ExtendedPosition = 1.8; // 90 degrees = 0.25 rotations
   }
 
   public static final class PoseEstimatorConstants {
