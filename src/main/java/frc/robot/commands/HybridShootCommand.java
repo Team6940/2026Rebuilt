@@ -118,6 +118,7 @@ public class HybridShootCommand extends Command {
 
   @Override
   public void end(boolean interrupted) {
+    hood.setAutoSetpoint(HoodConstants.IdlePosition);
     hood.setOperatorInputScalar(0.0);
     turret.setOperatorInputScalar(0.0);
     shooter.stop();

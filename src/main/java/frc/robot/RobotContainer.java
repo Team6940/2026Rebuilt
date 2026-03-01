@@ -241,25 +241,19 @@ public class RobotContainer {
                     drive)
                 .ignoringDisable(true));
 
-    driverController
-        .start()
-        .onTrue(
-            Commands.runOnce(
-                () -> superStructure.getClimbExtendCommand()));
+    driverController.start().onTrue(Commands.runOnce(() -> superStructure.getClimbExtendCommand()));
 
-    driverController
-        .back()
-        .onTrue(
-            Commands.runOnce(
-                () -> superStructure.getClimbRetractCommand()));
-    
+    driverController.back().onTrue(Commands.runOnce(() -> superStructure.getClimbRetractCommand()));
+
     operatorController
         .leftBumper()
         .whileTrue(
             Commands.defer(
-                () ->
-                    superStructure.getManualShootCommand(Button.kRightTrigger, Button.kRightBumper),
+                () -> superStructure.getShootCommand(Button.kRightTrigger, Button.kRightBumper),
                 Set.of(turret, shooter, hood, feeder)));
+    operatorController
+        .povDown()
+        .onTrue(superStructure.runOnce(() -> superStructure.toggleControlMode()));
     // operatorController
     //     .leftBumper()
     //     .whileTrue(new ManualShootCommand(Button.kRightTrigger, Button.kRightBumper));
