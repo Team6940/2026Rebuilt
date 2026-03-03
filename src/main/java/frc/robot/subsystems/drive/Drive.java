@@ -351,7 +351,7 @@ public class Drive extends SubsystemBase {
   private LimelightHelpers.PoseEstimate getAcceptedLimelightEstimate(String limelightName) {
     LimelightHelpers.SetRobotOrientation(
         limelightName,
-        gyroInputs.yawPosition.getDegrees(),
+        getPose().getRotation().getDegrees(),
         0,
         gyroInputs.pitchPosition.getDegrees(),
         0,
@@ -623,10 +623,10 @@ public class Drive extends SubsystemBase {
 
   /**
    * Returns chassis speeds relative to a target translation, expressed as (radial, tangential).
-   * Radial is positive away from the target, tangential is positive counter-clockwise.
-   * Uses the turret world position (accounting for its offset from chassis center) as the
-   * reference point, and correctly accounts for chassis rotation contributing to the turret
-   * pivot's field velocity (v_turret = v_chassis + omega x r_offset).
+   * Radial is positive away from the target, tangential is positive counter-clockwise. Uses the
+   * turret world position (accounting for its offset from chassis center) as the reference point,
+   * and correctly accounts for chassis rotation contributing to the turret pivot's field velocity
+   * (v_turret = v_chassis + omega x r_offset).
    */
   public Translation2d getTargetRelativeChassisSpeeds(Translation2d target) {
     Translation2d turretPosition = getTurretWorldPosition();
@@ -640,29 +640,42 @@ public class Drive extends SubsystemBase {
     Translation2d radialUnit = targetToTurret.div(distance);
     Translation2d tangentialUnit = new Translation2d(-radialUnit.getY(), radialUnit.getX());
 
-    ChassisSpeeds robotSpeeds = getChassisSpeeds();
-    ChassisSpeeds fieldSpeeds =
-        ChassisSpeeds.fromRobotRelativeSpeeds(robotSpeeds, getRotation());
+    Translation2d vel = getTurretFieldVelocity();
 
-    // Turret offset rotated into field frame
-    Translation2d rotatedOffset =
-        Constants.TurretConstants.TURRET_OFFSET.rotateBy(getRotation());
-    double omega = robotSpeeds.omegaRadiansPerSecond;
-
-    // v_turret = v_chassis + omega x r  (2D cross: omega x (rx, ry) = (-omega*ry, omega*rx))
-    double turretVx = fieldSpeeds.vxMetersPerSecond - omega * rotatedOffset.getY();
-    double turretVy = fieldSpeeds.vyMetersPerSecond + omega * rotatedOffset.getX();
-
-    double radial = turretVx * radialUnit.getX() + turretVy * radialUnit.getY();
-    double tangential = turretVx * tangentialUnit.getX() + turretVy * tangentialUnit.getY();
+    double radial = vel.getX() * radialUnit.getX() + vel.getY() * radialUnit.getY();
+    double tangential = vel.getX() * tangentialUnit.getX() + vel.getY() * tangentialUnit.getY();
 
     return new Translation2d(radial, tangential);
   }
 
   /**
+   * Returns the turret pivot's field-relative velocity as a {@link Translation2d} (x = vx, y = vy),
+   * correctly accounting for chassis rotation contributing to the turret pivot velocity via the
+   * cross-product term {@code omega × r_offset}:
+   *
+   * <pre>
+   *   v_turret = v_chassis + omega × r_offset
+   *            = (vx - omega·ry,  vy + omega·rx)
+   * </pre>
+   *
+   * where {@code r_offset} is {@link Constants.TurretConstants#TURRET_OFFSET} rotated into the
+   * current field frame. Use this whenever you need field-frame turret velocity (e.g. in {@link
+   * frc.robot.util.ProjectileCalculator#solve}).
+   */
+  public Translation2d getTurretFieldVelocity() {
+    ChassisSpeeds robotSpeeds = getChassisSpeeds();
+    ChassisSpeeds fieldSpeeds = ChassisSpeeds.fromRobotRelativeSpeeds(robotSpeeds, getRotation());
+    Translation2d rotatedOffset = Constants.TurretConstants.TURRET_OFFSET.rotateBy(getRotation());
+    double omega = robotSpeeds.omegaRadiansPerSecond;
+    double turretVx = fieldSpeeds.vxMetersPerSecond - omega * rotatedOffset.getY();
+    double turretVy = fieldSpeeds.vyMetersPerSecond + omega * rotatedOffset.getX();
+    return new Translation2d(turretVx, turretVy);
+  }
+
+  /**
    * Returns the turret pivot position in field coordinates, accounting for its offset from the
-   * chassis center (defined by {@link Constants.TurretConstants#TURRET_OFFSET} in robot frame).
-   * The offset is rotated by the current robot heading before being added to the chassis position.
+   * chassis center (defined by {@link Constants.TurretConstants#TURRET_OFFSET} in robot frame). The
+   * offset is rotated by the current robot heading before being added to the chassis position.
    */
   public Translation2d getTurretWorldPosition() {
     Pose2d pose = getPose();
@@ -717,7 +730,7 @@ public class Drive extends SubsystemBase {
   /*
    * Returns the center point of the alliance hub based on the current alliance.
    */
-  private static Translation2d getAllianceHubCenter() {
+  public static Translation2d getAllianceHubCenter() {
     boolean isRedAlliance =
         DriverStation.getAlliance().isPresent()
             && DriverStation.getAlliance().get() == Alliance.Red;
