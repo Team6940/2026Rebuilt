@@ -186,8 +186,8 @@ public class RobotContainer {
                 .ignoringDisable(true));
     driverController
         .rightBumper()
-        .toggleOnTrue(
-            Commands.defer(() -> superStructure.getIntakeCommand(), Set.of(stretcher, intake)));
+        .onTrue(
+            superStructure.runOnce(() -> superStructure.toggleIntakeMode()));
 
     driverController
         .leftBumper()
