@@ -2,26 +2,19 @@ package frc.robot.commands;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants;
-import frc.robot.Constants.IntakeConstants;
 import frc.robot.subsystems.Intake.IntakeSubsystem;
 import frc.robot.subsystems.Stretcher.StretcherSubsystem;
 
-public class IntakeCommand extends Command {
+public class IntakeRetractCommand extends Command {
   private final IntakeSubsystem intake = IntakeSubsystem.getInstance();
   private final StretcherSubsystem stretcher = StretcherSubsystem.getInstance();
 
-  public IntakeCommand() {
+  public IntakeRetractCommand() {
     addRequirements(intake, stretcher);
   }
 
   @Override
   public void execute() {
-    stretcher.setPosition(Constants.StretcherConstants.ExtendedPosition);
-    intake.setRPS(IntakeConstants.IntakingRPS);
-  }
-
-  @Override
-  public void end(boolean interrupted) {
     stretcher.setPosition(Constants.StretcherConstants.RetractedPosition);
     intake.stop();
   }

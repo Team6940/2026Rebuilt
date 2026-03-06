@@ -47,6 +47,7 @@ import frc.robot.subsystems.Shooter.ShooterSubsystem;
 import frc.robot.subsystems.Stretcher.StretcherSubsystem;
 import frc.robot.subsystems.SuperStructure;
 import frc.robot.subsystems.Turret.TurretSubsystem;
+import java.util.Set;
 import org.ironmaple.simulation.SimulatedArena;
 import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
 import org.ironmaple.simulation.seasonspecific.rebuilt2026.Arena2026Rebuilt;
@@ -187,6 +188,12 @@ public class RobotContainer {
                     () -> -driverController.getLeftY(),
                     () -> -driverController.getLeftX(),
                     () -> -driverController.getRightX())));
+
+    intake.setDefaultCommand(
+        Commands.defer(
+        () -> superStructure.getIntakeCommand(), Set.of(stretcher, intake))
+    );
+
     driverController.x().onTrue(Commands.runOnce(drive::stopWithX, drive));
     driverController
         .b()
@@ -248,8 +255,9 @@ public class RobotContainer {
     //     .onFalse(new InstantCommand(() -> intake.setRPS(0.)));
     driverController
         .rightBumper()
-        .toggleOnTrue(
-            Commands.defer(() -> superStructure.getIntakeCommand(), Set.of(stretcher, intake)));
+        .onTrue(
+            superStructure.runOnce(() -> superStructure.toggleIntakeMode()));
+            
     driverController
         .b()
         .onTrue(
@@ -263,14 +271,14 @@ public class RobotContainer {
     driverController
         .start()
         .onTrue(
-            Commands.runOnce(
-                () -> superStructure.getClimbExtendCommand()));
+            Commands.defer(
+                () -> superStructure.getClimbExtendCommand(), Set.of(climber)));
 
     driverController
         .back()
         .onTrue(
-            Commands.runOnce(
-                () -> superStructure.getClimbRetractCommand()));
+            Commands.defer(
+                () -> superStructure.getClimbRetractCommand(), Set.of(climber)));
     
     operatorController
         .leftBumper()
