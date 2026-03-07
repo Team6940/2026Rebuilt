@@ -7,8 +7,17 @@ public interface ShooterIO {
   public class ShooterIOInputs {
     public boolean motorConnected;
     public double motorVoltageVolts;
-    public double motorCurrentAmps;
+    public double motorSupplyCurrentAmps;
+    public double motorStatorCurrentAmps;
+    public double motorTorqueCurrentAmps;
     public double shooterVelocityRPS;
+
+    public boolean followerConnected;
+    public double followerVoltageVolts;
+    public double followerSupplyCurrentAmps;
+    public double followerStatorCurrentAmps;
+    public double followerTorqueCurrentAmps;
+    public double followerVelocityRPS;
   }
 
   public default void setVoltage(double voltage) {}

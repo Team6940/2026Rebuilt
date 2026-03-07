@@ -156,13 +156,13 @@ public final class Constants {
       shooterRpsZero.put(1.61, 41.1);
       shooterRpsZero.put(1.98, 45.2);
       shooterRpsZero.put(2.47, 47.7);
-      shooterRpsZero.put(2.90, 50.8);
-      shooterRpsZero.put(3.07, 51.27);
-      shooterRpsZero.put(3.35, 51.90);
-      shooterRpsZero.put(3.53, 54.9);
-      shooterRpsZero.put(3.88, 57.8);
-      shooterRpsZero.put(4.41, 64.9);
-      shooterRpsZero.put(5.20, 70.99);
+      shooterRpsZero.put(2.90, 49.4);
+      shooterRpsZero.put(3.07, 50.8);
+      shooterRpsZero.put(3.35, 51.4);
+      shooterRpsZero.put(3.53, 53.9);
+      shooterRpsZero.put(3.88, 56.8);
+      shooterRpsZero.put(4.41, 60.2);
+      shooterRpsZero.put(5.20, 67.0);
 
       // Moving away from target (+1 m/s): needs more spin (+1.5~3 RPS), flatter angle (-0.5~-1 deg)
       InterpolatingDoubleTreeMap shooterRpsPos1 = new InterpolatingDoubleTreeMap();
@@ -234,10 +234,16 @@ public final class Constants {
       RadialVelocityToDistanceToHoodPositionDegs.put(1.0, hoodPos1);
 
       // Distance (meters) -> Flight time (seconds)
-      DistanceToFlightTimeSecs.put(1.57,0.88);
-      DistanceToFlightTimeSecs.put(2.38, 1.11);
-      DistanceToFlightTimeSecs.put(2.83, 1.62);
-      DistanceToFlightTimeSecs.put(3.81, 1.34);
+      DistanceToFlightTimeSecs.put(0.96, 1.13);
+      DistanceToFlightTimeSecs.put(0.98, 1.79);
+      DistanceToFlightTimeSecs.put(1.71, 1.20);
+      DistanceToFlightTimeSecs.put(2.20, 1.13);
+      DistanceToFlightTimeSecs.put(2.65, 1.25);
+      DistanceToFlightTimeSecs.put(3.13, 1.36);
+      DistanceToFlightTimeSecs.put(3.88, 1.16);
+      DistanceToFlightTimeSecs.put(4.34, 1.19);
+      DistanceToFlightTimeSecs.put(4.96, 1.38);
+      DistanceToFlightTimeSecs.put(5.20, 1.59);
     }
   }
 
@@ -572,7 +578,7 @@ public final class Constants {
 
     // Manual control tuning
     public static final double HoodManualSensitivity = 2.0;
-    public static final double HoodHybridRangeDegs = 2.0;
+    public static final double HoodHybridRangeDegs = 3.0;
 
     // Passing mode constants (static values for tower passing)
     public static final double PassHoodDegs = 30.0;
@@ -617,12 +623,12 @@ public final class Constants {
 
     // Manual control tuning
     public static final double TurretManualSensitivity = 5.0;
-    public static final double TurretHybridRangeDegs = 15.0;
+    public static final double TurretHybridRangeDegs = 10.0;
 
     /**
-     * Turret pivot offset from the chassis center, in robot frame (+X = forward, +Y = left).
-     * The turret is mounted behind the chassis center, hence negative X.
-     * Tune the X value to the actual measured distance (meters).
+     * Turret pivot offset from the chassis center, in robot frame (+X = forward, +Y = left). The
+     * turret is mounted behind the chassis center, hence negative X. Tune the X value to the actual
+     * measured distance (meters).
      */
     public static final Translation2d TURRET_OFFSET = new Translation2d(-0.05, 0.0);
   }
@@ -679,6 +685,7 @@ public final class Constants {
 
     // Current limits
     public static final double ShooterSupplyCurrentLimit = 80.0;
+    public static final double ShooterStatorCurrentLimit = 240.;
 
     // Manual shooter presets (ABXY)
     public static final double ManualRpsA = 20.;
@@ -720,7 +727,7 @@ public final class Constants {
     public static final double FeedVelocityToleranceRPS = 0.5;
 
     // Default RPS values
-    public static final double DefaultTurntableRPS = 2.3;
+    public static final double DefaultTurntableRPS = 1.9;
     public static final double DefaultFeedRPS = 100.0;
   }
 

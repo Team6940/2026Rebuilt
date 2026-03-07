@@ -67,7 +67,7 @@ public class RobotContainer {
   private final HoodSubsystem hood = HoodSubsystem.getInstance();
   private final IntakeSubsystem intake = IntakeSubsystem.getInstance();
   private final ShooterSubsystem shooter = ShooterSubsystem.getInstance();
-  private final StretcherSubsystem stretcher = StretcherSubsystem.getInstance();
+  //private final StretcherSubsystem stretcher = StretcherSubsystem.getInstance();
   private final TurretSubsystem turret = TurretSubsystem.getInstance();
   private final ClimberSubsystem climber = ClimberSubsystem.getInstance();
   private final SuperStructure superStructure = SuperStructure.getInstance();
@@ -217,6 +217,8 @@ public class RobotContainer {
                     () -> -driverController.getLeftX(),
                     () -> -driverController.getRightX(),
                     2.)));
+    // intake.setDefaultCommand(
+    //     Commands.defer(() -> superStructure.getIntakeCommand(), Set.of(intake, stretcher)));
 
     // driverController
     //     .a()
@@ -266,7 +268,7 @@ public class RobotContainer {
 
     operatorController
         .leftBumper()
-        .whileTrue(
+        .toggleOnTrue(
             Commands.defer(
                 () -> superStructure.getShootCommand(Button.kRightTrigger, Button.kRightBumper),
                 Set.of(turret, shooter, hood, feeder)));

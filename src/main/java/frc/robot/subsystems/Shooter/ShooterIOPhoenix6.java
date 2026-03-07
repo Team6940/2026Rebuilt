@@ -13,7 +13,8 @@ import frc.robot.Constants.ShooterConstants;
 public class ShooterIOPhoenix6 implements ShooterIO {
 
   private final TalonFX flywheel = new TalonFX(MotorIDs.ShooterMotorID, new CANBus("canivore"));
-  private final TalonFX follower = new TalonFX(MotorIDs.ShooterFollowerMotorID, new CANBus("canivore"));
+  private final TalonFX follower =
+      new TalonFX(MotorIDs.ShooterFollowerMotorID, new CANBus("canivore"));
   private final VelocityTorqueCurrentFOC velocityRequest = new VelocityTorqueCurrentFOC(0.0);
   private final Follower followerRequest =
       new Follower(MotorIDs.ShooterMotorID, ShooterConstants.FollowerAlignment);
@@ -30,6 +31,8 @@ public class ShooterIOPhoenix6 implements ShooterIO {
 
     config.CurrentLimits.SupplyCurrentLimitEnable = true;
     config.CurrentLimits.SupplyCurrentLimit = ShooterConstants.ShooterSupplyCurrentLimit;
+    config.CurrentLimits.StatorCurrentLimitEnable = true;
+    config.CurrentLimits.StatorCurrentLimit = ShooterConstants.ShooterStatorCurrentLimit;
 
     config.MotorOutput.Inverted = ShooterConstants.Inverted;
 
@@ -71,7 +74,21 @@ public class ShooterIOPhoenix6 implements ShooterIO {
             .isOK();
 
     inputs.motorVoltageVolts = flywheel.getMotorVoltage().getValueAsDouble();
-    inputs.motorCurrentAmps = flywheel.getSupplyCurrent().getValueAsDouble();
+    inputs.motorSupplyCurrentAmps = flywheel.getSupplyCurrent().getValueAsDouble();
+    inputs.motorStatorCurrentAmps = flywheel.getStatorCurrent().getValueAsDouble();
+    inputs.motorTorqueCurrentAmps = flywheel.getTorqueCurrent().getValueAsDouble();
+
     inputs.shooterVelocityRPS = flywheel.getVelocity().getValueAsDouble();
+
+    inputs.followerConnected =
+        BaseStatusSignal.refreshAll(
+                follower.getMotorVoltage(), follower.getSupplyCurrent(), follower.getVelocity())
+            .isOK();
+
+    inputs.followerVoltageVolts = follower.getMotorVoltage().getValueAsDouble();
+    inputs.followerSupplyCurrentAmps = follower.getSupplyCurrent().getValueAsDouble();
+    inputs.followerStatorCurrentAmps = follower.getStatorCurrent().getValueAsDouble();
+    inputs.followerTorqueCurrentAmps = follower.getTorqueCurrent().getValueAsDouble();
+    inputs.followerVelocityRPS = follower.getVelocity().getValueAsDouble();
   }
 }
