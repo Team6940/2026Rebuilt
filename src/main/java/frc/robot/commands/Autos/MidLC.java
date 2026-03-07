@@ -6,42 +6,42 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import frc.robot.commands.ClimbExtendCommand;
+import frc.robot.commands.ClimbRetractCommand;
 import frc.robot.commands.HybridShootCommand;
-import frc.robot.commands.IntakeCommand;
 import frc.robot.subsystems.Drive.Drive;
+import frc.robot.subsystems.Turret.TurretSubsystem;
 import frc.robot.subsystems.ImprovedCommandXboxController.Button;
 import frc.robot.subsystems.SuperStructure.ShootMode;
+import frc.robot.subsystems.Climber.ClimberSubsystem;
 
-public class Mid_Depot extends SequentialCommandGroup {
+public class MidLC extends SequentialCommandGroup {
   Drive drive = Drive.getInstance();
+  ClimberSubsystem climber = ClimberSubsystem.getInstance();
+  TurretSubsystem turret = TurretSubsystem.getInstance();
 
-  public Mid_Depot() {
+  public MidLC() {
     if (DriverStation.getAlliance().isPresent()
         && DriverStation.getAlliance().get() == Alliance.Blue) {
       addCommands(
           new InstantCommand(
               () ->
                   drive.setPose(
-                      drive.generatePPPath("Mid-LeftDepot").getStartingHolonomicPose().get())));
+                      drive.generatePPPath("Mid-LeftC").getStartingHolonomicPose().get())));
     } else {
       addCommands(
           new InstantCommand(
               () ->
                   drive.setPose(
                       drive
-                          .generatePPPath("Mid-LeftDepot")
+                          .generatePPPath("Mid-LeftC")
                           .flipPath()
                           .getStartingHolonomicPose()
                           .get())));
     }
 
-    addCommands(new HybridShootCommand(Button.kAutoButton, ShootMode.SCORE));
-    addCommands(
-        drive
-            .followPPPath("Mid-LeftDepot")
-            .deadlineFor(new WaitCommand(1.).andThen(new IntakeCommand())));
-    addCommands(drive.followPPPath("LeftDepot-LeftC"));
-    addCommands(new HybridShootCommand(Button.kAutoButton, ShootMode.SCORE));
-    addCommands(new ClimbExtendCommand());
+    //addCommands(new HybridShootCommand(Button.kAutoButton, ShootMode.SCORE).withTimeout(3.));
+    addCommands(drive.followPPPath("Mid-LeftC").alongWith(new ClimbExtendCommand()));
+    addCommands(new WaitCommand(1.));
+    addCommands(new ClimbRetractCommand());
   }
 }

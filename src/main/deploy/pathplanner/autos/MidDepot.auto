@@ -7,13 +7,13 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Mid-LeftDepot"
+            "pathName": "Mid-Depot"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "LeftDepot-LeftC"
+            "pathName": "Depot-LeftC"
           }
         }
       ]

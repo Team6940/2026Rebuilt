@@ -152,17 +152,17 @@ public final class Constants {
     static {
       // Radial velocity (m/s) -> Distance (meters) -> Shooter RPS
       InterpolatingDoubleTreeMap shooterRpsZero = new InterpolatingDoubleTreeMap();
-      shooterRpsZero.put(1.04, 36.9);
-      shooterRpsZero.put(1.67, 39.1);
-      shooterRpsZero.put(2.05, 43.2);
-      shooterRpsZero.put(2.53, 45.7);
-      shooterRpsZero.put(2.96, 46.8);
-      shooterRpsZero.put(3.13, 47.27);
-      shooterRpsZero.put(3.41, 47.90);
-      shooterRpsZero.put(3.59, 50.9);
-      shooterRpsZero.put(3.94, 53.8);
-      shooterRpsZero.put(4.47, 60.9);
-      shooterRpsZero.put(5.26, 66.99);
+      shooterRpsZero.put(0.98, 38.9);
+      shooterRpsZero.put(1.61, 41.1);
+      shooterRpsZero.put(1.98, 45.2);
+      shooterRpsZero.put(2.47, 47.7);
+      shooterRpsZero.put(2.90, 50.8);
+      shooterRpsZero.put(3.07, 51.27);
+      shooterRpsZero.put(3.35, 51.90);
+      shooterRpsZero.put(3.53, 54.9);
+      shooterRpsZero.put(3.88, 57.8);
+      shooterRpsZero.put(4.41, 64.9);
+      shooterRpsZero.put(5.20, 70.99);
 
       // Moving away from target (+1 m/s): needs more spin (+1.5~3 RPS), flatter angle (-0.5~-1 deg)
       InterpolatingDoubleTreeMap shooterRpsPos1 = new InterpolatingDoubleTreeMap();
@@ -195,15 +195,15 @@ public final class Constants {
       // Radial velocity (m/s) -> Distance (meters) -> Hood position (degrees)
 
       InterpolatingDoubleTreeMap hoodZero = new InterpolatingDoubleTreeMap();
-      hoodZero.put(1.04, 17.5);
-      hoodZero.put(1.67, 23.5);
-      hoodZero.put(2.05, 28.0);
-      hoodZero.put(2.53, 31.2);
-      hoodZero.put(2.96, 33.22);
-      hoodZero.put(3.41, 35.1);
-      hoodZero.put(3.94, 36.5);
-      hoodZero.put(4.47, 39.38);
-      hoodZero.put(5.26, 41.66);
+      hoodZero.put(0.98, 17.5);
+      hoodZero.put(1.61, 23.5);
+      hoodZero.put(1.99, 28.0);
+      hoodZero.put(2.47, 31.2);
+      hoodZero.put(2.90, 33.22);
+      hoodZero.put(3.35, 35.1);
+      hoodZero.put(3.88, 36.1);
+      hoodZero.put(4.41, 39.38);
+      hoodZero.put(5.20, 41.66);
 
       // Moving away from target (+1 m/s): more loft needed (+0.5~1 deg)
       InterpolatingDoubleTreeMap hoodPos1 = new InterpolatingDoubleTreeMap();
@@ -234,11 +234,10 @@ public final class Constants {
       RadialVelocityToDistanceToHoodPositionDegs.put(1.0, hoodPos1);
 
       // Distance (meters) -> Flight time (seconds)
-      DistanceToFlightTimeSecs.put(1.0,0.7);
-      DistanceToFlightTimeSecs.put(1.5, 0.8);
-      DistanceToFlightTimeSecs.put(2.5, 1.0);
-      DistanceToFlightTimeSecs.put(3.5, 1.15);
-      DistanceToFlightTimeSecs.put(4.5, 1.3);
+      DistanceToFlightTimeSecs.put(1.57,0.88);
+      DistanceToFlightTimeSecs.put(2.38, 1.11);
+      DistanceToFlightTimeSecs.put(2.83, 1.62);
+      DistanceToFlightTimeSecs.put(3.81, 1.34);
     }
   }
 
@@ -545,7 +544,7 @@ public final class Constants {
 
     public static final double IntakeVelocityToleranceRPS = 0.5;
 
-    public static final double IntakingRPS = 45.0;
+    public static final double IntakingRPS = 40.0;
     public static final double ReversingRPS = 0;
   }
 
@@ -568,7 +567,7 @@ public final class Constants {
     // Positions (Degrees)
     public static final double HoodPositionToleranceDegs = 1.0;
     public static final double MinDegs = 17.842;
-    public static final double MaxDegs = 44.5;
+    public static final double MaxDegs = 43.;
     public static final double IdlePosition = 17.842;
 
     // Manual control tuning
@@ -600,11 +599,11 @@ public final class Constants {
         SensorDirectionValue.CounterClockwise_Positive;
 
     // PID Gains
-    public static final double kP = 36.;
+    public static final double kP = 42.;
     public static final double kI = 0.0;
     public static final double kD = 1.2;
     public static final double kV = 0.0;
-    public static final double kS = 0.3;
+    public static final double kS = 0.35;
 
     // Motion Magic Gains
     public static final double MaxVelocity = 40.0; // Rotations per second
@@ -625,7 +624,7 @@ public final class Constants {
      * The turret is mounted behind the chassis center, hence negative X.
      * Tune the X value to the actual measured distance (meters).
      */
-    public static final Translation2d TURRET_OFFSET = new Translation2d(-0.10, 0.0);
+    public static final Translation2d TURRET_OFFSET = new Translation2d(-0.05, 0.0);
   }
 
   public final class StretcherConstants {
@@ -665,7 +664,7 @@ public final class Constants {
     public static final MotorAlignmentValue FollowerAlignment = MotorAlignmentValue.Aligned;
 
     // PID Gains
-    public static final double kP = 14.;
+    public static final double kP = 11.5;
     public static final double kI = 0.0;
     public static final double kD = 0.0;
     public static final double kV = 0.115;

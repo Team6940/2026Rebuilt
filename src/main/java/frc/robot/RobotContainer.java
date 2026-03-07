@@ -23,6 +23,7 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants.FeederConstants;
 import frc.robot.Constants.IntakeConstants;
 import frc.robot.Constants.StretcherConstants;
+import frc.robot.commands.Autos.MidLC;
 import frc.robot.commands.DriveCommands;
 import frc.robot.commands.ManualShootCommand;
 import frc.robot.commands.ManualShootFieldRelativeCommand;
@@ -248,6 +249,8 @@ public class RobotContainer {
     driverController
         .back()
         .onTrue(Commands.defer(() -> superStructure.getClimbRetractCommand(), Set.of(climber)));
+    driverController.a().whileTrue(new InstantCommand(() -> drive.followPPPath("Right-RightNA")));
+    driverController.x().whileTrue(new InstantCommand(() -> drive.followPPPath("RightNA-Right")));
 
     operatorController
         .leftBumper()

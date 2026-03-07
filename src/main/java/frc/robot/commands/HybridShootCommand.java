@@ -176,7 +176,8 @@ public class HybridShootCommand extends Command {
 
     if (shootingEnabled) {
       shooter.setRPS(targetRps);
-      feeder.setRPS(FeederConstants.DefaultTurntableRPS, FeederConstants.DefaultFeedRPS);
+      feeder.setTurntableRPS(FeederConstants.DefaultTurntableRPS);
+      feeder.setFeedRPS(120.);
     } else {
       shooter.stop();
       feeder.stop();
