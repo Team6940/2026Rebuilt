@@ -1,16 +1,12 @@
 package frc.robot.subsystems;
 
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.subsystems.Intake.IntakeSubsystem;
-import frc.robot.subsystems.Stretcher.StretcherSubsystem;
 import frc.robot.commands.HybridShootCommand;
 import frc.robot.commands.IntakeCommand;
 import frc.robot.commands.IntakeExtendCommand;
 import frc.robot.commands.IntakeRetractCommand;
 import frc.robot.commands.ManualShootFieldRelativeCommand;
-import frc.robot.commands.ManualShootCommand;
 import frc.robot.commands.ClimbExtendCommand;
 import frc.robot.commands.ClimbRetractCommand;
 import frc.robot.subsystems.ImprovedCommandXboxController.Button;
@@ -22,8 +18,6 @@ public class SuperStructure extends SubsystemBase {
   public static SuperStructure getInstance() {
     if (instance == null) {
       instance = new SuperStructure();
-      // Initialize default command for intake based on initial mode
-      instance.updateIntakeDefaultCommand();
     }
     return instance;
   }
@@ -51,18 +45,6 @@ public class SuperStructure extends SubsystemBase {
   private ShootMode shootMode = ShootMode.SCORE;
   private IntakeMode intakeMode = IntakeMode.OFF;
   
-  private final IntakeSubsystem intake = IntakeSubsystem.getInstance();
-  
-  private void updateIntakeDefaultCommand() {
-    // Get the new default command based on current intakeMode
-    Command newDefaultCommand = getIntakeCommand();
-    
-    // Set the new default command on IntakeSubsystem
-    // The framework will automatically cancel the old default command if it's running
-    // This command will automatically run when no other command requires the intake subsystem
-    intake.setDefaultCommand(newDefaultCommand);
-  }
-  
   public void setControlMode(ControlMode mode) {
     controlMode = mode;
   }
@@ -72,10 +54,7 @@ public class SuperStructure extends SubsystemBase {
   }
 
   public void setIntakeMode(IntakeMode mode) {
-    if (intakeMode != mode) {
-      intakeMode = mode;
-      updateIntakeDefaultCommand();
-    }
+    intakeMode = mode;
   }
 
   public void toggleControlMode() {
@@ -121,10 +100,7 @@ public class SuperStructure extends SubsystemBase {
   }
 
   public Command getIntakeCommand() {
-    return switch (intakeMode) {
-      case INTAKE -> new IntakeExtendCommand();
-      case OFF -> new IntakeRetractCommand();
-    };
+    return new IntakeCommand();
   }
 
   public Command getClimbExtendCommand() {

@@ -25,6 +25,7 @@ import frc.robot.Constants.IntakeConstants;
 import frc.robot.Constants.StretcherConstants;
 import frc.robot.commands.Autos.MidLC;
 import frc.robot.commands.DriveCommands;
+import frc.robot.commands.IntakeDefaultCommand;
 import frc.robot.commands.ManualShootCommand;
 import frc.robot.commands.ManualShootFieldRelativeCommand;
 import frc.robot.generated.TunerConstants;
@@ -141,6 +142,9 @@ public class RobotContainer {
         "Drive SysId (Dynamic Forward)", drive.sysIdDynamic(SysIdRoutine.Direction.kForward));
     autoChooser.addOption(
         "Drive SysId (Dynamic Reverse)", drive.sysIdDynamic(SysIdRoutine.Direction.kReverse));
+
+    // Set up default commands
+    intake.setDefaultCommand(new IntakeDefaultCommand());
 
     // Configure the button bindings
 
