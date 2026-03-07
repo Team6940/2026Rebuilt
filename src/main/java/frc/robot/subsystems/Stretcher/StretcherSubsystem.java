@@ -84,6 +84,10 @@ public class StretcherSubsystem extends SubsystemBase {
         StretcherConstants.StretcherPositionToleranceRotations);
   }
 
+  public double getPosition() {
+    return inputs.stretcherPositionRotations;
+  }
+
   // ── Periodic ──────────────────────────────────────────────────────────────
 
   @Override
