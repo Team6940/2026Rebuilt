@@ -143,11 +143,6 @@ public class RobotContainer {
     autoChooser.addOption(
         "Drive SysId (Dynamic Reverse)", drive.sysIdDynamic(SysIdRoutine.Direction.kReverse));
 
-    // Set up default commands
-    intake.setDefaultCommand(new IntakeDefaultCommand());
-
-    // Configure the button bindings
-
     // configureButtonBindings();
     testBindings();
   }
@@ -166,6 +161,9 @@ public class RobotContainer {
    * RPS 40 Y: SET RPS 45 LEFT BUMPER: INCREASE RPS BY 5 LEFT TRIGGER: DECREASE RPS BY 5
    */
   private void configureButtonBindings() {
+
+    intake.setDefaultCommand(new IntakeDefaultCommand());
+
     drive.setDefaultCommand(
         drive.run(
             () ->
