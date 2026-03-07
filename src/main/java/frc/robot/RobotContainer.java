@@ -25,7 +25,7 @@ import frc.robot.Constants.IntakeConstants;
 import frc.robot.Constants.StretcherConstants;
 import frc.robot.commands.Autos.MidLC;
 import frc.robot.commands.DriveCommands;
-import frc.robot.commands.IntakeCommand;
+import frc.robot.commands.IntakeDefaultCommand;
 import frc.robot.commands.ManualShootCommand;
 import frc.robot.commands.ManualShootFieldRelativeCommand;
 import frc.robot.generated.TunerConstants;
@@ -143,8 +143,6 @@ public class RobotContainer {
     autoChooser.addOption(
         "Drive SysId (Dynamic Reverse)", drive.sysIdDynamic(SysIdRoutine.Direction.kReverse));
 
-    // Configure the button bindings
-
     // configureButtonBindings();
     testBindings();
   }
@@ -163,6 +161,9 @@ public class RobotContainer {
    * RPS 40 Y: SET RPS 45 LEFT BUMPER: INCREASE RPS BY 5 LEFT TRIGGER: DECREASE RPS BY 5
    */
   private void configureButtonBindings() {
+
+    intake.setDefaultCommand(new IntakeDefaultCommand());
+
     drive.setDefaultCommand(
         drive.run(
             () ->
@@ -181,14 +182,8 @@ public class RobotContainer {
                             new Pose2d(drive.getPose().getTranslation(), new Rotation2d())),
                     drive)
                 .ignoringDisable(true));
-    driverController
-        .rightBumper()
-        .onTrue(
-            superStructure
-                .runOnce(() -> superStructure.toggleIntakeMode())
-                .andThen(
-                    (Commands.defer(
-                        () -> superStructure.getIntakeCommand(), Set.of(intake)))));
+
+    driverController.rightBumper().onTrue(Commands.runOnce(superStructure::toggleIntakeMode));
 
     driverController
         .leftBumper()
@@ -200,6 +195,17 @@ public class RobotContainer {
         .povDown()
         .onTrue(superStructure.runOnce(() -> superStructure.toggleControlMode()));
     driverController.povUp().onTrue(superStructure.runOnce(() -> superStructure.toggleShootMode()));
+
+    driverController
+        .leftTrigger()
+        .whileTrue(
+            drive.run(
+                () ->
+                    drive.driveFieldCentricWithMaxSpeed(
+                        () -> -driverController.getLeftY(),
+                        () -> -driverController.getLeftX(),
+                        () -> -driverController.getRightX(),
+                        2.)));
   }
 
   private void testBindings() {
@@ -236,7 +242,10 @@ public class RobotContainer {
     //     .x()
     //     .onTrue(new InstantCommand(() -> intake.setRPS(IntakeConstants.IntakingRPS)))
     //     .onFalse(new InstantCommand(() -> intake.setRPS(0.)));
-    driverController.rightBumper().toggleOnTrue(new IntakeCommand());
+    driverController
+        .rightBumper()
+        .onTrue(superStructure.runOnce(() -> superStructure.toggleIntakeMode()));
+
     driverController
         .b()
         .onTrue(

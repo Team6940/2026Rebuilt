@@ -4,10 +4,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.commands.HybridShootCommand;
 import frc.robot.commands.IntakeCommand;
-import frc.robot.commands.IntakeExtendCommand;
-import frc.robot.commands.IntakeRetractCommand;
 import frc.robot.commands.ManualShootFieldRelativeCommand;
-import frc.robot.commands.ManualShootCommand;
 import frc.robot.commands.ClimbExtendCommand;
 import frc.robot.commands.ClimbRetractCommand;
 import frc.robot.subsystems.ImprovedCommandXboxController.Button;
@@ -17,7 +14,14 @@ public class SuperStructure extends SubsystemBase {
   private static SuperStructure instance;
 
   public static SuperStructure getInstance() {
-    return instance == null ? (instance = new SuperStructure()) : instance;
+    if (instance == null) {
+      instance = new SuperStructure();
+    }
+    return instance;
+  }
+  
+  private SuperStructure() {
+    // Private constructor for singleton pattern
   }
 
   public enum ControlMode {
@@ -38,7 +42,7 @@ public class SuperStructure extends SubsystemBase {
   private ControlMode controlMode = ControlMode.HYBRID;
   private ShootMode shootMode = ShootMode.SCORE;
   private IntakeMode intakeMode = IntakeMode.OFF;
-
+  
   public void setControlMode(ControlMode mode) {
     controlMode = mode;
   }
@@ -60,7 +64,9 @@ public class SuperStructure extends SubsystemBase {
   }
 
   public void toggleIntakeMode() {
-    intakeMode = intakeMode == IntakeMode.INTAKE ? IntakeMode.OFF : IntakeMode.INTAKE;
+    // flip state
+    IntakeMode newMode = intakeMode == IntakeMode.INTAKE ? IntakeMode.OFF : IntakeMode.INTAKE;
+    setIntakeMode(newMode);
   }
 
   public ControlMode getControlMode() {
@@ -92,10 +98,7 @@ public class SuperStructure extends SubsystemBase {
   }
 
   public Command getIntakeCommand() {
-    return switch (intakeMode) {
-      case INTAKE -> new IntakeExtendCommand();
-      case OFF -> new IntakeRetractCommand();
-    };
+    return new IntakeCommand();
   }
 
   public Command getClimbExtendCommand() {
