@@ -1,12 +1,10 @@
 package frc.robot.subsystems;
 
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.subsystems.Intake.IntakeSubsystem;
 import frc.robot.subsystems.Stretcher.StretcherSubsystem;
-import java.util.Set;
 import frc.robot.commands.HybridShootCommand;
 import frc.robot.commands.IntakeCommand;
 import frc.robot.commands.IntakeExtendCommand;
@@ -22,7 +20,16 @@ public class SuperStructure extends SubsystemBase {
   private static SuperStructure instance;
 
   public static SuperStructure getInstance() {
-    return instance == null ? (instance = new SuperStructure()) : instance;
+    if (instance == null) {
+      instance = new SuperStructure();
+      // Initialize default command for intake based on initial mode
+      instance.updateIntakeDefaultCommand();
+    }
+    return instance;
+  }
+  
+  private SuperStructure() {
+    // Private constructor for singleton pattern
   }
 
   public enum ControlMode {
@@ -44,8 +51,18 @@ public class SuperStructure extends SubsystemBase {
   private ShootMode shootMode = ShootMode.SCORE;
   private IntakeMode intakeMode = IntakeMode.OFF;
   
-  // currently scheduled intake-related command (if any)
-  private Command currentIntakeCommand = null;
+  private final IntakeSubsystem intake = IntakeSubsystem.getInstance();
+  
+  private void updateIntakeDefaultCommand() {
+    // Get the new default command based on current intakeMode
+    Command newDefaultCommand = getIntakeCommand();
+    
+    // Set the new default command on IntakeSubsystem
+    // The framework will automatically cancel the old default command if it's running
+    // This command will automatically run when no other command requires the intake subsystem
+    intake.setDefaultCommand(newDefaultCommand);
+  }
+  
   public void setControlMode(ControlMode mode) {
     controlMode = mode;
   }
@@ -55,7 +72,10 @@ public class SuperStructure extends SubsystemBase {
   }
 
   public void setIntakeMode(IntakeMode mode) {
-    intakeMode = mode;
+    if (intakeMode != mode) {
+      intakeMode = mode;
+      updateIntakeDefaultCommand();
+    }
   }
 
   public void toggleControlMode() {
@@ -68,19 +88,8 @@ public class SuperStructure extends SubsystemBase {
 
   public void toggleIntakeMode() {
     // flip state
-    intakeMode = intakeMode == IntakeMode.INTAKE ? IntakeMode.OFF : IntakeMode.INTAKE;
-
-    // cancel previously scheduled intake command (if any)
-    if (currentIntakeCommand != null) {
-      CommandScheduler.getInstance().cancel(currentIntakeCommand);
-      currentIntakeCommand = null;
-    }
-
-    // create deferred command for the new mode and schedule it
-    Command deferred =
-        Commands.defer(() -> getIntakeCommand(), Set.of(IntakeSubsystem.getInstance(), StretcherSubsystem.getInstance()));
-    currentIntakeCommand = deferred;
-    CommandScheduler.getInstance().schedule(deferred);
+    IntakeMode newMode = intakeMode == IntakeMode.INTAKE ? IntakeMode.OFF : IntakeMode.INTAKE;
+    setIntakeMode(newMode);
   }
 
   public ControlMode getControlMode() {
@@ -130,23 +139,5 @@ public class SuperStructure extends SubsystemBase {
     Logger.recordOutput("SuperStructure/ControlMode", controlMode);
     Logger.recordOutput("SuperStructure/ShootMode", shootMode);
     Logger.recordOutput("SuperStructure/IntakeMode", intakeMode);
-    // Ensure the currentIntakeCommand reference matches scheduler state and
-    // restore a command for the current intakeMode if none is scheduled.
-    if (currentIntakeCommand != null) {
-      if (!CommandScheduler.getInstance().isScheduled(currentIntakeCommand)) {
-        // command finished or was cancelled; clear reference so we can restore
-        currentIntakeCommand = null;
-      }
-    }
-
-    if (currentIntakeCommand == null) {
-      // no command currently tracked; schedule one for the current intake mode
-      Command deferred =
-          Commands.defer(
-              () -> getIntakeCommand(),
-              Set.of(IntakeSubsystem.getInstance(), StretcherSubsystem.getInstance()));
-      currentIntakeCommand = deferred;
-      CommandScheduler.getInstance().schedule(deferred);
-    }
   }
 }
