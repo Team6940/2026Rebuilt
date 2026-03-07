@@ -181,9 +181,7 @@ public class RobotContainer {
                     drive)
                 .ignoringDisable(true));
 
-    driverController
-        .rightBumper()
-        .onTrue(Commands.runOnce(superStructure::toggleIntakeMode));
+    driverController.rightBumper().onTrue(Commands.runOnce(superStructure::toggleIntakeMode));
 
     driverController
         .leftBumper()
@@ -195,6 +193,17 @@ public class RobotContainer {
         .povDown()
         .onTrue(superStructure.runOnce(() -> superStructure.toggleControlMode()));
     driverController.povUp().onTrue(superStructure.runOnce(() -> superStructure.toggleShootMode()));
+
+    driverController
+        .leftTrigger()
+        .whileTrue(
+            drive.run(
+                () ->
+                    drive.driveFieldCentricWithMaxSpeed(
+                        () -> -driverController.getLeftY(),
+                        () -> -driverController.getLeftX(),
+                        () -> -driverController.getRightX(),
+                        2.)));
   }
 
   private void testBindings() {
