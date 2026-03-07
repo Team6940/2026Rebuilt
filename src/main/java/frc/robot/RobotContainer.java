@@ -169,6 +169,7 @@ public class RobotContainer {
                     () -> -driverController.getLeftY(),
                     () -> -driverController.getLeftX(),
                     () -> -driverController.getRightX())));
+
     driverController.x().onTrue(Commands.runOnce(drive::stopWithX, drive));
     driverController
         .b()
@@ -181,8 +182,12 @@ public class RobotContainer {
                 .ignoringDisable(true));
     driverController
         .rightBumper()
-        .toggleOnTrue(
-            Commands.defer(() -> superStructure.getIntakeCommand(), Set.of(stretcher, intake)));
+        .onTrue(
+            superStructure
+                .runOnce(() -> superStructure.toggleIntakeMode())
+                .andThen(
+                    (Commands.defer(
+                        () -> superStructure.getIntakeCommand(), Set.of(stretcher, intake)))));
 
     driverController
         .leftBumper()
@@ -230,8 +235,13 @@ public class RobotContainer {
     //     .onFalse(new InstantCommand(() -> intake.setRPS(0.)));
     driverController
         .rightBumper()
-        .toggleOnTrue(
-            Commands.defer(() -> superStructure.getIntakeCommand(), Set.of(stretcher, intake)));
+        .onTrue(
+            superStructure
+                .runOnce(() -> superStructure.toggleIntakeMode())
+                .andThen(
+                    (Commands.defer(
+                        () -> superStructure.getIntakeCommand(), Set.of(stretcher, intake)))));
+
     driverController
         .b()
         .onTrue(
