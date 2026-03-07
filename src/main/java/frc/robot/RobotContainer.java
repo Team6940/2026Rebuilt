@@ -25,6 +25,7 @@ import frc.robot.Constants.IntakeConstants;
 import frc.robot.Constants.StretcherConstants;
 import frc.robot.commands.Autos.MidLC;
 import frc.robot.commands.DriveCommands;
+import frc.robot.commands.IntakeCommand;
 import frc.robot.commands.ManualShootCommand;
 import frc.robot.commands.ManualShootFieldRelativeCommand;
 import frc.robot.generated.TunerConstants;
@@ -66,7 +67,7 @@ public class RobotContainer {
   private final HoodSubsystem hood = HoodSubsystem.getInstance();
   private final IntakeSubsystem intake = IntakeSubsystem.getInstance();
   private final ShooterSubsystem shooter = ShooterSubsystem.getInstance();
-  private final StretcherSubsystem stretcher = StretcherSubsystem.getInstance();
+  //private final StretcherSubsystem stretcher = StretcherSubsystem.getInstance();
   private final TurretSubsystem turret = TurretSubsystem.getInstance();
   private final ClimberSubsystem climber = ClimberSubsystem.getInstance();
   private final SuperStructure superStructure = SuperStructure.getInstance();
@@ -187,7 +188,7 @@ public class RobotContainer {
                 .runOnce(() -> superStructure.toggleIntakeMode())
                 .andThen(
                     (Commands.defer(
-                        () -> superStructure.getIntakeCommand(), Set.of(stretcher, intake)))));
+                        () -> superStructure.getIntakeCommand(), Set.of(intake)))));
 
     driverController
         .leftBumper()
@@ -210,6 +211,8 @@ public class RobotContainer {
                     () -> -driverController.getLeftX(),
                     () -> -driverController.getRightX(),
                     2.)));
+    // intake.setDefaultCommand(
+    //     Commands.defer(() -> superStructure.getIntakeCommand(), Set.of(intake, stretcher)));
 
     // driverController
     //     .a()
@@ -233,15 +236,7 @@ public class RobotContainer {
     //     .x()
     //     .onTrue(new InstantCommand(() -> intake.setRPS(IntakeConstants.IntakingRPS)))
     //     .onFalse(new InstantCommand(() -> intake.setRPS(0.)));
-    driverController
-        .rightBumper()
-        .onTrue(
-            superStructure
-                .runOnce(() -> superStructure.toggleIntakeMode())
-                .andThen(
-                    (Commands.defer(
-                        () -> superStructure.getIntakeCommand(), Set.of(stretcher, intake)))));
-
+    driverController.rightBumper().toggleOnTrue(new IntakeCommand());
     driverController
         .b()
         .onTrue(
@@ -264,7 +259,7 @@ public class RobotContainer {
 
     operatorController
         .leftBumper()
-        .whileTrue(
+        .toggleOnTrue(
             Commands.defer(
                 () -> superStructure.getShootCommand(Button.kRightTrigger, Button.kRightBumper),
                 Set.of(turret, shooter, hood, feeder)));

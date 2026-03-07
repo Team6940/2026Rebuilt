@@ -7,11 +7,8 @@ import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import frc.robot.commands.ClimbExtendCommand;
 import frc.robot.commands.ClimbRetractCommand;
-import frc.robot.commands.HybridShootCommand;
 import frc.robot.subsystems.Drive.Drive;
 import frc.robot.subsystems.Turret.TurretSubsystem;
-import frc.robot.subsystems.ImprovedCommandXboxController.Button;
-import frc.robot.subsystems.SuperStructure.ShootMode;
 import frc.robot.subsystems.Climber.ClimberSubsystem;
 
 public class MidLC extends SequentialCommandGroup {

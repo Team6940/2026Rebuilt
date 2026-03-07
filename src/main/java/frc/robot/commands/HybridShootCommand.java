@@ -153,12 +153,13 @@ public class HybridShootCommand extends Command {
     hood.setAutoSetpoint(hoodDegs);
     turret.setAutoSetpointFieldRelativeRotation2d(fieldTargetAngle, drive.getPose());
 
-    // hood.setOperatorInputScalar(
-    //     ImprovedCommandXboxController.applyInputCurve(-operatorController.getLeftY()));
-    // turret.setOperatorInputScalar(
-    //     ImprovedCommandXboxController.applyInputCurve(-operatorController.getRightX()));
+    hood.setOperatorInputScalar(
+        ImprovedCommandXboxController.applyInputCurve(-operatorController.getLeftY()));
+    turret.setOperatorInputScalar(
+        ImprovedCommandXboxController.applyInputCurve(-operatorController.getRightX()));
 
     boolean shootingEnabled = operatorController.getButton(shootButton);
+    boolean feedingEnabled = operatorController.getButton(Button.kRightBumper);
     Logger.recordOutput("Cmds/HybridShoot/ShootMode", shootMode.toString());
     Logger.recordOutput("Cmds/HybridShoot/DistanceMeters", distanceMeters);
     Logger.recordOutput("Cmds/HybridShoot/RadialVelocityMPS", radialVelocity);
@@ -176,10 +177,14 @@ public class HybridShootCommand extends Command {
 
     if (shootingEnabled) {
       shooter.setRPS(targetRps);
+    } else {
+      shooter.stop();
+    }
+
+    if (feedingEnabled) {
       feeder.setTurntableRPS(FeederConstants.DefaultTurntableRPS);
       feeder.setFeedRPS(120.);
     } else {
-      shooter.stop();
       feeder.stop();
     }
   }
