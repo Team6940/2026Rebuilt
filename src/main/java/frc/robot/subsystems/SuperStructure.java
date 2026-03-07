@@ -1,7 +1,12 @@
 package frc.robot.subsystems;
 
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.subsystems.Intake.IntakeSubsystem;
+import frc.robot.subsystems.Stretcher.StretcherSubsystem;
+import java.util.Set;
 import frc.robot.commands.HybridShootCommand;
 import frc.robot.commands.IntakeCommand;
 import frc.robot.commands.IntakeExtendCommand;
@@ -38,7 +43,9 @@ public class SuperStructure extends SubsystemBase {
   private ControlMode controlMode = ControlMode.HYBRID;
   private ShootMode shootMode = ShootMode.SCORE;
   private IntakeMode intakeMode = IntakeMode.OFF;
-
+  
+  // currently scheduled intake-related command (if any)
+  private Command currentIntakeCommand = null;
   public void setControlMode(ControlMode mode) {
     controlMode = mode;
   }
@@ -60,7 +67,20 @@ public class SuperStructure extends SubsystemBase {
   }
 
   public void toggleIntakeMode() {
+    // flip state
     intakeMode = intakeMode == IntakeMode.INTAKE ? IntakeMode.OFF : IntakeMode.INTAKE;
+
+    // cancel previously scheduled intake command (if any)
+    if (currentIntakeCommand != null) {
+      CommandScheduler.getInstance().cancel(currentIntakeCommand);
+      currentIntakeCommand = null;
+    }
+
+    // create deferred command for the new mode and schedule it
+    Command deferred =
+        Commands.defer(() -> getIntakeCommand(), Set.of(IntakeSubsystem.getInstance(), StretcherSubsystem.getInstance()));
+    currentIntakeCommand = deferred;
+    CommandScheduler.getInstance().schedule(deferred);
   }
 
   public ControlMode getControlMode() {
@@ -110,5 +130,23 @@ public class SuperStructure extends SubsystemBase {
     Logger.recordOutput("SuperStructure/ControlMode", controlMode);
     Logger.recordOutput("SuperStructure/ShootMode", shootMode);
     Logger.recordOutput("SuperStructure/IntakeMode", intakeMode);
+    // Ensure the currentIntakeCommand reference matches scheduler state and
+    // restore a command for the current intakeMode if none is scheduled.
+    if (currentIntakeCommand != null) {
+      if (!CommandScheduler.getInstance().isScheduled(currentIntakeCommand)) {
+        // command finished or was cancelled; clear reference so we can restore
+        currentIntakeCommand = null;
+      }
+    }
+
+    if (currentIntakeCommand == null) {
+      // no command currently tracked; schedule one for the current intake mode
+      Command deferred =
+          Commands.defer(
+              () -> getIntakeCommand(),
+              Set.of(IntakeSubsystem.getInstance(), StretcherSubsystem.getInstance()));
+      currentIntakeCommand = deferred;
+      CommandScheduler.getInstance().schedule(deferred);
+    }
   }
 }
