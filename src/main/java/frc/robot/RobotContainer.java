@@ -169,11 +169,6 @@ public class RobotContainer {
                     () -> -driverController.getLeftX(),
                     () -> -driverController.getRightX())));
 
-    intake.setDefaultCommand(
-        Commands.defer(
-        () -> superStructure.getIntakeCommand(), Set.of(stretcher, intake))
-    );
-
     driverController.x().onTrue(Commands.runOnce(drive::stopWithX, drive));
     driverController
         .b()
@@ -187,7 +182,11 @@ public class RobotContainer {
     driverController
         .rightBumper()
         .onTrue(
-            superStructure.runOnce(() -> superStructure.toggleIntakeMode()));
+            superStructure
+                .runOnce(() -> superStructure.toggleIntakeMode())
+                .andThen(
+                    (Commands.defer(
+                        () -> superStructure.getIntakeCommand(), Set.of(stretcher, intake)))));
 
     driverController
         .leftBumper()
@@ -236,8 +235,12 @@ public class RobotContainer {
     driverController
         .rightBumper()
         .onTrue(
-            superStructure.runOnce(() -> superStructure.toggleIntakeMode()));
-            
+            superStructure
+                .runOnce(() -> superStructure.toggleIntakeMode())
+                .andThen(
+                    (Commands.defer(
+                        () -> superStructure.getIntakeCommand(), Set.of(stretcher, intake)))));
+
     driverController
         .b()
         .onTrue(
@@ -250,16 +253,12 @@ public class RobotContainer {
 
     driverController
         .start()
-        .onTrue(
-            Commands.defer(
-                () -> superStructure.getClimbExtendCommand(), Set.of(climber)));
+        .onTrue(Commands.defer(() -> superStructure.getClimbExtendCommand(), Set.of(climber)));
 
     driverController
         .back()
-        .onTrue(
-            Commands.defer(
-                () -> superStructure.getClimbRetractCommand(), Set.of(climber)));
-    
+        .onTrue(Commands.defer(() -> superStructure.getClimbRetractCommand(), Set.of(climber)));
+
     operatorController
         .leftBumper()
         .whileTrue(
