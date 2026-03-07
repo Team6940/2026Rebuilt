@@ -128,6 +128,7 @@ public final class Constants {
   public final class OperatorConstants {
     /** Joystick deadband applied before scaling operator inputs. */
     public static final double DEADBAND = 0.05;
+
     /**
      * Power exponent for the input curve. Values > 1 give finer control near center and bolder
      * response near full deflection. 2.0 = quadratic (recommended starting point).
@@ -150,111 +151,93 @@ public final class Constants {
 
     static {
       // Radial velocity (m/s) -> Distance (meters) -> Shooter RPS
-      InterpolatingDoubleTreeMap shooterRpsNeg1 = new InterpolatingDoubleTreeMap();
-      shooterRpsNeg1.put(1.5, 32.0);
-      shooterRpsNeg1.put(2.5, 37.0);
-      shooterRpsNeg1.put(3.5, 42.0);
-      shooterRpsNeg1.put(4.5, 47.0);
-
-      InterpolatingDoubleTreeMap shooterRpsNeg2 = new InterpolatingDoubleTreeMap();
-      shooterRpsNeg2.put(1.5, 34.0);
-      shooterRpsNeg2.put(2.5, 39.0);
-      shooterRpsNeg2.put(3.5, 44.0);
-      shooterRpsNeg2.put(4.5, 49.0);
-
-      InterpolatingDoubleTreeMap shooterRpsNeg3 = new InterpolatingDoubleTreeMap();
-      shooterRpsNeg3.put(1.5, 36.0);
-      shooterRpsNeg3.put(2.5, 41.0);
-      shooterRpsNeg3.put(3.5, 46.0);
-      shooterRpsNeg3.put(4.5, 51.0);
-
       InterpolatingDoubleTreeMap shooterRpsZero = new InterpolatingDoubleTreeMap();
-      shooterRpsZero.put(1.5, 30.0);
-      shooterRpsZero.put(2.5, 35.0);
-      shooterRpsZero.put(3.5, 40.0);
-      shooterRpsZero.put(4.5, 45.0);
+      shooterRpsZero.put(0.98, 38.9);
+      shooterRpsZero.put(1.61, 41.1);
+      shooterRpsZero.put(1.98, 45.2);
+      shooterRpsZero.put(2.47, 47.7);
+      shooterRpsZero.put(2.90, 50.8);
+      shooterRpsZero.put(3.07, 51.27);
+      shooterRpsZero.put(3.35, 51.90);
+      shooterRpsZero.put(3.53, 54.9);
+      shooterRpsZero.put(3.88, 57.8);
+      shooterRpsZero.put(4.41, 64.9);
+      shooterRpsZero.put(5.20, 70.99);
 
+      // Moving away from target (+1 m/s): needs more spin (+1.5~3 RPS), flatter angle (-0.5~-1 deg)
       InterpolatingDoubleTreeMap shooterRpsPos1 = new InterpolatingDoubleTreeMap();
-      shooterRpsPos1.put(1.5, 28.0);
-      shooterRpsPos1.put(2.5, 33.0);
-      shooterRpsPos1.put(3.5, 38.0);
-      shooterRpsPos1.put(4.5, 43.0);
+      shooterRpsPos1.put(1.04, 38.0);
+      shooterRpsPos1.put(1.67, 40.2);
+      shooterRpsPos1.put(2.05, 44.5);
+      shooterRpsPos1.put(2.53, 47.2);
+      shooterRpsPos1.put(2.96, 47.7);
+      shooterRpsPos1.put(3.41, 50.0);
+      shooterRpsPos1.put(3.94, 56.2);
+      shooterRpsPos1.put(4.47, 63.4);
+      shooterRpsPos1.put(5.26, 69.8);
 
-      InterpolatingDoubleTreeMap shooterRpsPos2 = new InterpolatingDoubleTreeMap();
-      shooterRpsPos2.put(1.5, 26.0);
-      shooterRpsPos2.put(2.5, 31.0);
-      shooterRpsPos2.put(3.5, 36.0);
-      shooterRpsPos2.put(4.5, 41.0);
+      // Moving toward target (-1 m/s): needs less spin (-1.5~3 RPS), steeper angle (+0.5~1 deg)
+      InterpolatingDoubleTreeMap shooterRpsNeg1 = new InterpolatingDoubleTreeMap();
+      shooterRpsNeg1.put(1.04, 35.0);
+      shooterRpsNeg1.put(1.67, 36.8);
+      shooterRpsNeg1.put(2.05, 41.0);
+      shooterRpsNeg1.put(2.53, 43.4);
+      shooterRpsNeg1.put(2.96, 43.2);
+      shooterRpsNeg1.put(3.41, 45.0);
+      shooterRpsNeg1.put(3.94, 50.8);
+      shooterRpsNeg1.put(4.47, 57.4);
+      shooterRpsNeg1.put(5.26, 62.8);
 
-      InterpolatingDoubleTreeMap shooterRpsPos3 = new InterpolatingDoubleTreeMap();
-      shooterRpsPos3.put(1.5, 24.0);
-      shooterRpsPos3.put(2.5, 29.0);
-      shooterRpsPos3.put(3.5, 34.0);
-      shooterRpsPos3.put(4.5, 39.0);
-
-      RadialVelocityToDistanceToShooterRps.put(-3.0, shooterRpsNeg3);
-      RadialVelocityToDistanceToShooterRps.put(-2.0, shooterRpsNeg2);
       RadialVelocityToDistanceToShooterRps.put(-1.0, shooterRpsNeg1);
       RadialVelocityToDistanceToShooterRps.put(0.0, shooterRpsZero);
       RadialVelocityToDistanceToShooterRps.put(1.0, shooterRpsPos1);
-      RadialVelocityToDistanceToShooterRps.put(2.0, shooterRpsPos2);
-      RadialVelocityToDistanceToShooterRps.put(3.0, shooterRpsPos3);
 
       // Radial velocity (m/s) -> Distance (meters) -> Hood position (degrees)
-      InterpolatingDoubleTreeMap hoodNeg1 = new InterpolatingDoubleTreeMap();
-      hoodNeg1.put(1.5, 12.0);
-      hoodNeg1.put(2.5, 20.0);
-      hoodNeg1.put(3.5, 28.0);
-      hoodNeg1.put(4.5, 36.0);
-
-      InterpolatingDoubleTreeMap hoodNeg2 = new InterpolatingDoubleTreeMap();
-      hoodNeg2.put(1.5, 14.0);
-      hoodNeg2.put(2.5, 22.0);
-      hoodNeg2.put(3.5, 30.0);
-      hoodNeg2.put(4.5, 38.0);
-
-      InterpolatingDoubleTreeMap hoodNeg3 = new InterpolatingDoubleTreeMap();
-      hoodNeg3.put(1.5, 16.0);
-      hoodNeg3.put(2.5, 24.0);
-      hoodNeg3.put(3.5, 32.0);
-      hoodNeg3.put(4.5, 40.0);
 
       InterpolatingDoubleTreeMap hoodZero = new InterpolatingDoubleTreeMap();
-      hoodZero.put(1.5, 10.0);
-      hoodZero.put(2.5, 18.0);
-      hoodZero.put(3.5, 26.0);
-      hoodZero.put(4.5, 34.0);
+      hoodZero.put(0.98, 17.5);
+      hoodZero.put(1.61, 23.5);
+      hoodZero.put(1.99, 28.0);
+      hoodZero.put(2.47, 31.2);
+      hoodZero.put(2.90, 33.22);
+      hoodZero.put(3.35, 35.1);
+      hoodZero.put(3.88, 36.1);
+      hoodZero.put(4.41, 39.38);
+      hoodZero.put(5.20, 41.66);
 
+      // Moving away from target (+1 m/s): more loft needed (+0.5~1 deg)
       InterpolatingDoubleTreeMap hoodPos1 = new InterpolatingDoubleTreeMap();
-      hoodPos1.put(1.5, 9.0);
-      hoodPos1.put(2.5, 17.0);
-      hoodPos1.put(3.5, 25.0);
-      hoodPos1.put(4.5, 33.0);
+      hoodPos1.put(1.04, 18.0);
+      hoodPos1.put(1.67, 24.2);
+      hoodPos1.put(2.05, 28.8);
+      hoodPos1.put(2.53, 32.0);
+      hoodPos1.put(2.96, 34.0);
+      hoodPos1.put(3.41, 36.0);
+      hoodPos1.put(3.94, 37.4);
+      hoodPos1.put(4.47, 40.3);
+      hoodPos1.put(5.26, 42.7);
 
-      InterpolatingDoubleTreeMap hoodPos2 = new InterpolatingDoubleTreeMap();
-      hoodPos2.put(1.5, 8.0);
-      hoodPos2.put(2.5, 16.0);
-      hoodPos2.put(3.5, 24.0);
-      hoodPos2.put(4.5, 32.0);
+      // Moving toward target (-1 m/s): less loft needed (-0.5~-1 deg)
+      InterpolatingDoubleTreeMap hoodNeg1 = new InterpolatingDoubleTreeMap();
+      hoodNeg1.put(1.04, 17.0);
+      hoodNeg1.put(1.67, 22.8);
+      hoodNeg1.put(2.05, 27.2);
+      hoodNeg1.put(2.53, 30.4);
+      hoodNeg1.put(2.96, 32.4);
+      hoodNeg1.put(3.41, 34.2);
+      hoodNeg1.put(3.94, 35.6);
+      hoodNeg1.put(4.47, 38.4);
+      hoodNeg1.put(5.26, 40.6);
 
-      InterpolatingDoubleTreeMap hoodPos3 = new InterpolatingDoubleTreeMap();
-      hoodPos3.put(1.5, 7.0);
-      hoodPos3.put(2.5, 15.0);
-      hoodPos3.put(3.5, 23.0);
-      hoodPos3.put(4.5, 31.0);
-      RadialVelocityToDistanceToHoodPositionDegs.put(-3.0, hoodNeg3);
-      RadialVelocityToDistanceToHoodPositionDegs.put(-2.0, hoodNeg2);
       RadialVelocityToDistanceToHoodPositionDegs.put(-1.0, hoodNeg1);
       RadialVelocityToDistanceToHoodPositionDegs.put(0.0, hoodZero);
       RadialVelocityToDistanceToHoodPositionDegs.put(1.0, hoodPos1);
-      RadialVelocityToDistanceToHoodPositionDegs.put(2.0, hoodPos2);
-      RadialVelocityToDistanceToHoodPositionDegs.put(3.0, hoodPos3);
 
       // Distance (meters) -> Flight time (seconds)
-      DistanceToFlightTimeSecs.put(1.5, 0.45);
-      DistanceToFlightTimeSecs.put(2.5, 0.55);
-      DistanceToFlightTimeSecs.put(3.5, 0.65);
-      DistanceToFlightTimeSecs.put(4.5, 0.75);
+      DistanceToFlightTimeSecs.put(1.57,0.88);
+      DistanceToFlightTimeSecs.put(2.38, 1.11);
+      DistanceToFlightTimeSecs.put(2.83, 1.62);
+      DistanceToFlightTimeSecs.put(3.81, 1.34);
     }
   }
 
@@ -325,8 +308,7 @@ public final class Constants {
       public static final Translation3d innerCenterPoint =
           new Translation3d(
               getTagPoseOrDefault(26).getX() + width / 2.0, fieldWidth / 2.0, innerHeight);
-      public static final Translation2d centerPoint =
-          new Translation2d(getTagPoseOrDefault(26).getX() + width / 2.0, fieldWidth / 2.0);
+      public static final Translation2d centerPoint = new Translation2d(4.621, 4.07);
 
       public static final Translation2d nearLeftCorner =
           new Translation2d(topCenterPoint.getX() - width / 2.0, fieldWidth / 2.0 + width / 2.0);
@@ -340,8 +322,7 @@ public final class Constants {
       // Relevant reference points on the opposite side
       public static final Translation3d oppTopCenterPoint =
           new Translation3d(getTagPoseOrDefault(4).getX() + width / 2.0, fieldWidth / 2.0, height);
-      public static final Translation2d oppCenterPoint =
-          new Translation2d(getTagPoseOrDefault(4).getX() + width / 2.0, fieldWidth / 2.0);
+      public static final Translation2d oppCenterPoint = new Translation2d(11.9, 4.07);
       public static final Translation2d oppNearLeftCorner =
           new Translation2d(oppTopCenterPoint.getX() - width / 2.0, fieldWidth / 2.0 + width / 2.0);
       public static final Translation2d oppNearRightCorner =
@@ -563,7 +544,7 @@ public final class Constants {
 
     public static final double IntakeVelocityToleranceRPS = 0.5;
 
-    public static final double IntakingRPS = 35.0;
+    public static final double IntakingRPS = 40.0;
     public static final double ReversingRPS = 0;
   }
 
@@ -586,12 +567,12 @@ public final class Constants {
     // Positions (Degrees)
     public static final double HoodPositionToleranceDegs = 1.0;
     public static final double MinDegs = 17.842;
-    public static final double MaxDegs = 44.5;
+    public static final double MaxDegs = 43.;
     public static final double IdlePosition = 17.842;
 
     // Manual control tuning
     public static final double HoodManualSensitivity = 2.0;
-    public static final double HoodHybridRangeDegs = 15.0;
+    public static final double HoodHybridRangeDegs = 2.0;
 
     // Passing mode constants (static values for tower passing)
     public static final double PassHoodDegs = 30.0;
@@ -618,11 +599,11 @@ public final class Constants {
         SensorDirectionValue.CounterClockwise_Positive;
 
     // PID Gains
-    public static final double kP = 36.;
+    public static final double kP = 42.;
     public static final double kI = 0.0;
     public static final double kD = 1.2;
     public static final double kV = 0.0;
-    public static final double kS = 0.3;
+    public static final double kS = 0.35;
 
     // Motion Magic Gains
     public static final double MaxVelocity = 40.0; // Rotations per second
@@ -636,11 +617,19 @@ public final class Constants {
 
     // Manual control tuning
     public static final double TurretManualSensitivity = 5.0;
-    public static final double TurretHybridRangeDegs = 30.0;
+    public static final double TurretHybridRangeDegs = 15.0;
+
+    /**
+     * Turret pivot offset from the chassis center, in robot frame (+X = forward, +Y = left).
+     * The turret is mounted behind the chassis center, hence negative X.
+     * Tune the X value to the actual measured distance (meters).
+     */
+    public static final Translation2d TURRET_OFFSET = new Translation2d(-0.05, 0.0);
   }
 
   public final class StretcherConstants {
-    public static final double StretcherRatio = 27. * 26. / 46.;// Sensor rotations to mechanism rotations
+    public static final double StretcherRatio =
+        27. * 26. / 46.; // Sensor rotations to mechanism rotations
     public static final InvertedValue Inverted = InvertedValue.CounterClockwise_Positive;
     public static final double StretcherSupplyCurrentLimit = 40.0;
 
@@ -662,7 +651,7 @@ public final class Constants {
     public static final double MinRotations = 0.; // CCW Positive
     public static final double MaxRotations = 3.11;
 
-    public static final double ExtendedPosition = 2.8;
+    public static final double ExtendedPosition = 2.65;
     public static final double RetractedPosition = 0.08;
 
     public static final double IdlePosition = 0.0;
@@ -675,7 +664,7 @@ public final class Constants {
     public static final MotorAlignmentValue FollowerAlignment = MotorAlignmentValue.Aligned;
 
     // PID Gains
-    public static final double kP = 14.;
+    public static final double kP = 11.5;
     public static final double kI = 0.0;
     public static final double kD = 0.0;
     public static final double kV = 0.115;

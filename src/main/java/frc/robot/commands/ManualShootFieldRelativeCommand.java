@@ -92,8 +92,9 @@ public class ManualShootFieldRelativeCommand extends Command {
     }
 
     if (operatorController.getButton(shootButton)) {
-      shooter.setRPS(targetRps);
-      feeder.setRPS(FeederConstants.DefaultTurntableRPS, FeederConstants.DefaultFeedRPS);
+      shooter.setDashboardRPS();
+      feeder.setTurntableRPS(FeederConstants.DefaultTurntableRPS);
+      feeder.setFeedRPS(120.);
     } else {
       shooter.stop();
       feeder.stop();
