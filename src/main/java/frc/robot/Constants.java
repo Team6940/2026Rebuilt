@@ -658,8 +658,8 @@ public final class Constants {
     public static final double MaxRotations = 3.11;
 
     public static final double ExtendedPosition = 2.65;
-    public static final double MidPosition = 2.0;
-    public static final double RetractedPosition = 0.08;
+    public static final double MidPosition = 1.75;
+    public static final double RetractedPosition = 0.00;
 
     public static final double IdlePosition = 0.0;
   }
