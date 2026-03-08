@@ -375,7 +375,7 @@ public class Drive extends SubsystemBase {
     ChassisSpeeds speeds = getChassisSpeeds();
     boolean omegaOk = Math.abs(speeds.omegaRadiansPerSecond) <= 4 * Math.PI;
     boolean hasTag = mt2.tagCount > 0;
-    boolean distOk = mt2.avgTagDist < 4;
+    boolean distOk = mt2.avgTagDist < 3.;
     boolean velOk = Math.hypot(speeds.vxMetersPerSecond, speeds.vyMetersPerSecond) < 2;
     boolean accepted = omegaOk && hasTag && distOk && velOk;
 

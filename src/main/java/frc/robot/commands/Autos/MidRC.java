@@ -7,12 +7,9 @@ import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import frc.robot.commands.ClimbExtendCommand;
 import frc.robot.commands.ClimbRetractCommand;
-import frc.robot.commands.HybridShootCommand;
+import frc.robot.subsystems.Climber.ClimberSubsystem;
 import frc.robot.subsystems.Drive.Drive;
 import frc.robot.subsystems.Turret.TurretSubsystem;
-import frc.robot.subsystems.ImprovedCommandXboxController.Button;
-import frc.robot.subsystems.SuperStructure.ShootMode;
-import frc.robot.subsystems.Climber.ClimberSubsystem;
 
 public class MidRC extends SequentialCommandGroup {
   Drive drive = Drive.getInstance();
@@ -39,7 +36,7 @@ public class MidRC extends SequentialCommandGroup {
                           .get())));
     }
 
-    //addCommands(new HybridShootCommand(Button.kAutoButton, ShootMode.SCORE).withTimeout(3.));
+    // addCommands(new HybridShootCommand(Button.kAutoButton, ShootMode.SCORE).withTimeout(3.));
     addCommands(drive.followPPPath("Mid-RightC").alongWith(new ClimbExtendCommand()));
     addCommands(new WaitCommand(1.));
     addCommands(new ClimbRetractCommand());

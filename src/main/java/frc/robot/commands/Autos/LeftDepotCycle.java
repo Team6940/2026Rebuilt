@@ -10,37 +10,39 @@ import frc.robot.subsystems.ImprovedCommandXboxController.Button;
 import frc.robot.subsystems.SuperStructure;
 import frc.robot.subsystems.SuperStructure.ShootMode;
 
-public class MidOutpost extends SequentialCommandGroup {
+public class LeftDepotCycle extends SequentialCommandGroup {
   Drive drive = Drive.getInstance();
   SuperStructure superStructure = SuperStructure.getInstance();
 
-  public MidOutpost() {
+  public LeftDepotCycle() {
     if (DriverStation.getAlliance().isPresent()
         && DriverStation.getAlliance().get() == Alliance.Blue) {
       addCommands(
           new InstantCommand(
               () ->
                   drive.setPose(
-                      drive.generatePPPath("Mid-MidS").getStartingHolonomicPose().get())));
+                      drive.generatePPPath("Left-LeftNA").getStartingHolonomicPose().get())));
     } else {
       addCommands(
           new InstantCommand(
               () ->
                   drive.setPose(
                       drive
-                          .generatePPPath("Mid-MidS")
+                          .generatePPPath("Left-LeftNA")
                           .flipPath()
                           .getStartingHolonomicPose()
                           .get())));
     }
-    addCommands(drive.followPPPath("Mid-MidS"));
-    addCommands(new HybridShootCommand(Button.kAutoButton, ShootMode.SCORE).withTimeout(2.));
+
     addCommands(
         drive
-            .followPPPath("MidS-Outpost")
+            .followPPPath("Left-LeftNA")
             .alongWith(
                 superStructure.runOnce(
                     () -> superStructure.setIntakeMode(SuperStructure.IntakeMode.INTAKE))));
-    addCommands(new HybridShootCommand(Button.kAutoButton, ShootMode.SCORE));
+    addCommands(drive.followPPPath("LeftNA-Left"));
+    addCommands(new HybridShootCommand(Button.kAutoButton, ShootMode.SCORE).withTimeout(4.));
+    addCommands(drive.followPPPath("Left-Depot"));
+    addCommands(new HybridShootCommand(Button.kAutoButton, ShootMode.SCORE).withTimeout(4.));
   }
 }

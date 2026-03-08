@@ -3,6 +3,7 @@ package frc.robot.subsystems.Feeder;
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.CANBus;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.controls.VelocityTorqueCurrentFOC;
 import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
@@ -16,7 +17,7 @@ public class FeederIOPhoenix6 implements FeederIO {
 
   private final VelocityVoltage turntableVelocityRequest =
       new VelocityVoltage(0).withEnableFOC(true);
-  private final VelocityVoltage feedVelocityRequest = new VelocityVoltage(0).withEnableFOC(true);
+  private final VelocityTorqueCurrentFOC feedVelocityRequest = new VelocityTorqueCurrentFOC(0);
 
   public FeederIOPhoenix6() {
     turntableMotorConfig();
@@ -46,8 +47,8 @@ public class FeederIOPhoenix6 implements FeederIO {
     TalonFXConfiguration config = new TalonFXConfiguration();
     config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
     config.Feedback.SensorToMechanismRatio = FeederConstants.FeedRatio;
-    config.Voltage.PeakForwardVoltage = 12.0;
-    config.Voltage.PeakReverseVoltage = -12.0;
+    config.TorqueCurrent.PeakForwardTorqueCurrent = 800.;
+    config.TorqueCurrent.PeakReverseTorqueCurrent = 0.;
     config.Slot0.kP = FeederConstants.FeedkP;
     config.Slot0.kI = FeederConstants.FeedkI;
     config.Slot0.kD = FeederConstants.FeedkD;
@@ -56,6 +57,8 @@ public class FeederIOPhoenix6 implements FeederIO {
 
     config.CurrentLimits.SupplyCurrentLimitEnable = true;
     config.CurrentLimits.SupplyCurrentLimit = FeederConstants.FeedSupplyCurrentLimit;
+    config.CurrentLimits.StatorCurrentLimitEnable = true;
+    config.CurrentLimits.StatorCurrentLimit = FeederConstants.FeedStatorCurrentLimit;
 
     config.MotorOutput.Inverted = FeederConstants.FeedInverted;
     feedMotor.getConfigurator().apply(config);
@@ -108,7 +111,8 @@ public class FeederIOPhoenix6 implements FeederIO {
             .isOK();
 
     inputs.feedMotorVoltageVolts = feedMotor.getMotorVoltage().getValueAsDouble();
-    inputs.feedMotorCurrentAmps = feedMotor.getSupplyCurrent().getValueAsDouble();
+    inputs.feedMotorSupplyCurrentAmps = feedMotor.getSupplyCurrent().getValueAsDouble();
+    inputs.feedMotorStatorCurrentAmps = feedMotor.getStatorCurrent().getValueAsDouble();
     inputs.feedVelocityRPS = feedMotor.getVelocity().getValueAsDouble();
   }
 }
