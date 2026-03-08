@@ -7,6 +7,9 @@ public interface TurretIO {
 
   public default void setPosition(double positionDegrees) {}
 
+  /** Commands the motor directly to an angular velocity (degrees per second). */
+  public default void setVelocity(double degsPerSec) {}
+
   public default void resetPosition(double positionDegrees) {}
 
   public default void zeroTurretPosition() {
@@ -21,6 +24,7 @@ public interface TurretIO {
 
     public double motorVoltageVolts;
     public double motorCurrentAmps;
+    public double motorVelocityDegsPerSec;
 
     public double encoderPositionDegrees;
     public double encoder2PositionDegrees;

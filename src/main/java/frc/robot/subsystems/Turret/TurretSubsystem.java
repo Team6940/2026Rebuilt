@@ -7,6 +7,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.TurretConstants;
 import frc.robot.Robot;
 import frc.robot.util.SetpointLeadCompensator;
+import java.util.function.DoubleSupplier;
 import org.littletonrobotics.junction.Logger;
 
 public class TurretSubsystem extends SubsystemBase {
@@ -18,7 +19,8 @@ public class TurretSubsystem extends SubsystemBase {
 
   public enum TurretMode {
     HYBRID,
-    MANUAL
+    MANUAL,
+    VELOCITY
   }
 
   private final TurretIO io;
@@ -38,6 +40,10 @@ public class TurretSubsystem extends SubsystemBase {
 
   private Rotation2d fieldRelativeRotation2d = new Rotation2d();
   private Pose2d lastRobotPose = new Pose2d();
+
+  private DoubleSupplier robotOmegaRadPerSecSupplier = () -> 0.0;
+  private double velocityCmdDegsPerSec = 0.0;
+  private double omegaFFDegsPerSec = 0.0;
 
   public TurretSubsystem() {
     if (Robot.isReal()) {
@@ -71,6 +77,11 @@ public class TurretSubsystem extends SubsystemBase {
   public void setModeManual() {
     mode = TurretMode.MANUAL;
     manualSetpointDegs = clamp(manualSetpointDegs);
+  }
+
+  public void setModeVelocity(DoubleSupplier omegaRadPerSecSupplier) {
+    mode = TurretMode.VELOCITY;
+    robotOmegaRadPerSecSupplier = omegaRadPerSecSupplier;
   }
 
   public TurretMode getMode() {
@@ -230,6 +241,7 @@ public class TurretSubsystem extends SubsystemBase {
     switch (mode) {
       case HYBRID -> handleHybrid();
       case MANUAL -> handleManual();
+      case VELOCITY -> handleVelocity();
         // case MANUAL -> handleManualFieldRelative();
     }
 
@@ -246,6 +258,9 @@ public class TurretSubsystem extends SubsystemBase {
     Logger.recordOutput("Turret/RobotHeadingDegs", lastRobotPose.getRotation().getDegrees());
     Logger.recordOutput("Turret/OperatorInputScalar", operatorInputScalar);
     Logger.recordOutput("Turret/EncoderCalculatedPositionDegs", encoderCalculatedPositionDegs);
+    Logger.recordOutput("Turret/VelocityCmdDegsPerSec", velocityCmdDegsPerSec);
+    Logger.recordOutput("Turret/OmegaFFDegsPerSec", omegaFFDegsPerSec);
+    Logger.recordOutput("Turret/MotorVelocityDegsPerSec", inputs.motorVelocityDegsPerSec);
   }
 
   private void handleHybrid() {
@@ -260,6 +275,22 @@ public class TurretSubsystem extends SubsystemBase {
     rawSetpointDegs = clamp(manualSetpointDegs);
     targetPositionDegs = leadComp.calculate(rawSetpointDegs);
     io.setPosition(targetPositionDegs);
+  }
+
+  private void handleVelocity() {
+    double angleError = autoSetpointDegs - inputs.turretPositionDegrees;
+    omegaFFDegsPerSec = -Math.toDegrees(robotOmegaRadPerSecSupplier.getAsDouble());
+    velocityCmdDegsPerSec =
+        MathUtil.clamp(
+            TurretConstants.kP_position * angleError + omegaFFDegsPerSec,
+            -TurretConstants.MaxVelocityDegsPerSec,
+            TurretConstants.MaxVelocityDegsPerSec);
+
+    double pos = inputs.turretPositionDegrees;
+    if (pos >= TurretConstants.MaxDegs && velocityCmdDegsPerSec > 0) velocityCmdDegsPerSec = 0;
+    if (pos <= TurretConstants.MinDegs && velocityCmdDegsPerSec < 0) velocityCmdDegsPerSec = 0;
+
+    io.setVelocity(velocityCmdDegsPerSec);
   }
 
   // private void handleManualFieldRelative() {
