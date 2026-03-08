@@ -23,6 +23,8 @@ public class ShooterIOPhoenix6 implements ShooterIO {
     TalonFXConfiguration config = new TalonFXConfiguration();
     config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
     config.Feedback.SensorToMechanismRatio = ShooterConstants.ShooterRatio;
+    config.TorqueCurrent.PeakForwardTorqueCurrent = 800.;
+    config.TorqueCurrent.PeakReverseTorqueCurrent = -800.;
     config.Slot0.kP = ShooterConstants.kP;
     config.Slot0.kI = ShooterConstants.kI;
     config.Slot0.kD = ShooterConstants.kD;

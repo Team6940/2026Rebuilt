@@ -25,6 +25,7 @@ import frc.robot.Constants.IntakeConstants;
 import frc.robot.Constants.StretcherConstants;
 import frc.robot.commands.Autos.MidLC;
 import frc.robot.commands.DriveCommands;
+import frc.robot.commands.IntakeCommand;
 import frc.robot.commands.IntakeDefaultCommand;
 import frc.robot.commands.ManualShootCommand;
 import frc.robot.commands.ManualShootFieldRelativeCommand;
@@ -67,7 +68,7 @@ public class RobotContainer {
   private final HoodSubsystem hood = HoodSubsystem.getInstance();
   private final IntakeSubsystem intake = IntakeSubsystem.getInstance();
   private final ShooterSubsystem shooter = ShooterSubsystem.getInstance();
-  //private final StretcherSubsystem stretcher = StretcherSubsystem.getInstance();
+  // private final StretcherSubsystem stretcher = StretcherSubsystem.getInstance();
   private final TurretSubsystem turret = TurretSubsystem.getInstance();
   private final ClimberSubsystem climber = ClimberSubsystem.getInstance();
   private final SuperStructure superStructure = SuperStructure.getInstance();
@@ -242,9 +243,13 @@ public class RobotContainer {
     //     .x()
     //     .onTrue(new InstantCommand(() -> intake.setRPS(IntakeConstants.IntakingRPS)))
     //     .onFalse(new InstantCommand(() -> intake.setRPS(0.)));
+
     driverController
         .rightBumper()
         .onTrue(superStructure.runOnce(() -> superStructure.toggleIntakeMode()));
+    intake.setDefaultCommand(new IntakeDefaultCommand());
+
+    //driverController.rightBumper().toggleOnTrue(new IntakeCommand());
 
     driverController
         .b()
@@ -263,8 +268,21 @@ public class RobotContainer {
     driverController
         .back()
         .onTrue(Commands.defer(() -> superStructure.getClimbRetractCommand(), Set.of(climber)));
-    driverController.a().whileTrue(new InstantCommand(() -> drive.followPPPath("Right-RightNA")));
-    driverController.x().whileTrue(new InstantCommand(() -> drive.followPPPath("RightNA-Right")));
+
+    // driverController.a().whileTrue(drive.followPPPath("LeftNA-Left"));
+    // driverController.x().whileTrue(drive.followPPPath("Left-Depot"));
+    // driverController
+    //     .a()
+    //     .onTrue(new InstantCommand(() -> feeder.setFeedRPS(60)))
+    //     .onFalse(new InstantCommand(() -> feeder.setFeedRPS(0)));
+    // driverController
+    //     .y()
+    //     .onTrue(new InstantCommand(() -> feeder.setFeedRPS(120)))
+    //     .onFalse(new InstantCommand(() -> feeder.setFeedRPS(0)));
+    // driverController
+    //     .x()
+    //     .onTrue(new InstantCommand(() -> feeder.setFeedRPS(15)))
+    //     .onFalse(new InstantCommand(() -> feeder.setFeedRPS(0)));
 
     operatorController
         .leftBumper()
