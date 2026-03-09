@@ -684,8 +684,8 @@ public final class Constants {
     public static final double kT = 0.1;
 
     // Current limits
-    public static final double ShooterSupplyCurrentLimit = 80.0;
-    public static final double ShooterStatorCurrentLimit = 240.;
+    public static final double ShooterSupplyCurrentLimit = 120.0;
+    public static final double ShooterStatorCurrentLimit = 240.0;
 
     // Manual shooter presets (ABXY)
     public static final double ManualRpsA = 20.;
@@ -715,20 +715,21 @@ public final class Constants {
     // Feed (upward feeding) Constants
     public static final double FeedRatio = 1.0 / 1.0; // Sensor rotations to mechanism rotations
     public static final InvertedValue FeedInverted = InvertedValue.CounterClockwise_Positive;
-    public static final double FeedSupplyCurrentLimit = 40.0;
+    public static final double FeedSupplyCurrentLimit = 60.0;
+    public static final double FeedStatorCurrentLimit = 160.;
 
     // Feed motor PID Gains
-    public static final double FeedkP = 0.15;
+    public static final double FeedkP = 5.5;
     public static final double FeedkI = 0.0;
     public static final double FeedkD = 0.0;
-    public static final double FeedkV = 0.105;
-    public static final double FeedkS = 0.452;
+    public static final double FeedkV = 0.145;
+    public static final double FeedkS = 4.8;
 
     public static final double FeedVelocityToleranceRPS = 0.5;
 
     // Default RPS values
-    public static final double DefaultTurntableRPS = 1.9;
-    public static final double DefaultFeedRPS = 100.0;
+    public static final double DefaultTurntableRPS = 2.3;
+    public static final double DefaultFeedRPS = 120.0;
   }
 
   public final class ClimberConstants {

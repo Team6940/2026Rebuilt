@@ -14,7 +14,8 @@ public interface FeederIO {
     // Feed motor (upward feeding)
     public boolean feedMotorConnected = false;
     public double feedMotorVoltageVolts = 0.0;
-    public double feedMotorCurrentAmps = 0.0;
+    public double feedMotorSupplyCurrentAmps = 0.0;
+    public double feedMotorStatorCurrentAmps = 0.0;
     public double feedVelocityRPS = 0.0;
   }
 

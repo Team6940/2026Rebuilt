@@ -10,37 +10,40 @@ import frc.robot.subsystems.ImprovedCommandXboxController.Button;
 import frc.robot.subsystems.SuperStructure;
 import frc.robot.subsystems.SuperStructure.ShootMode;
 
-public class MidOutpost extends SequentialCommandGroup {
+public class RightOutpostCycle extends SequentialCommandGroup {
   Drive drive = Drive.getInstance();
   SuperStructure superStructure = SuperStructure.getInstance();
 
-  public MidOutpost() {
+  public RightOutpostCycle() {
     if (DriverStation.getAlliance().isPresent()
         && DriverStation.getAlliance().get() == Alliance.Blue) {
       addCommands(
           new InstantCommand(
               () ->
                   drive.setPose(
-                      drive.generatePPPath("Mid-MidS").getStartingHolonomicPose().get())));
+                      drive.generatePPPath("Right-RightNA").getStartingHolonomicPose().get())));
     } else {
       addCommands(
           new InstantCommand(
               () ->
                   drive.setPose(
                       drive
-                          .generatePPPath("Mid-MidS")
+                          .generatePPPath("Right-RightNA")
                           .flipPath()
                           .getStartingHolonomicPose()
                           .get())));
     }
-    addCommands(drive.followPPPath("Mid-MidS"));
-    addCommands(new HybridShootCommand(Button.kAutoButton, ShootMode.SCORE).withTimeout(2.));
+
     addCommands(
         drive
-            .followPPPath("MidS-Outpost")
+            .followPPPath("Right-RightNA")
             .alongWith(
                 superStructure.runOnce(
                     () -> superStructure.setIntakeMode(SuperStructure.IntakeMode.INTAKE))));
-    addCommands(new HybridShootCommand(Button.kAutoButton, ShootMode.SCORE));
+    addCommands(drive.followPPPath("RightNA-Right"));
+    addCommands(
+        drive
+            .followPPPath("Right-Outpost")
+            .alongWith(new HybridShootCommand(Button.kAutoButton, ShootMode.SCORE)));
   }
 }
