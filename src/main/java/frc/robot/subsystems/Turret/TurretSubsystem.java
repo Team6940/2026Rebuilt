@@ -3,10 +3,13 @@ package frc.robot.subsystems.Turret;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.TurretConstants;
 import frc.robot.Robot;
 import frc.robot.util.SetpointLeadCompensator;
+import frc.robot.util.TurretVelocityCalculator;
+import java.util.function.DoubleSupplier;
 import org.littletonrobotics.junction.Logger;
 
 public class TurretSubsystem extends SubsystemBase {
@@ -29,6 +32,7 @@ public class TurretSubsystem extends SubsystemBase {
   private double manualSetpointDegs = TurretConstants.IdlePosition;
   private double targetPositionDegs = TurretConstants.IdlePosition;
   private double rawSetpointDegs = TurretConstants.IdlePosition;
+  private double TargetVelocity=0;
   private double operatorInputScalar = 0.0;
   private double encoderCalculatedPositionDegs = TurretConstants.IdlePosition;
 
@@ -38,6 +42,13 @@ public class TurretSubsystem extends SubsystemBase {
 
   private Rotation2d fieldRelativeRotation2d = new Rotation2d();
   private Pose2d lastRobotPose = new Pose2d();
+
+  // Velocity feedforward calculator: trapezoidal profile + chassis omega compensation
+  private final TurretVelocityCalculator velocityCalc =
+      new TurretVelocityCalculator(
+          TurretConstants.ProfileMaxVelocityDegsPerSec, TurretConstants.ProfileMaxAccelDegsPerSec2);
+  private DoubleSupplier chassisOmegaRadPerSecSupplier = () -> 0.0;
+  private double velocityFFDegsPerSec = 0.0;
 
   public TurretSubsystem() {
     if (Robot.isReal()) {
@@ -63,6 +74,12 @@ public class TurretSubsystem extends SubsystemBase {
     io.setPosition(positionDegrees);
   }
 
+  /** Explicit alias for {@link #setPosition(double, double)} with a descriptive name. */
+  public void setPositionWithVelocity(double positionDegrees, double velocityDegsPerSec) {
+    positionDegrees = clamp(positionDegrees);
+    io.setPositionWithVelocity(positionDegrees, velocityDegsPerSec);
+  }
+
   public void setModeHybrid() {
     mode = TurretMode.HYBRID;
     autoSetpointDegs = clamp(autoSetpointDegs);
@@ -73,6 +90,17 @@ public class TurretSubsystem extends SubsystemBase {
     manualSetpointDegs = clamp(manualSetpointDegs);
   }
 
+  /**
+   * Provides the chassis angular velocity to the turret so it can compensate for robot rotation.
+   * Call this once (e.g. in command initialize) to wire in the supplier; it will be read every
+   * loop.
+   *
+   * @param omegaSupplier supplies chassis omega in radians/second (CCW-positive)
+   */
+  public void setChassisOmegaSupplier(DoubleSupplier omegaSupplier) {
+    chassisOmegaRadPerSecSupplier = omegaSupplier;
+  }
+
   public TurretMode getMode() {
     return mode;
   }
@@ -81,6 +109,9 @@ public class TurretSubsystem extends SubsystemBase {
     autoSetpointDegs = clamp(positionDegrees);
   }
 
+  public void setAutoSetpoint(double positionDegrees,double targetVelocity) {
+    autoSetpointDegs = clamp(positionDegrees);
+  }
   /*
    * Sets the turret to a field-relative angle by calculating the
    * turret-relative angle based on the robot's current pose.
@@ -246,20 +277,37 @@ public class TurretSubsystem extends SubsystemBase {
     Logger.recordOutput("Turret/RobotHeadingDegs", lastRobotPose.getRotation().getDegrees());
     Logger.recordOutput("Turret/OperatorInputScalar", operatorInputScalar);
     Logger.recordOutput("Turret/EncoderCalculatedPositionDegs", encoderCalculatedPositionDegs);
+    Logger.recordOutput("Turret/VelocityFFDegsPerSec", velocityFFDegsPerSec);
+    Logger.recordOutput("Turret/ProfiledPositionDegs", velocityCalc.getProfiledPosition());
+    Logger.recordOutput("Turret/ProfiledVelocityDegsPerSec", velocityCalc.getProfiledVelocity());
+    Logger.recordOutput(
+        "Turret/ChassisOmegaCompDegsPerSec",
+        -Math.toDegrees(chassisOmegaRadPerSecSupplier.getAsDouble()));
   }
+
+  private static final double LOOP_DT = 0.02;
 
   private void handleHybrid() {
     rawSetpointDegs =
         clamp(autoSetpointDegs + operatorInputScalar * TurretConstants.TurretHybridRangeDegs);
-    targetPositionDegs = leadComp.calculate(rawSetpointDegs);
-    io.setPosition(targetPositionDegs);
+    // targetPositionDegs = rawSetpointDegs;
+    // TrapezoidProfile.State targetState=
+    //     velocityCalc.calculate(
+    //         targetPositionDegs, chassisOmegaRadPerSecSupplier.getAsDouble(), LOOP_DT);
+    // targetPositionDegs=targetState.position;
+    // velocityFFDegsPerSec=targetState.velocity;
+    setPositionWithVelocity(rawSetpointDegs, velocityFFDegsPerSec);
   }
 
   private void handleManual() {
     nudgeManualSetpoint(operatorInputScalar);
     rawSetpointDegs = clamp(manualSetpointDegs);
-    targetPositionDegs = leadComp.calculate(rawSetpointDegs);
-    io.setPosition(targetPositionDegs);
+    //  TrapezoidProfile.State targetState=
+    //     velocityCalc.calculate(
+    //         targetPositionDegs, chassisOmegaRadPerSecSupplier.getAsDouble(), LOOP_DT);
+    // targetPositionDegs=targetState.position;
+    // velocityFFDegsPerSec=targetState.velocity;
+    setPositionWithVelocity(rawSetpointDegs, velocityFFDegsPerSec);
   }
 
   // private void handleManualFieldRelative() {

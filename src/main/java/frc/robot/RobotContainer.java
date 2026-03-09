@@ -268,6 +268,8 @@ public class RobotContainer {
     driverController
         .back()
         .onTrue(Commands.defer(() -> superStructure.getClimbRetractCommand(), Set.of(climber)));
+    driverController.a().onTrue(Commands.run(() -> turret.setAutoSetpoint(0), turret));
+    driverController.a().onFalse(Commands.run(() -> turret.setAutoSetpoint(90), turret));
 
     // driverController.a().whileTrue(drive.followPPPath("LeftNA-Left"));
     // driverController.x().whileTrue(drive.followPPPath("Left-Depot"));

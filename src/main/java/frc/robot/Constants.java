@@ -560,15 +560,20 @@ public final class Constants {
         SensorDirectionValue.CounterClockwise_Positive;
 
     // PID Gains
-    public static final double kP = 42.;
+    public static final double kP = 1000.;
     public static final double kI = 0.0;
-    public static final double kD = 1.2;
+    public static final double kD = 50;
     public static final double kV = 0.0;
     public static final double kS = 0.35;
 
     // Motion Magic Gains
     public static final double MaxVelocity = 40.0; // Rotations per second
     public static final double Acceleration = 60.0; // Rotations per second squared
+
+    // RIO-side trapezoidal velocity feedforward profile (turret output, degrees)
+    // These constrain the velocity FF passed to PositionTorqueCurrentFOC.withVelocity()
+    public static final double ProfileMaxVelocityDegsPerSec = 720.0; // ~2 rev/s of turret output
+    public static final double ProfileMaxAccelDegsPerSec2 = 1440.0; // reach max vel in 0.5 s
 
     // Positions (Degrees)
     public static final double TurretPositionToleranceDegs = 2.0;

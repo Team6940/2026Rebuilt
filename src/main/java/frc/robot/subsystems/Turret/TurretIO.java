@@ -7,6 +7,15 @@ public interface TurretIO {
 
   public default void setPosition(double positionDegrees) {}
 
+  /**
+   * Commands the turret to a position with an explicit velocity feedforward.
+   *
+   * @param positionDegrees target turret angle in degrees
+   * @param velocityDegsPerSec feedforward velocity in degrees/second (trapezoidal profile + chassis
+   *     omega compensation)
+   */
+  public default void setPositionWithVelocity(double positionDegrees, double velocityDegsPerSec) {}
+
   public default void resetPosition(double positionDegrees) {}
 
   public default void zeroTurretPosition() {

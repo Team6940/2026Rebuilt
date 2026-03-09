@@ -80,8 +80,9 @@ public class HybridShootCommand extends Command {
 
   @Override
   public void initialize() {
-    hood.setModeHybrid();
+    hood.setModeManual();
     turret.setModeHybrid();
+    turret.setChassisOmegaSupplier(drive::getRobotOmegaRadPerSec);
     hood.setOperatorInputScalar(0.0);
     turret.setOperatorInputScalar(0.0);
   }
@@ -176,7 +177,7 @@ public class HybridShootCommand extends Command {
     Logger.recordOutput("Cmds/HybridShoot/ShootingEnabled", shootingEnabled);
 
     if (shootingEnabled) {
-      shooter.setRPS(targetRps);
+      shooter.setDashboardRPS();
     } else {
       shooter.stop();
     }
