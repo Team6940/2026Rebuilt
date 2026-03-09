@@ -151,6 +151,7 @@ public final class Constants {
 
     static {
       // Radial velocity (m/s) -> Distance (meters) -> Shooter RPS
+
       InterpolatingDoubleTreeMap shooterRpsZero = new InterpolatingDoubleTreeMap();
       shooterRpsZero.put(0.98, 38.9);
       shooterRpsZero.put(1.61, 41.1);
@@ -163,31 +164,8 @@ public final class Constants {
       shooterRpsZero.put(3.88, 56.8);
       shooterRpsZero.put(4.41, 60.2);
       shooterRpsZero.put(5.20, 67.0);
-
-      // Moving away from target (+1 m/s): needs more spin (+1.5~3 RPS), flatter angle (-0.5~-1 deg)
-      InterpolatingDoubleTreeMap shooterRpsPos1 = new InterpolatingDoubleTreeMap();
-      shooterRpsPos1.put(1.04, 38.0);
-      shooterRpsPos1.put(1.67, 40.2);
-      shooterRpsPos1.put(2.05, 44.5);
-      shooterRpsPos1.put(2.53, 47.2);
-      shooterRpsPos1.put(2.96, 47.7);
-      shooterRpsPos1.put(3.41, 50.0);
-      shooterRpsPos1.put(3.94, 56.2);
-      shooterRpsPos1.put(4.47, 63.4);
-      shooterRpsPos1.put(5.26, 69.8);
-
-      // Moving toward target (-1 m/s): needs less spin (-1.5~3 RPS), steeper angle (+0.5~1 deg)
-      InterpolatingDoubleTreeMap shooterRpsNeg1 = new InterpolatingDoubleTreeMap();
-      shooterRpsNeg1.put(1.04, 35.0);
-      shooterRpsNeg1.put(1.67, 36.8);
-      shooterRpsNeg1.put(2.05, 41.0);
-      shooterRpsNeg1.put(2.53, 43.4);
-      shooterRpsNeg1.put(2.96, 43.2);
-      shooterRpsNeg1.put(3.41, 45.0);
-      shooterRpsNeg1.put(3.94, 50.8);
-      shooterRpsNeg1.put(4.47, 57.4);
-      shooterRpsNeg1.put(5.26, 62.8);
-
+      InterpolatingDoubleTreeMap shooterRpsPos1 = shooterRpsZero;
+      InterpolatingDoubleTreeMap shooterRpsNeg1 = shooterRpsZero;
       RadialVelocityToDistanceToShooterRps.put(-1.0, shooterRpsNeg1);
       RadialVelocityToDistanceToShooterRps.put(0.0, shooterRpsZero);
       RadialVelocityToDistanceToShooterRps.put(1.0, shooterRpsPos1);
@@ -204,31 +182,8 @@ public final class Constants {
       hoodZero.put(3.88, 36.1);
       hoodZero.put(4.41, 39.38);
       hoodZero.put(5.20, 41.66);
-
-      // Moving away from target (+1 m/s): more loft needed (+0.5~1 deg)
-      InterpolatingDoubleTreeMap hoodPos1 = new InterpolatingDoubleTreeMap();
-      hoodPos1.put(1.04, 18.0);
-      hoodPos1.put(1.67, 24.2);
-      hoodPos1.put(2.05, 28.8);
-      hoodPos1.put(2.53, 32.0);
-      hoodPos1.put(2.96, 34.0);
-      hoodPos1.put(3.41, 36.0);
-      hoodPos1.put(3.94, 37.4);
-      hoodPos1.put(4.47, 40.3);
-      hoodPos1.put(5.26, 42.7);
-
-      // Moving toward target (-1 m/s): less loft needed (-0.5~-1 deg)
-      InterpolatingDoubleTreeMap hoodNeg1 = new InterpolatingDoubleTreeMap();
-      hoodNeg1.put(1.04, 17.0);
-      hoodNeg1.put(1.67, 22.8);
-      hoodNeg1.put(2.05, 27.2);
-      hoodNeg1.put(2.53, 30.4);
-      hoodNeg1.put(2.96, 32.4);
-      hoodNeg1.put(3.41, 34.2);
-      hoodNeg1.put(3.94, 35.6);
-      hoodNeg1.put(4.47, 38.4);
-      hoodNeg1.put(5.26, 40.6);
-
+      InterpolatingDoubleTreeMap hoodPos1 = hoodZero;
+      InterpolatingDoubleTreeMap hoodNeg1 = hoodZero;
       RadialVelocityToDistanceToHoodPositionDegs.put(-1.0, hoodNeg1);
       RadialVelocityToDistanceToHoodPositionDegs.put(0.0, hoodZero);
       RadialVelocityToDistanceToHoodPositionDegs.put(1.0, hoodPos1);
@@ -550,7 +505,7 @@ public final class Constants {
 
     public static final double IntakeVelocityToleranceRPS = 0.5;
 
-    public static final double IntakingRPS = 40.0;
+    public static final double IntakingRPS = 48.0;
     public static final double ReversingRPS = 0;
   }
 
@@ -715,8 +670,8 @@ public final class Constants {
     // Feed (upward feeding) Constants
     public static final double FeedRatio = 1.0 / 1.0; // Sensor rotations to mechanism rotations
     public static final InvertedValue FeedInverted = InvertedValue.CounterClockwise_Positive;
-    public static final double FeedSupplyCurrentLimit = 60.0;
-    public static final double FeedStatorCurrentLimit = 160.;
+    public static final double FeedSupplyCurrentLimit = 90.0;
+    public static final double FeedStatorCurrentLimit = 180.;
 
     // Feed motor PID Gains
     public static final double FeedkP = 5.5;
@@ -728,8 +683,8 @@ public final class Constants {
     public static final double FeedVelocityToleranceRPS = 0.5;
 
     // Default RPS values
-    public static final double DefaultTurntableRPS = 2.3;
-    public static final double DefaultFeedRPS = 120.0;
+    public static final double DefaultTurntableRPS = 2.8;
+    public static final double DefaultFeedRPS = 90.0;
   }
 
   public final class ClimberConstants {
