@@ -174,6 +174,10 @@ public class TurretSubsystem extends SubsystemBase {
         clamp(manualSetpointDegs + scalar * TurretConstants.TurretManualSensitivity);
   }
 
+  public double getManualSetpointDegs() {
+    return manualSetpointDegs;
+  }
+
   public double getCurrentPositionDegs() {
     return inputs.turretPositionDegrees;
   }
@@ -277,19 +281,54 @@ public class TurretSubsystem extends SubsystemBase {
     io.setPosition(targetPositionDegs);
   }
 
+  private static final double VELOCITY_LOOP_DT = 0.02; // seconds (standard 50 Hz loop)
+  // Deceleration zone: start ramping down velocity this many degrees before the hard limit
+  private static final double LIMIT_DECEL_ZONE_DEGS = 10.0;
+
   private void handleVelocity() {
-    double angleError = autoSetpointDegs - inputs.turretPositionDegrees;
-    omegaFFDegsPerSec = -Math.toDegrees(robotOmegaRadPerSecSupplier.getAsDouble());
-    velocityCmdDegsPerSec =
-        MathUtil.clamp(
-            TurretConstants.kP_position * angleError + omegaFFDegsPerSec,
-            -TurretConstants.MaxVelocityDegsPerSec,
-            TurretConstants.MaxVelocityDegsPerSec);
-
     double pos = inputs.turretPositionDegrees;
-    if (pos >= TurretConstants.MaxDegs && velocityCmdDegsPerSec > 0) velocityCmdDegsPerSec = 0;
-    if (pos <= TurretConstants.MinDegs && velocityCmdDegsPerSec < 0) velocityCmdDegsPerSec = 0;
+    double angleError = autoSetpointDegs - pos;
+    omegaFFDegsPerSec = -Math.toDegrees(robotOmegaRadPerSecSupplier.getAsDouble());
 
+    double rawCmd = TurretConstants.kP_position * angleError + omegaFFDegsPerSec;
+
+    // Magnitude clamp
+    rawCmd =
+        MathUtil.clamp(
+            rawCmd, -TurretConstants.MaxVelocityDegsPerSec, TurretConstants.MaxVelocityDegsPerSec);
+
+    // Soft deceleration zone near limits: scale the command down linearly
+    // as the predicted next-tick position approaches the hard boundary.
+    // This handles both the P term and the omega FF spike simultaneously.
+    double predictedPos = pos + rawCmd * VELOCITY_LOOP_DT;
+
+    if (rawCmd > 0) {
+      // Moving toward MaxDegs
+      double distToMax = TurretConstants.MaxDegs - pos;
+      if (distToMax <= 0) {
+        rawCmd = 0; // already at or past limit
+      } else if (distToMax < LIMIT_DECEL_ZONE_DEGS) {
+        // Ramp: full speed at zone edge, zero at limit
+        double scale = distToMax / LIMIT_DECEL_ZONE_DEGS;
+        rawCmd *= scale;
+        // Re-check predicted position after scaling; hard-zero if still overshooting
+        predictedPos = pos + rawCmd * VELOCITY_LOOP_DT;
+        if (predictedPos > TurretConstants.MaxDegs) rawCmd = 0;
+      }
+    } else if (rawCmd < 0) {
+      // Moving toward MinDegs
+      double distToMin = pos - TurretConstants.MinDegs;
+      if (distToMin <= 0) {
+        rawCmd = 0; // already at or past limit
+      } else if (distToMin < LIMIT_DECEL_ZONE_DEGS) {
+        double scale = distToMin / LIMIT_DECEL_ZONE_DEGS;
+        rawCmd *= scale;
+        predictedPos = pos + rawCmd * VELOCITY_LOOP_DT;
+        if (predictedPos < TurretConstants.MinDegs) rawCmd = 0;
+      }
+    }
+
+    velocityCmdDegsPerSec = rawCmd;
     io.setVelocity(velocityCmdDegsPerSec);
   }
 

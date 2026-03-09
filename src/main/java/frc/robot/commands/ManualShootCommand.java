@@ -6,6 +6,7 @@ import frc.robot.Constants.HoodConstants;
 import frc.robot.Constants.ShooterConstants;
 import frc.robot.Constants.TurretConstants;
 import frc.robot.RobotContainer;
+import frc.robot.subsystems.Drive.Drive;
 import frc.robot.subsystems.Feeder.FeederSubsystem;
 import frc.robot.subsystems.Hood.HoodSubsystem;
 import frc.robot.subsystems.ImprovedCommandXboxController;
@@ -18,6 +19,7 @@ public class ManualShootCommand extends Command {
   private final TurretSubsystem turret = TurretSubsystem.getInstance();
   private final ShooterSubsystem shooter = ShooterSubsystem.getInstance();
   private final FeederSubsystem feeder = FeederSubsystem.getInstance();
+  private final Drive drive = Drive.getInstance();
   private final ImprovedCommandXboxController operatorController =
       RobotContainer.operatorController;
   private double targetRps = ShooterConstants.ManualRpsA;
@@ -33,7 +35,7 @@ public class ManualShootCommand extends Command {
   @Override
   public void initialize() {
     hood.setModeManual();
-    turret.setModeManual();
+    turret.setModeVelocity(drive::getRobotOmegaRadPerSec);
     hood.setOperatorInputScalar(0.0);
     turret.setOperatorInputScalar(0.0);
   }
@@ -42,8 +44,13 @@ public class ManualShootCommand extends Command {
   public void execute() {
     hood.setOperatorInputScalar(
         ImprovedCommandXboxController.applyInputCurve(-operatorController.getLeftY()));
+    // Nudge the manual setpoint with the joystick, then mirror it to autoSetpoint
+    // so handleVelocity() has a valid target while omega FF is active.
     turret.setOperatorInputScalar(
         ImprovedCommandXboxController.applyInputCurve(-operatorController.getRightX()));
+    turret.nudgeManualSetpoint(
+        ImprovedCommandXboxController.applyInputCurve(-operatorController.getRightX()));
+    turret.setAutoSetpoint(turret.getManualSetpointDegs());
     if (operatorController.getButtonPressed(Button.kA)) {
       targetRps = ShooterConstants.ManualRpsA;
     } else if (operatorController.getButtonPressed(Button.kB)) {
@@ -64,6 +71,7 @@ public class ManualShootCommand extends Command {
     if (operatorController.getButton(resetButton)) {
       hood.setManualSetpoint(HoodConstants.IdlePosition);
       turret.setManualSetpoint(TurretConstants.IdlePosition);
+      turret.setAutoSetpoint(TurretConstants.IdlePosition);
       hood.setOperatorInputScalar(0.0);
       turret.setOperatorInputScalar(0.0);
     }

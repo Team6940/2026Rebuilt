@@ -42,7 +42,7 @@ public class ManualShootFieldRelativeCommand extends Command {
   @Override
   public void initialize() {
     hood.setModeManual();
-    turret.setModeManual();
+    turret.setModeVelocity(drive::getRobotOmegaRadPerSec);
     hood.setOperatorInputScalar(0.0);
     turret.setOperatorInputScalar(0.0);
     lastTurretSetpointDegs = turret.getCurrentPositionDegs();
@@ -81,6 +81,8 @@ public class ManualShootFieldRelativeCommand extends Command {
       lastTurretSetpointDegs = turretSetpoint;
     }
     turret.setManualSetpoint(lastTurretSetpointDegs);
+    // Mirror to autoSetpoint so handleVelocity() tracks this position with omega FF active.
+    turret.setAutoSetpoint(lastTurretSetpointDegs);
     if (operatorController.getButtonPressed(Button.kA)) {
       targetRps = ShooterConstants.ManualRpsA;
     } else if (operatorController.getButtonPressed(Button.kB)) {
@@ -102,6 +104,7 @@ public class ManualShootFieldRelativeCommand extends Command {
     if (operatorController.getButton(resetButton)) {
       hood.setManualSetpoint(HoodConstants.IdlePosition); // 0.
       turret.setManualSetpoint(TurretConstants.IdlePosition); // 0.
+      turret.setAutoSetpoint(TurretConstants.IdlePosition);
       hood.setOperatorInputScalar(0.0);
       turret.setOperatorInputScalar(0.0);
       lastTurretSetpointDegs = TurretConstants.IdlePosition;
