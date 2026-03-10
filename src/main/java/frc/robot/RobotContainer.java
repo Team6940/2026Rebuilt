@@ -144,8 +144,8 @@ public class RobotContainer {
     autoChooser.addOption(
         "Drive SysId (Dynamic Reverse)", drive.sysIdDynamic(SysIdRoutine.Direction.kReverse));
 
-    // configureButtonBindings();
-    testBindings();
+    configureButtonBindings();
+    // testBindings();
   }
 
   /**
@@ -184,11 +184,10 @@ public class RobotContainer {
                     drive)
                 .ignoringDisable(true));
 
-    driverController.rightBumper().onTrue(Commands.runOnce(superStructure::toggleIntakeMode));
-
+    driverController.rightBumper().onTrue(Commands.defer(()->superStructure.getIntakeCommand(), Set.of(intake)));
     driverController
         .leftBumper()
-        .whileTrue(
+        .toggleOnTrue(
             Commands.defer(
                 () -> superStructure.getShootCommand(Button.kRightTrigger, Button.kRightBumper),
                 Set.of(feeder, hood, shooter, turret)));

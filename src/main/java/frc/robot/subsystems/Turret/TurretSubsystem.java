@@ -239,7 +239,7 @@ public class TurretSubsystem extends SubsystemBase {
 
   public boolean isAtTargetPosition() {
     return MathUtil.isNear(
-        targetPositionDegs,
+        autoSetpointDegs,
         inputs.turretPositionDegrees,
         TurretConstants.TurretPositionToleranceDegs);
   }
