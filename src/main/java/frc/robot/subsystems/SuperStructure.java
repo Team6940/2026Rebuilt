@@ -88,7 +88,7 @@ public class SuperStructure extends SubsystemBase {
   }
 
   public Command getHybridShootCommand(Button shootButton) {
-    return new HybridShootCommand(shootButton, shootMode);
+    return new HybridShootCommand(shootButton, shootMode,true);
   }
 
   public Command getShootCommand(Button shootButton, Button resetButton) {

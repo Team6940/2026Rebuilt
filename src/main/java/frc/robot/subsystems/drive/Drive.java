@@ -592,6 +592,11 @@ public class Drive extends SubsystemBase {
     return kinematics.toChassisSpeeds(getModuleStates());
   }
 
+  /** Returns the robot's current rotational velocity in radians per second. */
+  public double getRobotOmegaRadPerSec() {
+    return getChassisSpeeds().omegaRadiansPerSecond;
+  }
+
   /** Returns the position of each module in radians. */
   public double[] getWheelRadiusCharacterizationPositions() {
     double[] values = new double[4];

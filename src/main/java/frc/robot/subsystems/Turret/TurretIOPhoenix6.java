@@ -4,7 +4,8 @@ import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.CANBus;
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
-import com.ctre.phoenix6.controls.MotionMagicVoltage;
+import com.ctre.phoenix6.controls.MotionMagicTorqueCurrentFOC;
+import com.ctre.phoenix6.controls.PositionTorqueCurrentFOC;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
@@ -15,10 +16,11 @@ import frc.robot.Constants.TurretConstants;
 
 public class TurretIOPhoenix6 implements TurretIO {
   private static final TalonFX motor = new TalonFX(MotorIDs.TurretMotorID, new CANBus("canivore"));
-  private static final CANcoder encoder = new CANcoder(MotorIDs.TurretEncoderID, new CANBus("canivore"));
+  private static final CANcoder encoder =
+      new CANcoder(MotorIDs.TurretEncoderID, new CANBus("canivore"));
   private static final CANcoder encoder2 =
       new CANcoder(MotorIDs.TurretEncoder2ID, new CANBus("canivore"));
-  private static final MotionMagicVoltage request = new MotionMagicVoltage(0.0).withEnableFOC(true);
+  private static final MotionMagicTorqueCurrentFOC request = new MotionMagicTorqueCurrentFOC(0);
 
   public TurretIOPhoenix6() {
     encoderConfig();
@@ -74,6 +76,13 @@ public class TurretIOPhoenix6 implements TurretIO {
   @Override
   public void setPosition(double positionDegrees) {
     motor.setControl(request.withPosition(Units.degreesToRotations(positionDegrees)));
+  }
+
+  @Override
+  public void setPositionWithVelocity(double positionDegrees, double velocityDegsPerSec) {
+    motor.setControl(
+        request
+            .withPosition(Units.degreesToRotations(positionDegrees)));
   }
 
   @Override

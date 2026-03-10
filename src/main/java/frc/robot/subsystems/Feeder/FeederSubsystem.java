@@ -1,6 +1,8 @@
 package frc.robot.subsystems.Feeder;
 
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.filter.Debouncer;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.FeederConstants;
 import frc.robot.Robot;
@@ -16,7 +18,25 @@ public class FeederSubsystem extends SubsystemBase {
   private final FeederIO io;
   private final FeederIOInputsAutoLogged inputs = new FeederIOInputsAutoLogged();
 
+  private enum TurntableControlMode {
+    VELOCITY,
+    VOLTAGE
+  }
+
+  private enum TurntableJamState {
+    FORWARD,
+    REVERSE
+  }
+
+  private final Debouncer turntableJamDebouncer =
+      new Debouncer(FeederConstants.TurntableJamDetectTimeSecs);
+
+  private TurntableControlMode turntableControlMode = TurntableControlMode.VELOCITY;
+  private TurntableJamState turntableJamState = TurntableJamState.FORWARD;
   private double targetTurntableRPS = 0.0;
+  private double appliedTurntableRPS = 0.0;
+  private double targetTurntableVoltage = 0.0;
+  private double turntableJamReverseEndTimeSecs = 0.0;
   private double targetFeedRPS = 0.0;
 
   public FeederSubsystem() {
@@ -33,8 +53,13 @@ public class FeederSubsystem extends SubsystemBase {
    * @param rps Target velocity in rotations per second
    */
   public void setTurntableRPS(double rps) {
+    turntableControlMode = TurntableControlMode.VELOCITY;
     targetTurntableRPS = rps;
-    io.setTurntableRPS(rps);
+    targetTurntableVoltage = 0.0;
+    if (rps <= 0.0) {
+      clearTurntableJamState();
+    }
+    updateTurntableCommand();
   }
 
   /**
@@ -105,7 +130,11 @@ public class FeederSubsystem extends SubsystemBase {
    * @param voltage Voltage to apply
    */
   public void setTurntableVoltage(double voltage) {
+    turntableControlMode = TurntableControlMode.VOLTAGE;
     targetTurntableRPS = 0.0;
+    targetTurntableVoltage = voltage;
+    appliedTurntableRPS = 0.0;
+    clearTurntableJamState();
     io.setTurntableVoltage(voltage);
   }
 
@@ -133,16 +162,70 @@ public class FeederSubsystem extends SubsystemBase {
 
   private void processLog() {
     io.updateInputs(inputs);
+    processTurntableJamState();
+    updateTurntableCommand();
     Logger.processInputs("Feeder", inputs);
     Logger.recordOutput("Feeder/TargetTurntableRPS", targetTurntableRPS);
+    Logger.recordOutput("Feeder/AppliedTurntableRPS", appliedTurntableRPS);
+    Logger.recordOutput("Feeder/TargetTurntableVoltage", targetTurntableVoltage);
     Logger.recordOutput("Feeder/TargetFeedRPS", targetFeedRPS);
     Logger.recordOutput("Feeder/IsTurntableAtTargetRPS", isTurntableAtTargetRPS());
     Logger.recordOutput("Feeder/IsFeedAtTargetRPS", isFeedAtTargetRPS());
     Logger.recordOutput("Feeder/IsAtTargetRPS", isAtTargetRPS());
+    Logger.recordOutput("Feeder/TurntableControlMode", turntableControlMode.toString());
+    Logger.recordOutput("Feeder/TurntableJamState", turntableJamState.toString());
+    Logger.recordOutput(
+        "Feeder/TurntableJamCurrentHigh",
+        inputs.turntableMotorCurrentAmps >= FeederConstants.TurntableJamCurrentThresholdAmps);
   }
 
   private void processDashboard() {
     // TODO: Implement dashboard code here
+  }
+
+  private void processTurntableJamState() {
+    if (turntableControlMode != TurntableControlMode.VELOCITY || targetTurntableRPS <= 0.0) {
+      turntableJamDebouncer.calculate(false);
+      if (targetTurntableRPS <= 0.0) {
+        clearTurntableJamState();
+      }
+      return;
+    }
+
+    double nowSecs = Timer.getFPGATimestamp();
+    if (turntableJamState == TurntableJamState.REVERSE) {
+      turntableJamDebouncer.calculate(false);
+      if (nowSecs >= turntableJamReverseEndTimeSecs) {
+        turntableJamState = TurntableJamState.FORWARD;
+      }
+      return;
+    }
+
+    boolean jamDetected =
+        turntableJamDebouncer.calculate(
+            inputs.turntableMotorCurrentAmps >= FeederConstants.TurntableJamCurrentThresholdAmps);
+    if (jamDetected) {
+      turntableJamState = TurntableJamState.REVERSE;
+      turntableJamReverseEndTimeSecs = nowSecs + FeederConstants.TurntableJamReverseTimeSecs;
+    }
+  }
+
+  private void updateTurntableCommand() {
+    if (turntableControlMode != TurntableControlMode.VELOCITY) {
+      return;
+    }
+
+    appliedTurntableRPS =
+        turntableJamState == TurntableJamState.REVERSE
+            ? FeederConstants.TurntableJamReverseRPS
+            : targetTurntableRPS;
+    io.setTurntableRPS(appliedTurntableRPS);
+  }
+
+  private void clearTurntableJamState() {
+    turntableJamState = TurntableJamState.FORWARD;
+    turntableJamReverseEndTimeSecs = 0.0;
+    turntableJamDebouncer.calculate(false);
   }
 }
 

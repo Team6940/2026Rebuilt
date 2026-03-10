@@ -144,8 +144,8 @@ public class RobotContainer {
     autoChooser.addOption(
         "Drive SysId (Dynamic Reverse)", drive.sysIdDynamic(SysIdRoutine.Direction.kReverse));
 
-    // configureButtonBindings();
-    testBindings();
+    configureButtonBindings();
+    // testBindings();
   }
 
   /**
@@ -195,7 +195,7 @@ public class RobotContainer {
 
     driverController
         .leftBumper()
-        .whileTrue(
+        .toggleOnTrue(
             Commands.defer(
                 () -> superStructure.getShootCommand(Button.kRightTrigger, Button.kRightBumper),
                 Set.of(feeder, hood, shooter, turret)));
@@ -281,6 +281,8 @@ public class RobotContainer {
     driverController
         .back()
         .onTrue(Commands.defer(() -> superStructure.getClimbRetractCommand(), Set.of(climber)));
+    driverController.a().onTrue(Commands.run(() -> turret.setAutoSetpoint(0), turret));
+    driverController.a().onFalse(Commands.run(() -> turret.setAutoSetpoint(90), turret));
 
     // driverController.a().whileTrue(drive.followPPPath("LeftNA-Left"));
     // driverController.x().whileTrue(drive.followPPPath("Left-Depot"));
