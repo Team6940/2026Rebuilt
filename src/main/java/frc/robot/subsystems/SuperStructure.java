@@ -36,6 +36,7 @@ public class SuperStructure extends SubsystemBase {
 
   public enum IntakeMode {
     INTAKE,
+    SHAKE,
     OFF
   }
 
@@ -65,7 +66,7 @@ public class SuperStructure extends SubsystemBase {
 
   public void toggleIntakeMode() {
     // flip state
-    IntakeMode newMode = intakeMode == IntakeMode.INTAKE ? IntakeMode.OFF : IntakeMode.INTAKE;
+    IntakeMode newMode = intakeMode == IntakeMode.SHAKE ? IntakeMode.OFF : IntakeMode.SHAKE;
     setIntakeMode(newMode);
   }
 

@@ -184,7 +184,15 @@ public class RobotContainer {
                     drive)
                 .ignoringDisable(true));
 
-    driverController.rightBumper().onTrue(Commands.defer(()->superStructure.getIntakeCommand(), Set.of(intake)));
+    // driverController
+    //     .rightBumper()
+    //     .onTrue(superStructure.runOnce(() -> superStructure.setIntakeMode(SuperStructure.IntakeMode.INTAKE)))
+    //     .onFalse(superStructure.runOnce(() -> superStructure.setIntakeMode(SuperStructure.IntakeMode.SHAKE)));
+    
+    // driverController
+    //     .leftBumper()
+    //     .onTrue(superStructure.runOnce(() -> superStructure.setIntakeMode(SuperStructure.IntakeMode.OFF)));
+
     driverController
         .leftBumper()
         .toggleOnTrue(
@@ -217,6 +225,8 @@ public class RobotContainer {
                     () -> -driverController.getLeftX(),
                     () -> -driverController.getRightX(),
                     2.)));
+    intake.setDefaultCommand(new IntakeDefaultCommand());
+
     // intake.setDefaultCommand(
     //     Commands.defer(() -> superStructure.getIntakeCommand(), Set.of(intake, stretcher)));
 
@@ -245,8 +255,12 @@ public class RobotContainer {
 
     driverController
         .rightBumper()
-        .onTrue(superStructure.runOnce(() -> superStructure.toggleIntakeMode()));
-    intake.setDefaultCommand(new IntakeDefaultCommand());
+        .onTrue(superStructure.runOnce(() -> superStructure.setIntakeMode(SuperStructure.IntakeMode.INTAKE)))
+        .onFalse(superStructure.runOnce(() -> superStructure.setIntakeMode(SuperStructure.IntakeMode.SHAKE)));
+    
+    driverController
+        .leftBumper()
+        .onTrue(superStructure.runOnce(() -> superStructure.setIntakeMode(SuperStructure.IntakeMode.OFF)));
 
     //driverController.rightBumper().toggleOnTrue(new IntakeCommand());
 

@@ -34,11 +34,16 @@ public class IntakeDefaultCommand extends Command {
     
     switch (intakeMode) {
       case INTAKE:
+        stretcher.setPosition(Constants.StretcherConstants.ExtendedPosition);
+        intake.setRPS(Constants.IntakeConstants.IntakingRPS);
+        break;
+
+      case SHAKE:
         // Toggle between Extended and Mid every 0.7 seconds
-        if (targetPosition == Constants.StretcherConstants.ExtendedPosition && timer.get() - lastToggleTime >= 1.) {
+        if (targetPosition == Constants.StretcherConstants.ExtendedPosition && timer.get() - lastToggleTime >= 0.7) {
           lastToggleTime = timer.get();
           targetPosition = Constants.StretcherConstants.MidPosition;
-        } else if (targetPosition == Constants.StretcherConstants.MidPosition && timer.get() - lastToggleTime >= 0.5) {
+        } else if (targetPosition == Constants.StretcherConstants.MidPosition && timer.get() - lastToggleTime >= 0.3) {
           lastToggleTime = timer.get();
           targetPosition = Constants.StretcherConstants.ExtendedPosition;
         }
@@ -48,16 +53,8 @@ public class IntakeDefaultCommand extends Command {
         break;
         
       case OFF:
-        // Intake retract logic: command retract and only stop intake after
-        // the stretcher has reached the retracted position.
         stretcher.setPosition(Constants.StretcherConstants.RetractedPosition);
-        // Keep intake running while retracting so cargo is pulled in, then stop
-        // once the stretcher reports being at target.
-        if (!stretcher.isAtTargetPosition()) {
-          intake.setRPS(Constants.IntakeConstants.IntakingRPS);
-        } else {
-          intake.stop();
-        }
+        intake.stop();
         break;
     }
   }
