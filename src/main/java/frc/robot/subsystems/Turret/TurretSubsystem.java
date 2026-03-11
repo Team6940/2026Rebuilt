@@ -3,7 +3,6 @@ package frc.robot.subsystems.Turret;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.TurretConstants;
 import frc.robot.Robot;
@@ -32,7 +31,6 @@ public class TurretSubsystem extends SubsystemBase {
   private double manualSetpointDegs = TurretConstants.IdlePosition;
   private double targetPositionDegs = TurretConstants.IdlePosition;
   private double rawSetpointDegs = TurretConstants.IdlePosition;
-  private double TargetVelocity=0;
   private double operatorInputScalar = 0.0;
   private double encoderCalculatedPositionDegs = TurretConstants.IdlePosition;
 
@@ -109,9 +107,10 @@ public class TurretSubsystem extends SubsystemBase {
     autoSetpointDegs = clamp(positionDegrees);
   }
 
-  public void setAutoSetpoint(double positionDegrees,double targetVelocity) {
+  public void setAutoSetpoint(double positionDegrees, double targetVelocity) {
     autoSetpointDegs = clamp(positionDegrees);
   }
+
   /*
    * Sets the turret to a field-relative angle by calculating the
    * turret-relative angle based on the robot's current pose.
@@ -243,6 +242,7 @@ public class TurretSubsystem extends SubsystemBase {
         inputs.turretPositionDegrees,
         TurretConstants.TurretPositionToleranceDegs);
   }
+
   public boolean isAtTargetPosition(double distance) {
     return MathUtil.isNear(
         autoSetpointDegs,
@@ -291,29 +291,28 @@ public class TurretSubsystem extends SubsystemBase {
         -Math.toDegrees(chassisOmegaRadPerSecSupplier.getAsDouble()));
   }
 
-  private static final double LOOP_DT = 0.02;
-
   private void handleHybrid() {
     rawSetpointDegs =
         clamp(autoSetpointDegs + operatorInputScalar * TurretConstants.TurretHybridRangeDegs);
-    // targetPositionDegs = rawSetpointDegs;
+    targetPositionDegs = rawSetpointDegs;
     // TrapezoidProfile.State targetState=
     //     velocityCalc.calculate(
     //         targetPositionDegs, chassisOmegaRadPerSecSupplier.getAsDouble(), LOOP_DT);
     // targetPositionDegs=targetState.position;
     // velocityFFDegsPerSec=targetState.velocity;
-    setPositionWithVelocity(rawSetpointDegs, velocityFFDegsPerSec);
+    setPosition(targetPositionDegs);
   }
 
   private void handleManual() {
     nudgeManualSetpoint(operatorInputScalar);
     rawSetpointDegs = clamp(manualSetpointDegs);
+    targetPositionDegs = rawSetpointDegs;
     //  TrapezoidProfile.State targetState=
     //     velocityCalc.calculate(
     //         targetPositionDegs, chassisOmegaRadPerSecSupplier.getAsDouble(), LOOP_DT);
     // targetPositionDegs=targetState.position;
     // velocityFFDegsPerSec=targetState.velocity;
-    setPositionWithVelocity(rawSetpointDegs, velocityFFDegsPerSec);
+    setPosition(targetPositionDegs);
   }
 
   // private void handleManualFieldRelative() {

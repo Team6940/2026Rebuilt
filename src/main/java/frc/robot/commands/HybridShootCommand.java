@@ -5,6 +5,8 @@ import edu.wpi.first.math.filter.Debouncer.DebounceType;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants.FeederConstants;
 import frc.robot.Constants.HoodConstants;
@@ -14,7 +16,6 @@ import frc.robot.subsystems.Drive.Drive;
 import frc.robot.subsystems.Feeder.FeederSubsystem;
 import frc.robot.subsystems.Hood.HoodSubsystem;
 import frc.robot.subsystems.ImprovedCommandXboxController;
-import frc.robot.subsystems.SuperStructure;
 import frc.robot.subsystems.ImprovedCommandXboxController.Button;
 import frc.robot.subsystems.Shooter.ShooterSubsystem;
 import frc.robot.subsystems.SuperStructure.ShootMode;
@@ -52,13 +53,13 @@ public class HybridShootCommand extends Command {
   private final FeederSubsystem feeder = FeederSubsystem.getInstance();
   private final ImprovedCommandXboxController operatorController =
       RobotContainer.operatorController;
-  private final Debouncer shooterDebouncer=new Debouncer(0.12,DebounceType.kFalling);
+  private final Debouncer shooterDebouncer = new Debouncer(0.12, DebounceType.kFalling);
   private final Button shootButton;
   private final ShootMode shootMode;
   private final MotionShotMode motionShotMode;
   private final boolean autoTriggerEnabled;
 
-  private static final double LEAD_YAW_COMPENSATION_INDEX = 6.;
+  //private static final double LEAD_YAW_COMPENSATION_INDEX = 6.;
 
   /**
    * Creates a HybridShootCommand using the default motion-shot algorithm ({@link
@@ -171,7 +172,7 @@ public class HybridShootCommand extends Command {
       }
     } else {
       // Pass mode: shoot to tower with static shooter settings
-      distanceMeters = drive.getDistanceToAllianceTower();
+      distanceMeters = 5.; // This is just a 'smart' bypass data, do NOT believe it.
       straightToTarget = drive.getRotationToAllianceTower();
       Translation2d towerSpeeds = drive.getTowerRelativeChassisSpeeds();
       radialVelocity = towerSpeeds.getX();
@@ -179,8 +180,13 @@ public class HybridShootCommand extends Command {
 
       targetRps = ShooterConstants.PassRps;
       hoodDegs = HoodConstants.PassHoodDegs;
-      double leadYawDegs = LEAD_YAW_COMPENSATION_INDEX * tangentialVelocity;
-      fieldTargetAngle = straightToTarget.plus(Rotation2d.fromDegrees(leadYawDegs));
+      //double leadYawDegs = LEAD_YAW_COMPENSATION_INDEX * tangentialVelocity;
+      //fieldTargetAngle = straightToTarget.plus(Rotation2d.fromDegrees(leadYawDegs));
+      fieldTargetAngle =
+          (DriverStation.getAlliance().isPresent()
+                  && DriverStation.getAlliance().get() == Alliance.Blue)
+              ? new Rotation2d(Math.PI)
+              : new Rotation2d(0.);
     }
 
     hood.setAutoSetpoint(hoodDegs);
@@ -201,10 +207,9 @@ public class HybridShootCommand extends Command {
     boolean hoodAtTarget = hood.isAtTargetPosition();
     boolean turretAtTarget = turret.isAtTargetPosition(distanceMeters);
     boolean shooterAtTarget = shooterDebouncer.calculate(shooter.isAtTargetRps());
-    boolean distanceInScope=distanceMeters<=5.23&&distanceMeters>=1;
-    boolean readyToAutoFeed = shooterAtTarget && turretAtTarget && hoodAtTarget&&distanceInScope;
-    boolean feedingEnabled =
-        autoTriggerEnabled ? readyToAutoFeed : operatorController.getButton(Button.kRightBumper);
+    boolean distanceInScope = distanceMeters <= 5.3 && distanceMeters >= 1;
+    boolean readyToAutoFeed = shooterAtTarget && turretAtTarget && hoodAtTarget && distanceInScope;
+    boolean feedingEnabled = readyToAutoFeed || operatorController.getButton(Button.kRightBumper);
 
     Logger.recordOutput("Cmds/HybridShoot/ShootMode", shootMode.toString());
     Logger.recordOutput("Cmds/HybridShoot/DistanceMeters", distanceMeters);

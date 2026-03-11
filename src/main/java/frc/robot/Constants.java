@@ -154,13 +154,13 @@ public final class Constants {
 
       InterpolatingDoubleTreeMap shooterRpsZero = new InterpolatingDoubleTreeMap();
       shooterRpsZero.put(1.32, 38.61);
-      shooterRpsZero.put(1.88,39.24);
-      shooterRpsZero.put(2.6,40.14);
-      shooterRpsZero.put(3.4,43.2);
-      shooterRpsZero.put(4.1,47.5);
-      shooterRpsZero.put(4.99,51.7);
-      shooterRpsZero.put(5.2,52.5);
-      // shooterRpsZero.put(0.98, 38.9);6
+      shooterRpsZero.put(1.88, 39.24);
+      shooterRpsZero.put(2.6, 40.14);
+      shooterRpsZero.put(3.4, 43.2);
+      shooterRpsZero.put(4.1, 48.1);
+      shooterRpsZero.put(4.99, 52.5);
+      shooterRpsZero.put(5.2, 53.5);
+      // shooterRpsZero.put(0.98, 38.9);
       // shooterRpsZero.put(1.61, 41.1);
       // shooterRpsZero.put(1.98, 45.2);
       // shooterRpsZero.put(2.47, 47.7);
@@ -180,13 +180,13 @@ public final class Constants {
       // Radial velocity (m/s) -> Distance (meters) -> Hood position (degrees)
 
       InterpolatingDoubleTreeMap hoodZero = new InterpolatingDoubleTreeMap();
-      hoodZero.put(1.32,18.49);
-      hoodZero.put(1.88,23.26);
-      hoodZero.put(2.6,26.8);
-      hoodZero.put(3.4,32.5);
-      hoodZero.put(4.1,38.);
-      hoodZero.put(4.99,43.7);
-      hoodZero.put(5.2,44.5);
+      hoodZero.put(1.32, 18.49);
+      hoodZero.put(1.88, 23.40);
+      hoodZero.put(2.6, 27.1);
+      hoodZero.put(3.4, 33.2);
+      hoodZero.put(4.1, 38.5);
+      hoodZero.put(4.99, 43.5);
+      hoodZero.put(5.2, 43.5);
       // hoodZero.put(0.98, 17.5);
       // hoodZero.put(1.61, 23.5);
       // hoodZero.put(1.99, 28.0);
@@ -512,7 +512,7 @@ public final class Constants {
 
     public static final double IntakeVelocityToleranceRPS = 0.5;
 
-    public static final double IntakingRPS = 48.0;
+    public static final double IntakingRPS = 45.0;
     public static final double ReversingRPS = 0;
   }
 
@@ -535,7 +535,7 @@ public final class Constants {
     // Positions (Degrees)
     public static final double HoodPositionToleranceDegs = 1.8;
     public static final double MinDegs = 17.842;
-    public static final double MaxDegs = 43.;
+    public static final double MaxDegs = 43.5;
     public static final double IdlePosition = 17.842;
 
     // Manual control tuning
@@ -543,7 +543,7 @@ public final class Constants {
     public static final double HoodHybridRangeDegs = 3.0;
 
     // Passing mode constants (static values for tower passing)
-    public static final double PassHoodDegs = 30.0;
+    public static final double PassHoodDegs = 43.5;
   }
 
   public final class TurretConstants {
@@ -557,12 +557,12 @@ public final class Constants {
     public static final double TurretSupplyCurrentLimit = 40.0;
 
     // Encoder 1
-    public static final double TurretEncoderOffsetDegrees = -0.118164*360.;
+    public static final double TurretEncoderOffsetDegrees = -0.118164 * 360.;
     public static final SensorDirectionValue TurretEncoderDirection =
         SensorDirectionValue.CounterClockwise_Positive;
 
     // Encoder 2
-    public static final double TurretEncoder2OffsetDegrees = -0.017090*360.;
+    public static final double TurretEncoder2OffsetDegrees = -0.017090 * 360.;
     public static final SensorDirectionValue TurretEncoder2Direction =
         SensorDirectionValue.CounterClockwise_Positive;
 
@@ -598,11 +598,13 @@ public final class Constants {
      * measured distance (meters).
      */
     public static final Translation2d TURRET_OFFSET = new Translation2d(-0.05, 0.0);
-    
-    public static final InterpolatingDoubleTreeMap DistanceToTurretTolerance=new InterpolatingDoubleTreeMap();
-    static{
-      DistanceToTurretTolerance.put(3.,15.);
-      DistanceToTurretTolerance.put(5.,7.);
+
+    public static final InterpolatingDoubleTreeMap DistanceToTurretTolerance =
+        new InterpolatingDoubleTreeMap();
+
+    static {
+      DistanceToTurretTolerance.put(3., 15.);
+      DistanceToTurretTolerance.put(5., 7.);
     }
   }
 
@@ -625,13 +627,13 @@ public final class Constants {
     public static final double Acceleration = 48.0; // Rotations per second squared
 
     // Positions (Rotations) — original degree values divided by 360
-    public static final double StretcherPositionToleranceRotations = 3.0 / 360.0;
+    public static final double StretcherPositionToleranceRotations = 30. / 360.0;
 
     public static final double MinRotations = 0.; // CCW Positive
     public static final double MaxRotations = 3.11;
 
     public static final double ExtendedPosition = 2.65;
-    public static final double MidPosition = 1.5;
+    public static final double MidPosition = 2.2;
     public static final double RetractedPosition = 0.00;
 
     public static final double IdlePosition = 0.0;
@@ -661,13 +663,13 @@ public final class Constants {
     public static final double ShooterStatorCurrentLimit = 100.0;
 
     // Manual shooter presets (ABXY)
-    public static final double ManualRpsA = 20.;
+    public static final double ManualRpsA = 30.;
     public static final double ManualRpsB = 40.;
     public static final double ManualRpsX = 55.;
     public static final double ManualRpsY = 70.;
 
     // Passing mode constants (static values for tower passing)
-    public static final double PassRps = 40.0;
+    public static final double PassRps = 70.0;
   }
 
   public final class FeederConstants {
@@ -684,7 +686,7 @@ public final class Constants {
     public static final double TurntablekS = 0.392;
 
     public static final double TurntableVelocityToleranceRPS = 0.5;
-    public static final double TurntableJamCurrentThresholdAmps = 65.0;
+    public static final double TurntableJamCurrentThresholdAmps = 50.0;
     public static final double TurntableJamDetectTimeSecs = 0.3;
     public static final double TurntableJamReverseRPS = -2.0;
     public static final double TurntableJamReverseTimeSecs = 0.25;
@@ -705,8 +707,8 @@ public final class Constants {
     public static final double FeedVelocityToleranceRPS = 0.5;
 
     // Default RPS values
-    public static final double DefaultTurntableRPS = 2.8;
-    public static final double DefaultFeedRPS = 90.0;
+    public static final double DefaultTurntableRPS = 2.4;
+    public static final double DefaultFeedRPS = 85.0;
   }
 
   public final class ClimberConstants {

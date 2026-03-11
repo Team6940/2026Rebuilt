@@ -34,13 +34,13 @@ public class MidOutpost extends SequentialCommandGroup {
                           .get())));
     }
     addCommands(drive.followPPPath("Mid-MidS"));
-    addCommands(new HybridShootCommand(Button.kAutoButton, ShootMode.SCORE).withTimeout(2.));
+    addCommands(new HybridShootCommand(Button.kAutoButton, ShootMode.SCORE, true).withTimeout(2.));
     addCommands(
         drive
             .followPPPath("MidS-Outpost")
             .alongWith(
                 superStructure.runOnce(
-                    () -> superStructure.setIntakeMode(SuperStructure.IntakeMode.INTAKE))));
-    addCommands(new HybridShootCommand(Button.kAutoButton, ShootMode.SCORE));
+                    () -> superStructure.setIntakeMode(SuperStructure.IntakeMode.SHAKE))));
+    addCommands(new HybridShootCommand(Button.kAutoButton, ShootMode.SCORE, true));
   }
 }

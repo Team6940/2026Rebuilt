@@ -1,7 +1,7 @@
 package frc.robot.commands;
 
-import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants;
 import frc.robot.subsystems.Intake.IntakeSubsystem;
 import frc.robot.subsystems.Stretcher.StretcherSubsystem;
@@ -31,7 +31,7 @@ public class IntakeDefaultCommand extends Command {
   @Override
   public void execute() {
     SuperStructure.IntakeMode intakeMode = superStructure.getIntakeMode();
-    
+
     switch (intakeMode) {
       case INTAKE:
         stretcher.setPosition(Constants.StretcherConstants.ExtendedPosition);
@@ -40,10 +40,12 @@ public class IntakeDefaultCommand extends Command {
 
       case SHAKE:
         // Toggle between Extended and Mid every 0.7 seconds
-        if (targetPosition == Constants.StretcherConstants.ExtendedPosition && timer.get() - lastToggleTime >= 0.7) {
+        if (targetPosition == Constants.StretcherConstants.ExtendedPosition
+            && timer.get() - lastToggleTime >= 0.6) {
           lastToggleTime = timer.get();
           targetPosition = Constants.StretcherConstants.MidPosition;
-        } else if (targetPosition == Constants.StretcherConstants.MidPosition && timer.get() - lastToggleTime >= 0.3) {
+        } else if (targetPosition == Constants.StretcherConstants.MidPosition
+            && timer.get() - lastToggleTime >= 0.4) {
           lastToggleTime = timer.get();
           targetPosition = Constants.StretcherConstants.ExtendedPosition;
         }
@@ -51,10 +53,12 @@ public class IntakeDefaultCommand extends Command {
         // keep running intake while intaking
         intake.setRPS(Constants.IntakeConstants.IntakingRPS);
         break;
-        
+
       case OFF:
         stretcher.setPosition(Constants.StretcherConstants.RetractedPosition);
-        intake.stop();
+        if (stretcher.isAtTargetPosition()) {
+          intake.stop();
+        }
         break;
       case STOPOUT:
         stretcher.setPosition(Constants.StretcherConstants.MidPosition);
@@ -75,4 +79,3 @@ public class IntakeDefaultCommand extends Command {
     return false;
   }
 }
-
