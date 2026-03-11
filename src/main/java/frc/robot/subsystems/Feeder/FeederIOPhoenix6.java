@@ -102,12 +102,12 @@ public class FeederIOPhoenix6 implements FeederIO {
             .isOK();
 
     inputs.turntableMotorVoltageVolts = turntableMotor.getMotorVoltage().getValueAsDouble();
-    inputs.turntableMotorCurrentAmps = turntableMotor.getSupplyCurrent().getValueAsDouble();
+    inputs.turntableMotorCurrentAmps = turntableMotor.getStatorCurrent().getValueAsDouble();
     inputs.turntableVelocityRPS = turntableMotor.getVelocity().getValueAsDouble();
 
     inputs.feedMotorConnected =
         BaseStatusSignal.refreshAll(
-                feedMotor.getMotorVoltage(), feedMotor.getSupplyCurrent(), feedMotor.getVelocity())
+                feedMotor.getMotorVoltage(), feedMotor.getStatorCurrent(), feedMotor.getVelocity())
             .isOK();
 
     inputs.feedMotorVoltageVolts = feedMotor.getMotorVoltage().getValueAsDouble();

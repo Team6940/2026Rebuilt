@@ -24,6 +24,8 @@ import frc.robot.Constants.FeederConstants;
 import frc.robot.Constants.IntakeConstants;
 import frc.robot.Constants.StretcherConstants;
 import frc.robot.commands.Autos.MidLC;
+import frc.robot.commands.Autos.MidOutpost;
+import frc.robot.commands.Autos.RightOutpostCycle;
 import frc.robot.commands.DriveCommands;
 import frc.robot.commands.IntakeCommand;
 import frc.robot.commands.IntakeDefaultCommand;
@@ -184,14 +186,16 @@ public class RobotContainer {
                     drive)
                 .ignoringDisable(true));
 
-    // driverController
-    //     .rightBumper()
-    //     .onTrue(superStructure.runOnce(() -> superStructure.setIntakeMode(SuperStructure.IntakeMode.INTAKE)))
-    //     .onFalse(superStructure.runOnce(() -> superStructure.setIntakeMode(SuperStructure.IntakeMode.SHAKE)));
+    driverController
+        .rightBumper()
+        .onTrue(superStructure.runOnce(() -> superStructure.toggleIntakeMode()));
+    driverController
+        .rightTrigger()
+        .onTrue(superStructure.runOnce(() -> superStructure.setIntakeMode(SuperStructure.IntakeMode.OFF)));
     
     // driverController
     //     .leftBumper()
-    //     .onTrue(superStructure.runOnce(() -> superStructure.setIntakeMode(SuperStructure.IntakeMode.OFF)));
+    //     .onTrue(superStructure.runOnce(() -> superStructure.setIntakeMode(SuperStructure.IntakeMode.SHAKE)));
 
     driverController
         .leftBumper()
@@ -214,6 +218,8 @@ public class RobotContainer {
                         () -> -driverController.getLeftX(),
                         () -> -driverController.getRightX(),
                         2.)));
+    driverController.a().whileTrue(new RightOutpostCycle());
+    driverController.x().whileTrue(new MidOutpost());
   }
 
   private void testBindings() {

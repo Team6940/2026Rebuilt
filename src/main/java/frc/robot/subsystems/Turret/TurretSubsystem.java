@@ -243,6 +243,12 @@ public class TurretSubsystem extends SubsystemBase {
         inputs.turretPositionDegrees,
         TurretConstants.TurretPositionToleranceDegs);
   }
+  public boolean isAtTargetPosition(double distance) {
+    return MathUtil.isNear(
+        autoSetpointDegs,
+        inputs.turretPositionDegrees,
+        TurretConstants.DistanceToTurretTolerance.get(distance));
+  }
 
   public void setVoltage(double voltage) {
     io.setVoltage(voltage);

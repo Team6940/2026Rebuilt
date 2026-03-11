@@ -41,9 +41,10 @@ public class RightOutpostCycle extends SequentialCommandGroup {
                 superStructure.runOnce(
                     () -> superStructure.setIntakeMode(SuperStructure.IntakeMode.INTAKE))));
     addCommands(drive.followPPPath("RightNA-Right"));
+    addCommands(new HybridShootCommand(Button.kAutoButton, ShootMode.SCORE, true).withTimeout(3.));
     addCommands(
         drive
             .followPPPath("Right-Outpost")
-            .alongWith(new HybridShootCommand(Button.kAutoButton, ShootMode.SCORE)));
+            .alongWith(new HybridShootCommand(Button.kAutoButton, ShootMode.SCORE, true)));
   }
 }

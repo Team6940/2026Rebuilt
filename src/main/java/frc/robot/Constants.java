@@ -100,7 +100,7 @@ public final class Constants {
   }
 
   public final class DriveConstants {
-    public static final double DEADBAND = 0.05;
+    public static final double DEADBAND = 0.02;
     public static final double ANGLE_KP = 5.0;
     public static final double ANGLE_KD = 0.4;
     public static final double ANGLE_MAX_VELOCITY = 8.0;
@@ -156,9 +156,11 @@ public final class Constants {
       shooterRpsZero.put(1.32, 38.61);
       shooterRpsZero.put(1.88,39.24);
       shooterRpsZero.put(2.6,40.14);
-      shooterRpsZero.put(3.4,43.);
-      shooterRpsZero.put(4.1,47.);
-      // shooterRpsZero.put(0.98, 38.9);
+      shooterRpsZero.put(3.4,43.2);
+      shooterRpsZero.put(4.1,47.5);
+      shooterRpsZero.put(4.99,51.7);
+      shooterRpsZero.put(5.2,52.5);
+      // shooterRpsZero.put(0.98, 38.9);6
       // shooterRpsZero.put(1.61, 41.1);
       // shooterRpsZero.put(1.98, 45.2);
       // shooterRpsZero.put(2.47, 47.7);
@@ -180,9 +182,11 @@ public final class Constants {
       InterpolatingDoubleTreeMap hoodZero = new InterpolatingDoubleTreeMap();
       hoodZero.put(1.32,18.49);
       hoodZero.put(1.88,23.26);
-      hoodZero.put(2.6,26.2);
+      hoodZero.put(2.6,26.8);
       hoodZero.put(3.4,32.5);
       hoodZero.put(4.1,38.);
+      hoodZero.put(4.99,43.7);
+      hoodZero.put(5.2,44.5);
       // hoodZero.put(0.98, 17.5);
       // hoodZero.put(1.61, 23.5);
       // hoodZero.put(1.99, 28.0);
@@ -529,7 +533,7 @@ public final class Constants {
     public static final double Acceleration = 20.0; // Rotations per second squared
 
     // Positions (Degrees)
-    public static final double HoodPositionToleranceDegs = 1.0;
+    public static final double HoodPositionToleranceDegs = 1.8;
     public static final double MinDegs = 17.842;
     public static final double MaxDegs = 43.;
     public static final double IdlePosition = 17.842;
@@ -594,6 +598,12 @@ public final class Constants {
      * measured distance (meters).
      */
     public static final Translation2d TURRET_OFFSET = new Translation2d(-0.05, 0.0);
+    
+    public static final InterpolatingDoubleTreeMap DistanceToTurretTolerance=new InterpolatingDoubleTreeMap();
+    static{
+      DistanceToTurretTolerance.put(3.,15.);
+      DistanceToTurretTolerance.put(5.,7.);
+    }
   }
 
   public final class StretcherConstants {
@@ -630,7 +640,7 @@ public final class Constants {
   public final class ShooterConstants {
     public static final double ShooterRatio = 1.0 / 1.0;
     public static final InvertedValue Inverted = InvertedValue.Clockwise_Positive;
-    public static final double ShooterVelocityToleranceRPS = 2.;
+    public static final double ShooterVelocityToleranceRPS = 2.5;
     public static final MotorAlignmentValue FollowerAlignment = MotorAlignmentValue.Aligned;
 
     // PID Gains
@@ -674,8 +684,8 @@ public final class Constants {
     public static final double TurntablekS = 0.392;
 
     public static final double TurntableVelocityToleranceRPS = 0.5;
-    public static final double TurntableJamCurrentThresholdAmps = 160.0;
-    public static final double TurntableJamDetectTimeSecs = 0.15;
+    public static final double TurntableJamCurrentThresholdAmps = 65.0;
+    public static final double TurntableJamDetectTimeSecs = 0.3;
     public static final double TurntableJamReverseRPS = -2.0;
     public static final double TurntableJamReverseTimeSecs = 0.25;
 

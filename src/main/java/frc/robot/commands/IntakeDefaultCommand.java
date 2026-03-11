@@ -56,6 +56,10 @@ public class IntakeDefaultCommand extends Command {
         stretcher.setPosition(Constants.StretcherConstants.RetractedPosition);
         intake.stop();
         break;
+      case STOPOUT:
+        stretcher.setPosition(Constants.StretcherConstants.MidPosition);
+        intake.setRPS(Constants.IntakeConstants.IntakingRPS);
+        break;
     }
   }
 

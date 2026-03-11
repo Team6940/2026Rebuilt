@@ -14,6 +14,7 @@ import frc.robot.subsystems.Drive.Drive;
 import frc.robot.subsystems.Feeder.FeederSubsystem;
 import frc.robot.subsystems.Hood.HoodSubsystem;
 import frc.robot.subsystems.ImprovedCommandXboxController;
+import frc.robot.subsystems.SuperStructure;
 import frc.robot.subsystems.ImprovedCommandXboxController.Button;
 import frc.robot.subsystems.Shooter.ShooterSubsystem;
 import frc.robot.subsystems.SuperStructure.ShootMode;
@@ -51,7 +52,7 @@ public class HybridShootCommand extends Command {
   private final FeederSubsystem feeder = FeederSubsystem.getInstance();
   private final ImprovedCommandXboxController operatorController =
       RobotContainer.operatorController;
-  private final Debouncer shooterDebouncer=new Debouncer(0.1,DebounceType.kFalling);
+  private final Debouncer shooterDebouncer=new Debouncer(0.12,DebounceType.kFalling);
   private final Button shootButton;
   private final ShootMode shootMode;
   private final MotionShotMode motionShotMode;
@@ -198,9 +199,10 @@ public class HybridShootCommand extends Command {
     }
 
     boolean hoodAtTarget = hood.isAtTargetPosition();
-    boolean turretAtTarget = turret.isAtTargetPosition();
+    boolean turretAtTarget = turret.isAtTargetPosition(distanceMeters);
     boolean shooterAtTarget = shooterDebouncer.calculate(shooter.isAtTargetRps());
-    boolean readyToAutoFeed = shooterAtTarget && turretAtTarget && hoodAtTarget;
+    boolean distanceInScope=distanceMeters<=5.23&&distanceMeters>=1;
+    boolean readyToAutoFeed = shooterAtTarget && turretAtTarget && hoodAtTarget&&distanceInScope;
     boolean feedingEnabled =
         autoTriggerEnabled ? readyToAutoFeed : operatorController.getButton(Button.kRightBumper);
 
