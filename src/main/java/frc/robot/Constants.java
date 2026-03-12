@@ -514,7 +514,7 @@ public final class Constants {
 
     public static final double IntakeVelocityToleranceRPS = 0.5;
 
-    public static final double IntakingRPS = 45.0;
+    public static final double IntakingRPS = 38.0;
     public static final double ReversingRPS = 0;
   }
 
