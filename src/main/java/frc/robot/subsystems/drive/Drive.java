@@ -314,6 +314,7 @@ public class Drive extends SubsystemBase {
   }
 
   public void processLog() {
+    Logger.recordOutput("Odometry/Robot", getPose());
     Logger.recordOutput("Drive/ChassisSpeeds", getChassisSpeeds());
     Logger.recordOutput("Drive/HubRelativeChassisSpeeds", getHubRelativeChassisSpeeds());
     Logger.recordOutput("Drive/DistanceToAllianceHub", getDistanceToAllianceHub());

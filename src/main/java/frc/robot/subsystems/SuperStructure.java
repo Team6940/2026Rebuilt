@@ -5,7 +5,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.commands.ClimbExtendCommand;
 import frc.robot.commands.ClimbRetractCommand;
 import frc.robot.commands.HybridShootCommand;
-import frc.robot.commands.IntakeCommand;
+import frc.robot.commands.IntakeDefaultCommand;
 import frc.robot.commands.ManualShootFieldRelativeCommand;
 import frc.robot.subsystems.ImprovedCommandXboxController.Button;
 import org.littletonrobotics.junction.Logger;
@@ -67,7 +67,7 @@ public class SuperStructure extends SubsystemBase {
 
   public void toggleIntakeMode() {
     // flip state
-    IntakeMode newMode = intakeMode == IntakeMode.SHAKE ? IntakeMode.OFF : IntakeMode.SHAKE;
+    IntakeMode newMode = intakeMode == IntakeMode.INTAKE ? IntakeMode.OFF : IntakeMode.INTAKE;
     setIntakeMode(newMode);
   }
 
@@ -107,7 +107,7 @@ public class SuperStructure extends SubsystemBase {
   }
 
   public Command getIntakeCommand() {
-    return new IntakeCommand();
+    return new IntakeDefaultCommand();
   }
 
   public Command getClimbExtendCommand() {

@@ -65,15 +65,14 @@ import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 public class RobotContainer {
   // Subsystems
   public static final String limelightLeft = "limelight-l";
-  public static final String limelightRight = "limelight-r";
+  public static final String limelightRight = "limelight";
   private final Drive drive;
   private final FeederSubsystem feeder = FeederSubsystem.getInstance();
   private final HoodSubsystem hood = HoodSubsystem.getInstance();
   private final IntakeSubsystem intake = IntakeSubsystem.getInstance();
   private final ShooterSubsystem shooter = ShooterSubsystem.getInstance();
-  // private final StretcherSubsystem stretcher = StretcherSubsystem.getInstance();
+  private final StretcherSubsystem stretcher = StretcherSubsystem.getInstance();
   private final TurretSubsystem turret = TurretSubsystem.getInstance();
-  private final ClimberSubsystem climber = ClimberSubsystem.getInstance();
   private final SuperStructure superStructure = SuperStructure.getInstance();
   // Simulated subsystems
   private SwerveDriveSimulation driveSimulation = null;
@@ -129,7 +128,7 @@ public class RobotContainer {
     }
 
     // Set up auto routines
-    autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
+    autoChooser = new LoggedDashboardChooser<>("Auto Choices");
 
     // Set up SysId routines
     // autoChooser.addOption(
@@ -170,7 +169,8 @@ public class RobotContainer {
    */
   private void configureButtonBindings() {
 
-    intake.setDefaultCommand(new IntakeDefaultCommand());
+    intake.setDefaultCommand(
+        Commands.defer(() -> superStructure.getIntakeCommand(), Set.of(intake, stretcher)));
 
     drive.setDefaultCommand(
         drive.run(
@@ -194,6 +194,14 @@ public class RobotContainer {
     driverController
         .rightBumper()
         .onTrue(superStructure.runOnce(() -> superStructure.toggleIntakeMode()));
+    driverController
+        .rightTrigger()
+        .onTrue(
+            superStructure.runOnce(
+                () -> superStructure.setIntakeMode(SuperStructure.IntakeMode.SHAKE)))
+        .onFalse(
+            superStructure.runOnce(
+                () -> superStructure.setIntakeMode(SuperStructure.IntakeMode.INTAKE)));
     driverController
         .leftTrigger()
         .whileTrue(
@@ -292,13 +300,13 @@ public class RobotContainer {
                     drive)
                 .ignoringDisable(true));
 
-    driverController
-        .start()
-        .onTrue(Commands.defer(() -> superStructure.getClimbExtendCommand(), Set.of(climber)));
+    // driverController
+    //     .start()
+    //     .onTrue(Commands.defer(() -> superStructure.getClimbExtendCommand(), Set.of(climber)));
 
-    driverController
-        .back()
-        .onTrue(Commands.defer(() -> superStructure.getClimbRetractCommand(), Set.of(climber)));
+    // driverController
+    //     .back()
+    //     .onTrue(Commands.defer(() -> superStructure.getClimbRetractCommand(), Set.of(climber)));
     driverController.a().onTrue(Commands.run(() -> turret.setAutoSetpoint(0), turret));
     driverController.a().onFalse(Commands.run(() -> turret.setAutoSetpoint(90), turret));
 

@@ -41,11 +41,11 @@ public class IntakeDefaultCommand extends Command {
       case SHAKE:
         // Toggle between Extended and Mid every 0.7 seconds
         if (targetPosition == Constants.StretcherConstants.ExtendedPosition
-            && timer.get() - lastToggleTime >= 0.6) {
+            && timer.get() - lastToggleTime >= 0.5) {
           lastToggleTime = timer.get();
           targetPosition = Constants.StretcherConstants.MidPosition;
         } else if (targetPosition == Constants.StretcherConstants.MidPosition
-            && timer.get() - lastToggleTime >= 0.4) {
+            && timer.get() - lastToggleTime >= 0.25) {
           lastToggleTime = timer.get();
           targetPosition = Constants.StretcherConstants.ExtendedPosition;
         }

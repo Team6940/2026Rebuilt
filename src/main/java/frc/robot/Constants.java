@@ -153,13 +153,14 @@ public final class Constants {
       // Radial velocity (m/s) -> Distance (meters) -> Shooter RPS
 
       InterpolatingDoubleTreeMap shooterRpsZero = new InterpolatingDoubleTreeMap();
-      shooterRpsZero.put(1.32, 38.61);
-      shooterRpsZero.put(1.88, 39.24);
+      shooterRpsZero.put(1.05, 34.5);
+      shooterRpsZero.put(1.32, 38.61); //36.61
+      shooterRpsZero.put(1.88, 39.24); //38.04
       shooterRpsZero.put(2.6, 40.14);
       shooterRpsZero.put(3.4, 43.2);
       shooterRpsZero.put(4.1, 48.1);
-      shooterRpsZero.put(4.99, 52.5);
-      shooterRpsZero.put(5.2, 53.5);
+      shooterRpsZero.put(4.99, 53.5);
+      shooterRpsZero.put(5.2, 54.5);
       // shooterRpsZero.put(0.98, 38.9);
       // shooterRpsZero.put(1.61, 41.1);
       // shooterRpsZero.put(1.98, 45.2);
@@ -180,8 +181,9 @@ public final class Constants {
       // Radial velocity (m/s) -> Distance (meters) -> Hood position (degrees)
 
       InterpolatingDoubleTreeMap hoodZero = new InterpolatingDoubleTreeMap();
+      hoodZero.put(1.05, 17.8);
       hoodZero.put(1.32, 18.49);
-      hoodZero.put(1.88, 23.40);
+      hoodZero.put(1.88, 23.40); //23.1
       hoodZero.put(2.6, 27.1);
       hoodZero.put(3.4, 33.2);
       hoodZero.put(4.1, 38.5);
@@ -633,7 +635,7 @@ public final class Constants {
     public static final double MaxRotations = 3.11;
 
     public static final double ExtendedPosition = 2.65;
-    public static final double MidPosition = 2.2;
+    public static final double MidPosition = 2.3;
     public static final double RetractedPosition = 0.00;
 
     public static final double IdlePosition = 0.0;
@@ -650,7 +652,7 @@ public final class Constants {
     public static final double kI = 0.0;
     public static final double kD = 0.0;
     public static final double kV = 0.115;
-    public static final double kS = 21.;
+    public static final double kS = 14.;
 
     // Torque-current feedforward (Amps per RPS)
     public static final double kTorqueFFPerRPS = 0.0;
@@ -709,6 +711,10 @@ public final class Constants {
     // Default RPS values
     public static final double DefaultTurntableRPS = 2.4;
     public static final double DefaultFeedRPS = 85.0;
+
+    // Manual reverse (POV right) — both motors run backward to unjam or eject notes
+    public static final double ReverseFeederRPS = -30.0;
+    public static final double ReverseTurntableRPS = -2.0;
   }
 
   public final class ClimberConstants {

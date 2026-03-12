@@ -93,7 +93,12 @@ public class ManualShootFieldRelativeCommand extends Command {
       targetRps = ShooterConstants.ManualRpsY;
     }
 
-    if (operatorController.getButton(shootButton)) {
+    boolean reverseFeeder = operatorController.getHID().getPOV() == 90;
+
+    if (reverseFeeder) {
+      feeder.setTurntableRPS(FeederConstants.ReverseTurntableRPS);
+      feeder.setFeedRPS(FeederConstants.ReverseFeederRPS);
+    } else if (operatorController.getButton(shootButton)) {
       shooter.setRPS(targetRps);
       feeder.setTurntableRPS(FeederConstants.DefaultTurntableRPS);
       feeder.setFeedRPS(FeederConstants.DefaultFeedRPS);
