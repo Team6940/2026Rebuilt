@@ -15,25 +15,38 @@ public class LeftDepotCycle extends SequentialCommandGroup {
   SuperStructure superStructure = SuperStructure.getInstance();
 
   public LeftDepotCycle() {
-    if (DriverStation.getAlliance().isPresent()
-        && DriverStation.getAlliance().get() == Alliance.Blue) {
-      addCommands(
-          new InstantCommand(
-              () ->
-                  drive.setPose(
-                      drive.generatePPPath("Left-LeftNA").getStartingHolonomicPose().get())));
-    } else {
-      addCommands(
-          new InstantCommand(
-              () ->
-                  drive.setPose(
-                      drive
-                          .generatePPPath("Left-LeftNA")
-                          .flipPath()
-                          .getStartingHolonomicPose()
-                          .get())));
-    }
-
+    // if (DriverStation.getAlliance().isPresent()
+    //     && DriverStation.getAlliance().get() == Alliance.Blue) {
+    //   addCommands(
+    //       new InstantCommand(
+    //           () ->
+    //               drive.setPose(
+    //                   drive.generatePPPath("Left-LeftNA").getStartingHolonomicPose().get())));
+    // } else {
+    //   addCommands(
+    //       new InstantCommand(
+    //           () ->
+    //               drive.setPose(
+    //                   drive
+    //                       .generatePPPath("Left-LeftNA")
+    //                       .flipPath()
+    //                       .getStartingHolonomicPose()
+    //                       .get())));
+    // }
+    addCommands(
+        new InstantCommand(
+            () -> {
+              if (DriverStation.getAlliance().get() == Alliance.Blue) {
+                drive.setPose(drive.generatePPPath("Left-LeftNA").getStartingHolonomicPose().get());
+              } else {
+                drive.setPose(
+                    drive
+                        .generatePPPath("Left-LeftNA")
+                        .flipPath()
+                        .getStartingHolonomicPose()
+                        .get());
+              }
+            }));
     addCommands(
         drive
             .followPPPath("Left-LeftNA")

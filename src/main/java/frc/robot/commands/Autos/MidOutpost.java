@@ -15,24 +15,34 @@ public class MidOutpost extends SequentialCommandGroup {
   SuperStructure superStructure = SuperStructure.getInstance();
 
   public MidOutpost() {
-    if (DriverStation.getAlliance().isPresent()
-        && DriverStation.getAlliance().get() == Alliance.Blue) {
-      addCommands(
-          new InstantCommand(
-              () ->
-                  drive.setPose(
-                      drive.generatePPPath("Mid-MidS").getStartingHolonomicPose().get())));
-    } else {
-      addCommands(
-          new InstantCommand(
-              () ->
-                  drive.setPose(
-                      drive
-                          .generatePPPath("Mid-MidS")
-                          .flipPath()
-                          .getStartingHolonomicPose()
-                          .get())));
-    }
+    // if (DriverStation.getAlliance().isPresent()
+    //     && DriverStation.getAlliance().get() == Alliance.Blue) {
+    //   addCommands(
+    //       new InstantCommand(
+    //           () ->
+    //               drive.setPose(
+    //                   drive.generatePPPath("Mid-MidS").getStartingHolonomicPose().get())));
+    // } else {
+    //   addCommands(
+    //       new InstantCommand(
+    //           () ->
+    //               drive.setPose(
+    //                   drive
+    //                       .generatePPPath("Mid-MidS")
+    //                       .flipPath()
+    //                       .getStartingHolonomicPose()
+    //                       .get())));
+    // }
+    addCommands(
+        new InstantCommand(
+            () -> {
+              if (DriverStation.getAlliance().get() == Alliance.Blue) {
+                drive.setPose(drive.generatePPPath("Mid-MidS").getStartingHolonomicPose().get());
+              } else {
+                drive.setPose(
+                    drive.generatePPPath("Mid-MidS").flipPath().getStartingHolonomicPose().get());
+              }
+            }));
     addCommands(drive.followPPPath("Mid-MidS"));
     addCommands(new HybridShootCommand(Button.kAutoButton, ShootMode.SCORE, true).withTimeout(2.));
     addCommands(

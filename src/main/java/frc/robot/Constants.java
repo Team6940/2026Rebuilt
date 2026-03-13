@@ -671,7 +671,7 @@ public final class Constants {
     public static final double ManualRpsY = 70.;
 
     // Passing mode constants (static values for tower passing)
-    public static final double PassRps = 70.0;
+    public static final double PassRps = 60.;
   }
 
   public final class FeederConstants {

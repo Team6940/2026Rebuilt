@@ -15,25 +15,40 @@ public class RightOutpostCycle extends SequentialCommandGroup {
   SuperStructure superStructure = SuperStructure.getInstance();
 
   public RightOutpostCycle() {
-    if (DriverStation.getAlliance().isPresent()
-        && DriverStation.getAlliance().get() == Alliance.Blue) {
-      addCommands(
-          new InstantCommand(
-              () ->
-                  drive.setPose(
-                      drive.generatePPPath("Right-RightNA").getStartingHolonomicPose().get())));
-    } else {
-      addCommands(
-          new InstantCommand(
-              () ->
-                  drive.setPose(
-                      drive
-                          .generatePPPath("Right-RightNA")
-                          .flipPath()
-                          .getStartingHolonomicPose()
-                          .get())));
-    }
+    // if (DriverStation.getAlliance().isPresent()
+    //     && DriverStation.getAlliance().get() == Alliance.Blue) {
+    //   addCommands(
+    //       new InstantCommand(
+    //           () ->
+    //               drive.setPose(
+    //                   drive.generatePPPath("Right-RightNA").getStartingHolonomicPose().get())));
+    // } else {
+    //   addCommands(
+    //       new InstantCommand(
+    //           () ->
+    //               drive.setPose(
+    //                   drive
+    //                       .generatePPPath("Right-RightNA")
+    //                       .flipPath()
+    //                       .getStartingHolonomicPose()
+    //                       .get())));
+    // }
 
+    addCommands(
+        new InstantCommand(
+            () -> {
+              if (DriverStation.getAlliance().get() == Alliance.Blue) {
+                drive.setPose(
+                    drive.generatePPPath("Right-RightNA").getStartingHolonomicPose().get());
+              } else {
+                drive.setPose(
+                    drive
+                        .generatePPPath("Right-RightNA")
+                        .flipPath()
+                        .getStartingHolonomicPose()
+                        .get());
+              }
+            }));
     addCommands(
         drive
             .followPPPath("Right-RightNA")
