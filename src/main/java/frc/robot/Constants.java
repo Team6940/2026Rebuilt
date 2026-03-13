@@ -36,7 +36,7 @@ import java.util.TreeMap;
  * on a roboRIO. Change the value of "simMode" to switch between "sim" (physics sim) and "replay"
  * (log replay from a file).
  */
-public final class Constants {
+  public final class Constants {
   public static final Mode simMode = Mode.SIM;
   public static final Mode currentMode = RobotBase.isReal() ? Mode.REAL : simMode;
 
@@ -154,10 +154,10 @@ public final class Constants {
 
       InterpolatingDoubleTreeMap shooterRpsZero = new InterpolatingDoubleTreeMap();
       shooterRpsZero.put(1.05, 34.5);
-      shooterRpsZero.put(1.32, 38.61); //36.61
-      shooterRpsZero.put(1.88, 39.24); //38.04
-      shooterRpsZero.put(2.6, 40.14);
-      shooterRpsZero.put(3.4, 43.2);
+      shooterRpsZero.put(1.32, 38.61); // 36.61
+      shooterRpsZero.put(1.88, 39.54); // 38.04
+      shooterRpsZero.put(2.6, 41.04);
+      shooterRpsZero.put(3.4, 43.5);
       shooterRpsZero.put(4.1, 48.1);
       shooterRpsZero.put(4.99, 53.5);
       shooterRpsZero.put(5.2, 54.5);
@@ -183,7 +183,7 @@ public final class Constants {
       InterpolatingDoubleTreeMap hoodZero = new InterpolatingDoubleTreeMap();
       hoodZero.put(1.05, 17.8);
       hoodZero.put(1.32, 18.49);
-      hoodZero.put(1.88, 23.40); //23.1
+      hoodZero.put(1.88, 23.40); // 23.1
       hoodZero.put(2.6, 27.1);
       hoodZero.put(3.4, 33.2);
       hoodZero.put(4.1, 38.5);
@@ -709,7 +709,7 @@ public final class Constants {
     public static final double FeedVelocityToleranceRPS = 0.5;
 
     // Default RPS values
-    public static final double DefaultTurntableRPS = 2.4;
+    public static final double DefaultTurntableRPS = 2.5;
     public static final double DefaultFeedRPS = 85.0;
 
     // Manual reverse (POV right) — both motors run backward to unjam or eject notes
