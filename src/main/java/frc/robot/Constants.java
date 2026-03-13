@@ -36,7 +36,7 @@ import java.util.TreeMap;
  * on a roboRIO. Change the value of "simMode" to switch between "sim" (physics sim) and "replay"
  * (log replay from a file).
  */
-  public final class Constants {
+public final class Constants {
   public static final Mode simMode = Mode.SIM;
   public static final Mode currentMode = RobotBase.isReal() ? Mode.REAL : simMode;
 
@@ -184,8 +184,8 @@ import java.util.TreeMap;
       hoodZero.put(1.05, 17.8);
       hoodZero.put(1.32, 18.49);
       hoodZero.put(1.88, 23.40); // 23.1
-      hoodZero.put(2.6, 27.1);
-      hoodZero.put(3.4, 33.2);
+      hoodZero.put(2.6, 27.3);
+      hoodZero.put(3.4, 33.9);
       hoodZero.put(4.1, 38.5);
       hoodZero.put(4.99, 43.5);
       hoodZero.put(5.2, 43.5);
