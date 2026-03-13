@@ -56,6 +56,6 @@ public class LeftDepotCycle extends SequentialCommandGroup {
     addCommands(drive.followPPPath("LeftNA-Left"));
     addCommands(new HybridShootCommand(Button.kAutoButton, ShootMode.SCORE).withTimeout(4.));
     addCommands(drive.followPPPath("Left-Depot"));
-    addCommands(new HybridShootCommand(Button.kAutoButton, ShootMode.SCORE).withTimeout(4.));
+    addCommands(new HybridShootCommand(Button.kAutoButton, ShootMode.SCORE));
   }
 }

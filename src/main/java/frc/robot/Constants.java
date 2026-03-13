@@ -205,9 +205,10 @@ public final class Constants {
       RadialVelocityToDistanceToHoodPositionDegs.put(1.0, hoodPos1);
 
       // Distance (meters) -> Flight time (seconds)
-      DistanceToFlightTimeSecs.put(0.96, 0.9);
-      DistanceToFlightTimeSecs.put(1.2, 1.15);
-      DistanceToFlightTimeSecs.put(5., 1.25);
+      DistanceToFlightTimeSecs.put(0.96, 0.88);
+      DistanceToFlightTimeSecs.put(1.2, 0.93);
+      DistanceToFlightTimeSecs.put(3.,1.07);
+      DistanceToFlightTimeSecs.put(5., 1.2);
     }
   }
 
