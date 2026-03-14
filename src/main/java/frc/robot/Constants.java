@@ -653,7 +653,7 @@ public final class Constants {
     public static final double kI = 0.0;
     public static final double kD = 0.0;
     public static final double kV = 0.115;
-    public static final double kS = 14.;
+    public static final double kS = 15.5;
 
     // Torque-current feedforward (Amps per RPS)
     public static final double kTorqueFFPerRPS = 0.0;
