@@ -155,10 +155,10 @@ public final class Constants {
       InterpolatingDoubleTreeMap shooterRpsZero = new InterpolatingDoubleTreeMap();
       shooterRpsZero.put(1.05, 34.5);
       shooterRpsZero.put(1.32, 38.61); // 36.61
-      shooterRpsZero.put(1.88, 39.54); // 38.04
-      shooterRpsZero.put(2.6, 41.04);
-      shooterRpsZero.put(3.4, 43.5);
-      shooterRpsZero.put(4.1, 48.1);
+      shooterRpsZero.put(1.88, 39.84); // 38.04
+      shooterRpsZero.put(2.6, 41.64);
+      shooterRpsZero.put(3.4, 43.8);
+      shooterRpsZero.put(4.1, 48.7);
       shooterRpsZero.put(4.99, 53.5);
       shooterRpsZero.put(5.2, 54.5);
       // shooterRpsZero.put(0.98, 38.9);
@@ -205,10 +205,10 @@ public final class Constants {
       RadialVelocityToDistanceToHoodPositionDegs.put(1.0, hoodPos1);
 
       // Distance (meters) -> Flight time (seconds)
-      DistanceToFlightTimeSecs.put(0.96, 0.88);
-      DistanceToFlightTimeSecs.put(1.2, 0.93);
-      DistanceToFlightTimeSecs.put(3.,1.07);
-      DistanceToFlightTimeSecs.put(5., 1.2);
+      DistanceToFlightTimeSecs.put(0.96, 0.9);
+      DistanceToFlightTimeSecs.put(1.2, 1.0);
+      DistanceToFlightTimeSecs.put(3.,1.14);
+      DistanceToFlightTimeSecs.put(5., 1.23);
     }
   }
 
@@ -653,7 +653,7 @@ public final class Constants {
     public static final double kI = 0.0;
     public static final double kD = 0.0;
     public static final double kV = 0.115;
-    public static final double kS = 15.5;
+    public static final double kS = 14.;
 
     // Torque-current feedforward (Amps per RPS)
     public static final double kTorqueFFPerRPS = 0.0;

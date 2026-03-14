@@ -176,7 +176,7 @@ public class HybridShootCommand extends Command {
       }
     } else {
       // Pass mode: shoot to tower with static shooter settings
-      distanceMeters = 5.; // This is just a 'smart' bypass data, do NOT believe it.
+      distanceMeters = 3.; // This is just a 'smart' bypass data, do NOT believe it.
       straightToTarget = drive.getRotationToAllianceTower();
       Translation2d towerSpeeds = drive.getTowerRelativeChassisSpeeds();
       radialVelocity = towerSpeeds.getX();
