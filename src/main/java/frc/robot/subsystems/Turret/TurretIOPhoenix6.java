@@ -20,9 +20,9 @@ public class TurretIOPhoenix6 implements TurretIO {
       new CANcoder(MotorIDs.TurretEncoderID, new CANBus("canivore"));
   private static final CANcoder encoder2 =
       new CANcoder(MotorIDs.TurretEncoder2ID, new CANBus("canivore"));
-  private static final MotionMagicTorqueCurrentFOC positionRequest = new MotionMagicTorqueCurrentFOC(0);
-  private static final VelocityTorqueCurrentFOC velocityRequest =
-      new VelocityTorqueCurrentFOC(0.0);
+  private static final MotionMagicTorqueCurrentFOC positionRequest =
+      new MotionMagicTorqueCurrentFOC(0);
+  private static final VelocityTorqueCurrentFOC velocityRequest = new VelocityTorqueCurrentFOC(0.0);
 
   public TurretIOPhoenix6() {
     encoderConfig();

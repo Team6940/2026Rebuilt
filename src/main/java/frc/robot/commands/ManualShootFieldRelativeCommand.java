@@ -42,7 +42,7 @@ public class ManualShootFieldRelativeCommand extends Command {
   @Override
   public void initialize() {
     hood.setModeManual();
-    turret.setModeVelocity(drive::getRobotOmegaRadPerSec);
+    turret.setModeManual();
     hood.setOperatorInputScalar(0.0);
     turret.setOperatorInputScalar(0.0);
     lastTurretSetpointDegs = turret.getCurrentPositionDegs();

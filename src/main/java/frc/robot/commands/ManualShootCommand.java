@@ -10,7 +10,8 @@ import frc.robot.subsystems.Drive.Drive;
 import frc.robot.subsystems.Feeder.FeederSubsystem;
 import frc.robot.subsystems.Hood.HoodSubsystem;
 import frc.robot.subsystems.ImprovedCommandXboxController;
-import frc.robot.subsystems.ImprovedCommandXboxController.Button;import frc.robot.subsystems.Shooter.ShooterSubsystem;
+import frc.robot.subsystems.ImprovedCommandXboxController.Button;
+import frc.robot.subsystems.Shooter.ShooterSubsystem;
 import frc.robot.subsystems.Turret.TurretSubsystem;
 import org.littletonrobotics.junction.Logger;
 
@@ -26,6 +27,8 @@ public class ManualShootCommand extends Command {
   private final Button shootButton;
   private final Button resetButton;
 
+  // Be cautious when calling this command !!!
+  // This command is now in VELOCITY mode and haven't been tested.
   public ManualShootCommand(Button shootButton, Button resetButton) {
     addRequirements(hood, turret, shooter, feeder);
     this.shootButton = shootButton;
