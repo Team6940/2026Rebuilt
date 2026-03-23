@@ -6,7 +6,6 @@ import frc.robot.Constants.HoodConstants;
 import frc.robot.Constants.ShooterConstants;
 import frc.robot.Constants.TurretConstants;
 import frc.robot.RobotContainer;
-import frc.robot.subsystems.Drive.Drive;
 import frc.robot.subsystems.Feeder.FeederSubsystem;
 import frc.robot.subsystems.Hood.HoodSubsystem;
 import frc.robot.subsystems.ImprovedCommandXboxController;
@@ -19,7 +18,6 @@ public class ManualShootCommand extends Command {
   private final TurretSubsystem turret = TurretSubsystem.getInstance();
   private final ShooterSubsystem shooter = ShooterSubsystem.getInstance();
   private final FeederSubsystem feeder = FeederSubsystem.getInstance();
-  private final Drive drive = Drive.getInstance();
   private final ImprovedCommandXboxController operatorController =
       RobotContainer.operatorController;
   private double targetRps = ShooterConstants.ManualRpsA;
@@ -36,7 +34,6 @@ public class ManualShootCommand extends Command {
   public void initialize() {
     hood.setModeManual();
     turret.setModeManual();
-    turret.setChassisOmegaSupplier(drive::getRobotOmegaRadPerSec);
     hood.setOperatorInputScalar(0.0);
     turret.setOperatorInputScalar(0.0);
   }
