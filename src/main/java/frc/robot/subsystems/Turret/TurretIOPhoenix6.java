@@ -78,13 +78,6 @@ public class TurretIOPhoenix6 implements TurretIO {
   }
 
   @Override
-  public void setPositionWithVelocity(double positionDegrees, double velocityDegsPerSec) {
-    motor.setControl(
-        request
-            .withPosition(Units.degreesToRotations(positionDegrees)));
-  }
-
-  @Override
   public void resetPosition(double positionDegrees) {
     motor.setPosition(Units.degreesToRotations(positionDegrees));
   }
