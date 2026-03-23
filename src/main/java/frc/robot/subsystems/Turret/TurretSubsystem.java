@@ -92,6 +92,10 @@ public class TurretSubsystem extends SubsystemBase {
     autoSetpointDegs = clamp(positionDegrees);
   }
 
+  public void setAutoSetpoint(double positionDegrees, double targetVelocity) {
+    autoSetpointDegs = clamp(positionDegrees);
+  }
+
   /*
    * Sets the turret to a field-relative angle by calculating the
    * turret-relative angle based on the robot's current pose.
@@ -223,9 +227,16 @@ public class TurretSubsystem extends SubsystemBase {
 
   public boolean isAtTargetPosition() {
     return MathUtil.isNear(
-        targetPositionDegs,
+        autoSetpointDegs,
         inputs.turretPositionDegrees,
         TurretConstants.TurretPositionToleranceDegs);
+  }
+
+  public boolean isAtTargetPosition(double distance) {
+    return MathUtil.isNear(
+        autoSetpointDegs,
+        inputs.turretPositionDegrees,
+        TurretConstants.DistanceToTurretTolerance.get(distance));
   }
 
   public void setVoltage(double voltage) {
@@ -270,15 +281,25 @@ public class TurretSubsystem extends SubsystemBase {
   private void handleHybrid() {
     rawSetpointDegs =
         clamp(autoSetpointDegs + operatorInputScalar * TurretConstants.TurretHybridRangeDegs);
-    targetPositionDegs = leadComp.calculate(rawSetpointDegs);
-    io.setPosition(targetPositionDegs);
+    targetPositionDegs = rawSetpointDegs;
+    // TrapezoidProfile.State targetState=
+    //     velocityCalc.calculate(
+    //         targetPositionDegs, chassisOmegaRadPerSecSupplier.getAsDouble(), LOOP_DT);
+    // targetPositionDegs=targetState.position;
+    // velocityFFDegsPerSec=targetState.velocity;
+    setPosition(targetPositionDegs);
   }
 
   private void handleManual() {
     nudgeManualSetpoint(operatorInputScalar);
     rawSetpointDegs = clamp(manualSetpointDegs);
-    targetPositionDegs = leadComp.calculate(rawSetpointDegs);
-    io.setPosition(targetPositionDegs);
+    targetPositionDegs = rawSetpointDegs;
+    //  TrapezoidProfile.State targetState=
+    //     velocityCalc.calculate(
+    //         targetPositionDegs, chassisOmegaRadPerSecSupplier.getAsDouble(), LOOP_DT);
+    // targetPositionDegs=targetState.position;
+    // velocityFFDegsPerSec=targetState.velocity;
+    setPosition(targetPositionDegs);
   }
 
   private static final double VELOCITY_LOOP_DT = 0.02; // seconds (standard 50 Hz loop)

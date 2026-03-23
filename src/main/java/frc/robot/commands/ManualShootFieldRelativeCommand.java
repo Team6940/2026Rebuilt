@@ -27,7 +27,7 @@ public class ManualShootFieldRelativeCommand extends Command {
   private final ImprovedCommandXboxController operatorController =
       RobotContainer.operatorController;
 
-  private double targetRps = ShooterConstants.ManualRpsY;
+  private double targetRps = ShooterConstants.ManualRpsB;
   private final Button shootButton;
   private final Button resetButton;
   private double lastTurretSetpointDegs = TurretConstants.IdlePosition;
@@ -46,6 +46,7 @@ public class ManualShootFieldRelativeCommand extends Command {
     hood.setOperatorInputScalar(0.0);
     turret.setOperatorInputScalar(0.0);
     lastTurretSetpointDegs = turret.getCurrentPositionDegs();
+    hood.setManualSetpoint(27.);
     turret.setManualSetpoint(lastTurretSetpointDegs);
   }
 
@@ -93,8 +94,13 @@ public class ManualShootFieldRelativeCommand extends Command {
       targetRps = ShooterConstants.ManualRpsY;
     }
 
-    if (operatorController.getButton(shootButton)) {
-      shooter.setDashboardRPS();
+    boolean reverseFeeder = operatorController.getHID().getPOV() == 90;
+
+    if (reverseFeeder) {
+      feeder.setTurntableRPS(FeederConstants.ReverseTurntableRPS);
+      feeder.setFeedRPS(FeederConstants.ReverseFeederRPS);
+    } else if (operatorController.getButton(shootButton)) {
+      shooter.setRPS(targetRps);
       feeder.setTurntableRPS(FeederConstants.DefaultTurntableRPS);
       feeder.setFeedRPS(FeederConstants.DefaultFeedRPS);
     } else {

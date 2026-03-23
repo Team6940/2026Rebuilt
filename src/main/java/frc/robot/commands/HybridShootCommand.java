@@ -1,8 +1,12 @@
 package frc.robot.commands;
 
+import edu.wpi.first.math.filter.Debouncer;
+import edu.wpi.first.math.filter.Debouncer.DebounceType;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants.FeederConstants;
 import frc.robot.Constants.HoodConstants;
@@ -49,18 +53,31 @@ public class HybridShootCommand extends Command {
   private final FeederSubsystem feeder = FeederSubsystem.getInstance();
   private final ImprovedCommandXboxController operatorController =
       RobotContainer.operatorController;
+  private final Debouncer shooterDebouncer = new Debouncer(0.12, DebounceType.kFalling);
   private final Button shootButton;
   private final ShootMode shootMode;
   private final MotionShotMode motionShotMode;
+  private final boolean autoTriggerEnabled;
 
-  private static final double LEAD_YAW_COMPENSATION_INDEX = 6.;
+  /** Persistent RPS offset applied on top of the solver result. Adjusted via ABXY. */
+  private double rpsOffset = 0.0;
+
+  // private static final double LEAD_YAW_COMPENSATION_INDEX = 6.;
 
   /**
    * Creates a HybridShootCommand using the default motion-shot algorithm ({@link
    * MotionShotMode#LOOKAHEAD}).
    */
   public HybridShootCommand(Button shootButton, ShootMode shootMode) {
-    this(shootButton, shootMode, MotionShotMode.LOOKAHEAD);
+    this(shootButton, shootMode, MotionShotMode.LOOKAHEAD, false);
+  }
+
+  /**
+   * Creates a HybridShootCommand using the default motion-shot algorithm ({@link
+   * MotionShotMode#LOOKAHEAD}) with optional automatic trigger behavior.
+   */
+  public HybridShootCommand(Button shootButton, ShootMode shootMode, boolean autoTriggerEnabled) {
+    this(shootButton, shootMode, MotionShotMode.LOOKAHEAD, autoTriggerEnabled);
   }
 
   /**
@@ -72,10 +89,29 @@ public class HybridShootCommand extends Command {
    */
   public HybridShootCommand(
       Button shootButton, ShootMode shootMode, MotionShotMode motionShotMode) {
+    this(shootButton, shootMode, motionShotMode, false);
+  }
+
+  /**
+   * Creates a HybridShootCommand with explicit motion-shot algorithm selection and optional
+   * automatic trigger behavior.
+   *
+   * @param shootButton operator button used for manual spin-up
+   * @param shootMode {@link ShootMode#SCORE} to aim at the hub, {@link ShootMode#PASS} for tower
+   * @param motionShotMode which motion-compensation algorithm to apply in SCORE mode
+   * @param autoTriggerEnabled when true, spins up immediately and auto-feeds once all shot targets
+   *     are within tolerance
+   */
+  public HybridShootCommand(
+      Button shootButton,
+      ShootMode shootMode,
+      MotionShotMode motionShotMode,
+      boolean autoTriggerEnabled) {
     addRequirements(hood, turret, shooter, feeder);
     this.shootButton = shootButton;
     this.shootMode = shootMode;
     this.motionShotMode = motionShotMode;
+    this.autoTriggerEnabled = autoTriggerEnabled;
   }
 
   @Override
@@ -84,6 +120,7 @@ public class HybridShootCommand extends Command {
     turret.setModeVelocity(drive::getRobotOmegaRadPerSec);
     hood.setOperatorInputScalar(0.0);
     turret.setOperatorInputScalar(0.0);
+    rpsOffset = 0.0;
   }
 
   @Override
@@ -138,7 +175,7 @@ public class HybridShootCommand extends Command {
       }
     } else {
       // Pass mode: shoot to tower with static shooter settings
-      distanceMeters = drive.getDistanceToAllianceTower();
+      distanceMeters = 3.; // This is just a 'smart' bypass data, do NOT believe it.
       straightToTarget = drive.getRotationToAllianceTower();
       Translation2d towerSpeeds = drive.getTowerRelativeChassisSpeeds();
       radialVelocity = towerSpeeds.getX();
@@ -146,8 +183,13 @@ public class HybridShootCommand extends Command {
 
       targetRps = ShooterConstants.PassRps;
       hoodDegs = HoodConstants.PassHoodDegs;
-      double leadYawDegs = LEAD_YAW_COMPENSATION_INDEX * tangentialVelocity;
-      fieldTargetAngle = straightToTarget.plus(Rotation2d.fromDegrees(leadYawDegs));
+      // double leadYawDegs = LEAD_YAW_COMPENSATION_INDEX * tangentialVelocity;
+      // fieldTargetAngle = straightToTarget.plus(Rotation2d.fromDegrees(leadYawDegs));
+      fieldTargetAngle =
+          (DriverStation.getAlliance().isPresent()
+                  && DriverStation.getAlliance().get() == Alliance.Blue)
+              ? new Rotation2d(Math.PI)
+              : new Rotation2d(0.);
     }
 
     hood.setAutoSetpoint(hoodDegs);
@@ -158,30 +200,53 @@ public class HybridShootCommand extends Command {
     turret.setOperatorInputScalar(
         ImprovedCommandXboxController.applyInputCurve(-operatorController.getRightX()));
 
-    boolean shootingEnabled = operatorController.getButton(shootButton);
-    boolean feedingEnabled = operatorController.getButton(Button.kRightBumper);
+    // ABXY adjust the persistent RPS offset: B=-1, A=-0.5, X=+0.5, Y=+1
+    if (operatorController.getButtonPressed(Button.kB)) rpsOffset = -0.5;
+    if (operatorController.getButtonPressed(Button.kA)) rpsOffset = -1.0;
+    if (operatorController.getButtonPressed(Button.kX)) rpsOffset = 0.5;
+    if (operatorController.getButtonPressed(Button.kY)) rpsOffset = 1.0;
+    double adjustedTargetRps = targetRps + rpsOffset;
+
+    boolean shootingEnabled = autoTriggerEnabled || operatorController.getButton(shootButton);
+    if (shootingEnabled) {
+      shooter.setRPS(adjustedTargetRps);
+    } else {
+      shooter.stop();
+    }
+
+    boolean hoodAtTarget = hood.isAtTargetPosition();
+    boolean turretAtTarget = turret.isAtTargetPosition(distanceMeters);
+    boolean shooterAtTarget = shooterDebouncer.calculate(shooter.isAtTargetRps());
+    boolean distanceInScope = distanceMeters <= 5.3 && distanceMeters >= 1;
+    boolean readyToAutoFeed = shooterAtTarget && turretAtTarget && hoodAtTarget && distanceInScope;
+    boolean feedingEnabled = readyToAutoFeed || operatorController.getButton(Button.kRightBumper);
+
     Logger.recordOutput("Cmds/HybridShoot/ShootMode", shootMode.toString());
     Logger.recordOutput("Cmds/HybridShoot/DistanceMeters", distanceMeters);
     Logger.recordOutput("Cmds/HybridShoot/RadialVelocityMPS", radialVelocity);
     Logger.recordOutput("Cmds/HybridShoot/TangentialVelocityMPS", tangentialVelocity);
     Logger.recordOutput("Cmds/HybridShoot/TargetRPS", targetRps);
+    Logger.recordOutput("Cmds/HybridShoot/RpsOffset", rpsOffset);
+    Logger.recordOutput("Cmds/HybridShoot/AdjustedTargetRPS", adjustedTargetRps);
     Logger.recordOutput("Cmds/HybridShoot/ActualRPS", shooter.getShooterRPS());
-    Logger.recordOutput("Cmds/HybridShoot/ShooterAtTarget", shooter.isAtTargetRps());
+    Logger.recordOutput("Cmds/HybridShoot/DebouncedShooterAtTarget", shooterAtTarget);
     Logger.recordOutput("Cmds/HybridShoot/HoodDegs", hoodDegs);
+    Logger.recordOutput("Cmds/HybridShoot/HoodAtTarget", hoodAtTarget);
     Logger.recordOutput(
         "Cmds/HybridShoot/LeadYawDegs", fieldTargetAngle.minus(straightToTarget).getDegrees());
     Logger.recordOutput("Cmds/HybridShoot/FieldTargetDegs", fieldTargetAngle.getDegrees());
     Logger.recordOutput("Cmds/HybridShoot/TurretRealPositionDegs", turret.getCurrentPositionDegs());
-    Logger.recordOutput("Cmds/HybridShoot/TurretAtTarget", turret.isAtTargetPosition());
+    Logger.recordOutput("Cmds/HybridShoot/TurretAtTarget", turretAtTarget);
+    Logger.recordOutput("Cmds/HybridShoot/AutoTriggerEnabled", autoTriggerEnabled);
+    Logger.recordOutput("Cmds/HybridShoot/ReadyToAutoFeed", readyToAutoFeed);
     Logger.recordOutput("Cmds/HybridShoot/ShootingEnabled", shootingEnabled);
 
-    if (shootingEnabled) {
-      shooter.setRPS(targetRps);
-    } else {
-      shooter.stop();
-    }
+    boolean reverseFeeder = operatorController.getHID().getPOV() == 90;
 
-    if (feedingEnabled) {
+    if (reverseFeeder) {
+      feeder.setTurntableRPS(FeederConstants.ReverseTurntableRPS);
+      feeder.setFeedRPS(FeederConstants.ReverseFeederRPS);
+    } else if (feedingEnabled) {
       feeder.setTurntableRPS(FeederConstants.DefaultTurntableRPS);
       feeder.setFeedRPS(FeederConstants.DefaultFeedRPS);
     } else {

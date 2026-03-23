@@ -2,11 +2,11 @@ package frc.robot.subsystems;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.commands.HybridShootCommand;
-import frc.robot.commands.IntakeCommand;
-import frc.robot.commands.ManualShootFieldRelativeCommand;
 import frc.robot.commands.ClimbExtendCommand;
 import frc.robot.commands.ClimbRetractCommand;
+import frc.robot.commands.HybridShootCommand;
+import frc.robot.commands.IntakeDefaultCommand;
+import frc.robot.commands.ManualShootFieldRelativeCommand;
 import frc.robot.subsystems.ImprovedCommandXboxController.Button;
 import org.littletonrobotics.junction.Logger;
 
@@ -19,7 +19,7 @@ public class SuperStructure extends SubsystemBase {
     }
     return instance;
   }
-  
+
   private SuperStructure() {
     // Private constructor for singleton pattern
   }
@@ -36,13 +36,15 @@ public class SuperStructure extends SubsystemBase {
 
   public enum IntakeMode {
     INTAKE,
-    OFF
+    SHAKE,
+    OFF,
+    STOPOUT
   }
 
   private ControlMode controlMode = ControlMode.HYBRID;
   private ShootMode shootMode = ShootMode.SCORE;
   private IntakeMode intakeMode = IntakeMode.OFF;
-  
+
   public void setControlMode(ControlMode mode) {
     controlMode = mode;
   }
@@ -82,28 +84,36 @@ public class SuperStructure extends SubsystemBase {
   }
 
   public Command getManualShootCommand(Button shootButton, Button resetButton) {
-    //return new ManualShootCommand(shootButton, resetButton);
+    // return new ManualShootCommand(shootButton, resetButton);
     return new ManualShootFieldRelativeCommand(shootButton, resetButton);
   }
 
-  public Command getHybridShootCommand(Button shootButton) {
-    return new HybridShootCommand(shootButton, shootMode);
+  public Command getHybridShootCommand(Button shootButton, ShootMode shootMode) {
+    return new HybridShootCommand(shootButton, shootMode, true);
   }
 
-  public Command getShootCommand(Button shootButton, Button resetButton) {
+  public Command getScoreCommand(Button shootButton, Button resetButton) {
     return switch (controlMode) {
-      case HYBRID -> getHybridShootCommand(shootButton);
+      case HYBRID -> getHybridShootCommand(shootButton, ShootMode.SCORE);
+      case MANUAL -> getManualShootCommand(shootButton, resetButton);
+    };
+  }
+
+  public Command getPassCommand(Button shootButton, Button resetButton) {
+    return switch (controlMode) {
+      case HYBRID -> getHybridShootCommand(shootButton, ShootMode.PASS);
       case MANUAL -> getManualShootCommand(shootButton, resetButton);
     };
   }
 
   public Command getIntakeCommand() {
-    return new IntakeCommand();
+    return new IntakeDefaultCommand();
   }
 
   public Command getClimbExtendCommand() {
     return new ClimbExtendCommand();
   }
+
   public Command getClimbRetractCommand() {
     return new ClimbRetractCommand();
   }

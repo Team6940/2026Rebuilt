@@ -23,7 +23,10 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants.FeederConstants;
 import frc.robot.Constants.IntakeConstants;
 import frc.robot.Constants.StretcherConstants;
+import frc.robot.commands.Autos.LeftDepotCycle;
 import frc.robot.commands.Autos.MidLC;
+import frc.robot.commands.Autos.MidOutpost;
+import frc.robot.commands.Autos.RightOutpostCycle;
 import frc.robot.commands.DriveCommands;
 import frc.robot.commands.IntakeCommand;
 import frc.robot.commands.IntakeDefaultCommand;
@@ -62,15 +65,14 @@ import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 public class RobotContainer {
   // Subsystems
   public static final String limelightLeft = "limelight-l";
-  public static final String limelightRight = "limelight-r";
+  public static final String limelightRight = "limelight";
   private final Drive drive;
   private final FeederSubsystem feeder = FeederSubsystem.getInstance();
   private final HoodSubsystem hood = HoodSubsystem.getInstance();
   private final IntakeSubsystem intake = IntakeSubsystem.getInstance();
   private final ShooterSubsystem shooter = ShooterSubsystem.getInstance();
-  // private final StretcherSubsystem stretcher = StretcherSubsystem.getInstance();
+  private final StretcherSubsystem stretcher = StretcherSubsystem.getInstance();
   private final TurretSubsystem turret = TurretSubsystem.getInstance();
-  private final ClimberSubsystem climber = ClimberSubsystem.getInstance();
   private final SuperStructure superStructure = SuperStructure.getInstance();
   // Simulated subsystems
   private SwerveDriveSimulation driveSimulation = null;
@@ -126,26 +128,30 @@ public class RobotContainer {
     }
 
     // Set up auto routines
-    autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
+    autoChooser = new LoggedDashboardChooser<>("Auto Choices");
 
     // Set up SysId routines
-    autoChooser.addOption(
-        "Drive Wheel Radius Characterization", DriveCommands.wheelRadiusCharacterization(drive));
-    autoChooser.addOption(
-        "Drive Simple FF Characterization", DriveCommands.feedforwardCharacterization(drive));
-    autoChooser.addOption(
-        "Drive SysId (Quasistatic Forward)",
-        drive.sysIdQuasistatic(SysIdRoutine.Direction.kForward));
-    autoChooser.addOption(
-        "Drive SysId (Quasistatic Reverse)",
-        drive.sysIdQuasistatic(SysIdRoutine.Direction.kReverse));
-    autoChooser.addOption(
-        "Drive SysId (Dynamic Forward)", drive.sysIdDynamic(SysIdRoutine.Direction.kForward));
-    autoChooser.addOption(
-        "Drive SysId (Dynamic Reverse)", drive.sysIdDynamic(SysIdRoutine.Direction.kReverse));
+    // autoChooser.addOption(
+    //     "Drive Wheel Radius Characterization", DriveCommands.wheelRadiusCharacterization(drive));
+    // autoChooser.addOption(
+    //     "Drive Simple FF Characterization", DriveCommands.feedforwardCharacterization(drive));
+    // autoChooser.addOption(
+    //     "Drive SysId (Quasistatic Forward)",
+    //     drive.sysIdQuasistatic(SysIdRoutine.Direction.kForward));
+    // autoChooser.addOption(
+    //     "Drive SysId (Quasistatic Reverse)",
+    //     drive.sysIdQuasistatic(SysIdRoutine.Direction.kReverse));
+    // autoChooser.addOption(
+    //     "Drive SysId (Dynamic Forward)", drive.sysIdDynamic(SysIdRoutine.Direction.kForward));
+    // autoChooser.addOption(
+    //     "Drive SysId (Dynamic Reverse)", drive.sysIdDynamic(SysIdRoutine.Direction.kReverse));
 
-    // configureButtonBindings();
-    testBindings();
+    autoChooser.addOption("LeftDepotCycle", new LeftDepotCycle());
+    autoChooser.addOption("MidOutpost", new MidOutpost());
+    autoChooser.addOption("RightOutpostCycle", new RightOutpostCycle());
+
+    configureButtonBindings();
+    // testBindings();
   }
 
   /**
@@ -163,7 +169,8 @@ public class RobotContainer {
    */
   private void configureButtonBindings() {
 
-    intake.setDefaultCommand(new IntakeDefaultCommand());
+    intake.setDefaultCommand(
+        Commands.defer(() -> superStructure.getIntakeCommand(), Set.of(intake, stretcher)));
 
     drive.setDefaultCommand(
         drive.run(
@@ -184,19 +191,17 @@ public class RobotContainer {
                     drive)
                 .ignoringDisable(true));
 
-    driverController.rightBumper().onTrue(Commands.runOnce(superStructure::toggleIntakeMode));
-
     driverController
-        .leftBumper()
-        .whileTrue(
-            Commands.defer(
-                () -> superStructure.getShootCommand(Button.kRightTrigger, Button.kRightBumper),
-                Set.of(feeder, hood, shooter, turret)));
+        .rightBumper()
+        .onTrue(superStructure.runOnce(() -> superStructure.toggleIntakeMode()));
     driverController
-        .povDown()
-        .onTrue(superStructure.runOnce(() -> superStructure.toggleControlMode()));
-    driverController.povUp().onTrue(superStructure.runOnce(() -> superStructure.toggleShootMode()));
-
+        .rightTrigger()
+        .onTrue(
+            superStructure.runOnce(
+                () -> superStructure.setIntakeMode(SuperStructure.IntakeMode.SHAKE)))
+        .onFalse(
+            superStructure.runOnce(
+                () -> superStructure.setIntakeMode(SuperStructure.IntakeMode.INTAKE)));
     driverController
         .leftTrigger()
         .whileTrue(
@@ -207,6 +212,28 @@ public class RobotContainer {
                         () -> -driverController.getLeftX(),
                         () -> -driverController.getRightX(),
                         2.)));
+    // driverController
+    //     .leftBumper()
+    //     .onTrue(superStructure.runOnce(() ->
+    // superStructure.setIntakeMode(SuperStructure.IntakeMode.SHAKE)));
+
+    operatorController
+        .leftBumper()
+        .whileTrue(
+            Commands.defer(
+                () -> superStructure.getScoreCommand(Button.kRightTrigger, Button.kRightBumper),
+                Set.of(feeder, hood, shooter, turret)));
+    operatorController
+        .leftTrigger()
+        .whileTrue(
+            Commands.defer(
+                () -> superStructure.getPassCommand(Button.kRightTrigger, Button.kRightBumper),
+                Set.of(feeder, hood, shooter, turret)));
+    operatorController
+        .povDown()
+        .onTrue(superStructure.runOnce(() -> superStructure.toggleControlMode()));
+    // driverController.a().whileTrue(new RightOutpostCycle());
+    // driverController.x().whileTrue(new MidOutpost());
   }
 
   private void testBindings() {
@@ -218,6 +245,8 @@ public class RobotContainer {
                     () -> -driverController.getLeftX(),
                     () -> -driverController.getRightX(),
                     2.)));
+    intake.setDefaultCommand(new IntakeDefaultCommand());
+
     // intake.setDefaultCommand(
     //     Commands.defer(() -> superStructure.getIntakeCommand(), Set.of(intake, stretcher)));
 
@@ -246,10 +275,20 @@ public class RobotContainer {
 
     driverController
         .rightBumper()
-        .onTrue(superStructure.runOnce(() -> superStructure.toggleIntakeMode()));
-    intake.setDefaultCommand(new IntakeDefaultCommand());
+        .onTrue(
+            superStructure.runOnce(
+                () -> superStructure.setIntakeMode(SuperStructure.IntakeMode.INTAKE)))
+        .onFalse(
+            superStructure.runOnce(
+                () -> superStructure.setIntakeMode(SuperStructure.IntakeMode.SHAKE)));
 
-    //driverController.rightBumper().toggleOnTrue(new IntakeCommand());
+    driverController
+        .leftBumper()
+        .onTrue(
+            superStructure.runOnce(
+                () -> superStructure.setIntakeMode(SuperStructure.IntakeMode.OFF)));
+
+    // driverController.rightBumper().toggleOnTrue(new IntakeCommand());
 
     driverController
         .b()
@@ -261,13 +300,15 @@ public class RobotContainer {
                     drive)
                 .ignoringDisable(true));
 
-    driverController
-        .start()
-        .onTrue(Commands.defer(() -> superStructure.getClimbExtendCommand(), Set.of(climber)));
+    // driverController
+    //     .start()
+    //     .onTrue(Commands.defer(() -> superStructure.getClimbExtendCommand(), Set.of(climber)));
 
-    driverController
-        .back()
-        .onTrue(Commands.defer(() -> superStructure.getClimbRetractCommand(), Set.of(climber)));
+    // driverController
+    //     .back()
+    //     .onTrue(Commands.defer(() -> superStructure.getClimbRetractCommand(), Set.of(climber)));
+    driverController.a().onTrue(Commands.run(() -> turret.setAutoSetpoint(0), turret));
+    driverController.a().onFalse(Commands.run(() -> turret.setAutoSetpoint(90), turret));
 
     // driverController.a().whileTrue(drive.followPPPath("LeftNA-Left"));
     // driverController.x().whileTrue(drive.followPPPath("Left-Depot"));
@@ -284,12 +325,12 @@ public class RobotContainer {
     //     .onTrue(new InstantCommand(() -> feeder.setFeedRPS(15)))
     //     .onFalse(new InstantCommand(() -> feeder.setFeedRPS(0)));
 
-    operatorController
-        .leftBumper()
-        .toggleOnTrue(
-            Commands.defer(
-                () -> superStructure.getShootCommand(Button.kRightTrigger, Button.kRightBumper),
-                Set.of(turret, shooter, hood, feeder)));
+    // operatorController
+    //     .leftBumper()
+    //     .toggleOnTrue(
+    //         Commands.defer(
+    //             () -> superStructure.getShootCommand(Button.kRightTrigger, Button.kRightBumper),
+    //             Set.of(turret, shooter, hood, feeder)));
     operatorController
         .povDown()
         .onTrue(superStructure.runOnce(() -> superStructure.toggleControlMode()));

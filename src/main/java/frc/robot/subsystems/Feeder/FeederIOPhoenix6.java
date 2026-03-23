@@ -26,7 +26,7 @@ public class FeederIOPhoenix6 implements FeederIO {
 
   private void turntableMotorConfig() {
     TalonFXConfiguration config = new TalonFXConfiguration();
-    config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
+    config.MotorOutput.NeutralMode = NeutralModeValue.Coast;
     config.Feedback.SensorToMechanismRatio = FeederConstants.TurntableRatio;
     config.Voltage.PeakForwardVoltage = 12.0;
     config.Voltage.PeakReverseVoltage = -12.0;
@@ -102,12 +102,12 @@ public class FeederIOPhoenix6 implements FeederIO {
             .isOK();
 
     inputs.turntableMotorVoltageVolts = turntableMotor.getMotorVoltage().getValueAsDouble();
-    inputs.turntableMotorCurrentAmps = turntableMotor.getSupplyCurrent().getValueAsDouble();
+    inputs.turntableMotorCurrentAmps = turntableMotor.getStatorCurrent().getValueAsDouble();
     inputs.turntableVelocityRPS = turntableMotor.getVelocity().getValueAsDouble();
 
     inputs.feedMotorConnected =
         BaseStatusSignal.refreshAll(
-                feedMotor.getMotorVoltage(), feedMotor.getSupplyCurrent(), feedMotor.getVelocity())
+                feedMotor.getMotorVoltage(), feedMotor.getStatorCurrent(), feedMotor.getVelocity())
             .isOK();
 
     inputs.feedMotorVoltageVolts = feedMotor.getMotorVoltage().getValueAsDouble();
