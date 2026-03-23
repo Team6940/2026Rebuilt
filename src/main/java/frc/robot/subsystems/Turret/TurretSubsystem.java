@@ -7,6 +7,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.TurretConstants;
 import frc.robot.Robot;
 import frc.robot.util.SetpointLeadCompensator;
+import java.util.function.DoubleSupplier;
 import org.littletonrobotics.junction.Logger;
 
 public class TurretSubsystem extends SubsystemBase {
@@ -18,7 +19,8 @@ public class TurretSubsystem extends SubsystemBase {
 
   public enum TurretMode {
     HYBRID,
-    MANUAL
+    MANUAL,
+    VELOCITY
   }
 
   private final TurretIO io;
@@ -38,6 +40,10 @@ public class TurretSubsystem extends SubsystemBase {
 
   private Rotation2d fieldRelativeRotation2d = new Rotation2d();
   private Pose2d lastRobotPose = new Pose2d();
+
+  private DoubleSupplier robotOmegaRadPerSecSupplier = () -> 0.0;
+  private double velocityCmdDegsPerSec = 0.0;
+  private double omegaFFDegsPerSec = 0.0;
 
   public TurretSubsystem() {
     if (Robot.isReal()) {
@@ -71,6 +77,11 @@ public class TurretSubsystem extends SubsystemBase {
   public void setModeManual() {
     mode = TurretMode.MANUAL;
     manualSetpointDegs = clamp(manualSetpointDegs);
+  }
+
+  public void setModeVelocity(DoubleSupplier omegaRadPerSecSupplier) {
+    mode = TurretMode.VELOCITY;
+    robotOmegaRadPerSecSupplier = omegaRadPerSecSupplier;
   }
 
   public TurretMode getMode() {
@@ -167,6 +178,10 @@ public class TurretSubsystem extends SubsystemBase {
         clamp(manualSetpointDegs + scalar * TurretConstants.TurretManualSensitivity);
   }
 
+  public double getManualSetpointDegs() {
+    return manualSetpointDegs;
+  }
+
   public double getCurrentPositionDegs() {
     return inputs.turretPositionDegrees;
   }
@@ -241,6 +256,7 @@ public class TurretSubsystem extends SubsystemBase {
     switch (mode) {
       case HYBRID -> handleHybrid();
       case MANUAL -> handleManual();
+      case VELOCITY -> handleVelocity();
         // case MANUAL -> handleManualFieldRelative();
     }
 
@@ -257,6 +273,9 @@ public class TurretSubsystem extends SubsystemBase {
     Logger.recordOutput("Turret/RobotHeadingDegs", lastRobotPose.getRotation().getDegrees());
     Logger.recordOutput("Turret/OperatorInputScalar", operatorInputScalar);
     Logger.recordOutput("Turret/EncoderCalculatedPositionDegs", encoderCalculatedPositionDegs);
+    Logger.recordOutput("Turret/VelocityCmdDegsPerSec", velocityCmdDegsPerSec);
+    Logger.recordOutput("Turret/OmegaFFDegsPerSec", omegaFFDegsPerSec);
+    Logger.recordOutput("Turret/MotorVelocityDegsPerSec", inputs.motorVelocityDegsPerSec);
   }
 
   private void handleHybrid() {
@@ -281,6 +300,57 @@ public class TurretSubsystem extends SubsystemBase {
     // targetPositionDegs=targetState.position;
     // velocityFFDegsPerSec=targetState.velocity;
     setPosition(targetPositionDegs);
+  }
+
+  private static final double VELOCITY_LOOP_DT = 0.02; // seconds (standard 50 Hz loop)
+  // Deceleration zone: start ramping down velocity this many degrees before the hard limit
+  private static final double LIMIT_DECEL_ZONE_DEGS = 10.0;
+
+  private void handleVelocity() {
+    double pos = inputs.turretPositionDegrees;
+    double angleError = autoSetpointDegs - pos;
+    omegaFFDegsPerSec = -Math.toDegrees(robotOmegaRadPerSecSupplier.getAsDouble());
+
+    double rawCmd = TurretConstants.kP_position * angleError + omegaFFDegsPerSec;
+
+    // Magnitude clamp
+    rawCmd =
+        MathUtil.clamp(
+            rawCmd, -TurretConstants.MaxVelocityDegsPerSec, TurretConstants.MaxVelocityDegsPerSec);
+
+    // Soft deceleration zone near limits: scale the command down linearly
+    // as the predicted next-tick position approaches the hard boundary.
+    // This handles both the P term and the omega FF spike simultaneously.
+    double predictedPos = pos + rawCmd * VELOCITY_LOOP_DT;
+
+    if (rawCmd > 0) {
+      // Moving toward MaxDegs
+      double distToMax = TurretConstants.MaxDegs - pos;
+      if (distToMax <= 0) {
+        rawCmd = 0; // already at or past limit
+      } else if (distToMax < LIMIT_DECEL_ZONE_DEGS) {
+        // Ramp: full speed at zone edge, zero at limit
+        double scale = distToMax / LIMIT_DECEL_ZONE_DEGS;
+        rawCmd *= scale;
+        // Re-check predicted position after scaling; hard-zero if still overshooting
+        predictedPos = pos + rawCmd * VELOCITY_LOOP_DT;
+        if (predictedPos > TurretConstants.MaxDegs) rawCmd = 0;
+      }
+    } else if (rawCmd < 0) {
+      // Moving toward MinDegs
+      double distToMin = pos - TurretConstants.MinDegs;
+      if (distToMin <= 0) {
+        rawCmd = 0; // already at or past limit
+      } else if (distToMin < LIMIT_DECEL_ZONE_DEGS) {
+        double scale = distToMin / LIMIT_DECEL_ZONE_DEGS;
+        rawCmd *= scale;
+        predictedPos = pos + rawCmd * VELOCITY_LOOP_DT;
+        if (predictedPos < TurretConstants.MinDegs) rawCmd = 0;
+      }
+    }
+
+    velocityCmdDegsPerSec = rawCmd;
+    io.setVelocity(velocityCmdDegsPerSec);
   }
 
   // private void handleManualFieldRelative() {

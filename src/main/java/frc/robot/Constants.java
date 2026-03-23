@@ -580,6 +580,26 @@ public final class Constants {
     public static final double MaxVelocity = 40.0; // Rotations per second
     public static final double Acceleration = 60.0; // Rotations per second squared
 
+    // ── Velocity-based control gains (used when TurretMode.VELOCITY is active) ──
+    //
+    // Outer position loop (runs on RIO, produces commanded angular velocity):
+    //   ω_cmd = kP_position * angleError  +  ω_feedforward
+    // Inner velocity loop (runs on motor controller):
+    //   uses kP_velocity, kV_velocity, kS_velocity via VelocityTorqueCurrentFOC
+    //
+    // Tune order:
+    //   1. kV_velocity  — set so motor tracks a constant velocity command accurately
+    //   2. kP_velocity  — tighten velocity tracking
+    //   3. kP_position  — tune convergence speed of the outer loop (start low, ~2–5)
+    public static final double kP_position = 3.0; // deg/s per deg of error — tune
+    public static final double kP_velocity = 2.0; // motor velocity kP — tune
+    public static final double kV_velocity = 0.12; // motor velocity kV — tune
+    public static final double kS_velocity = 0.35; // motor velocity kS (same as kS above)
+
+    // Maximum commanded turret angular velocity (degrees per second).
+    // Corresponds to roughly 8 rad/s (~460 deg/s). Tune as needed.
+    public static final double MaxVelocityDegsPerSec = 460.0;
+
     // Positions (Degrees)
     public static final double TurretPositionToleranceDegs = 10.0;
     public static final double MinDegs = -220.0;

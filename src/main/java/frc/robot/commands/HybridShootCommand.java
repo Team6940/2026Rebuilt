@@ -117,7 +117,7 @@ public class HybridShootCommand extends Command {
   @Override
   public void initialize() {
     hood.setModeHybrid();
-    turret.setModeHybrid();
+    turret.setModeVelocity(drive::getRobotOmegaRadPerSec);
     hood.setOperatorInputScalar(0.0);
     turret.setOperatorInputScalar(0.0);
     rpsOffset = 0.0;
