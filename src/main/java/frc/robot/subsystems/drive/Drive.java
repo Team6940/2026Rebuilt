@@ -72,6 +72,8 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
+import edu.wpi.first.networktables.NetworkTableEntry;
+import edu.wpi.first.networktables.NetworkTableInstance;
 import org.ironmaple.simulation.drivesims.COTS;
 import org.ironmaple.simulation.drivesims.configs.DriveTrainSimulationConfig;
 import org.ironmaple.simulation.drivesims.configs.SwerveModuleSimulationConfig;
@@ -156,6 +158,18 @@ public class Drive extends SubsystemBase {
       new SwerveDrivePoseEstimator(kinematics, rawGyroRotation, lastModulePositions, new Pose2d());
 
   private final Field2d field2d = new Field2d();
+
+  // Limelight snapshot NT entries — writing 1 triggers a single image save to
+  // the Limelight's internal storage, which is viewable post-match at
+  // http://<limelight-ip>:5801 under the Snapshots tab.
+  private final NetworkTableEntry llLeftSnapshot =
+      NetworkTableInstance.getDefault()
+          .getTable(RobotContainer.limelightLeft)
+          .getEntry("snapshot");
+  private final NetworkTableEntry llRightSnapshot =
+      NetworkTableInstance.getDefault()
+          .getTable(RobotContainer.limelightRight)
+          .getEntry("snapshot");
 
   // PID Controllers for autoMoveToPose
   private final PIDController xController;
@@ -319,6 +333,9 @@ public class Drive extends SubsystemBase {
   }
 
   public void processLog() {
+    // Reset snapshot triggers so each tag detection only saves one image
+    llLeftSnapshot.setNumber(0);
+    llRightSnapshot.setNumber(0);
     field2d.setRobotPose(getPose());
     Logger.recordOutput("Odometry/Robot", getPose());
     Logger.recordOutput("Drive/ChassisSpeeds", getChassisSpeeds());
@@ -371,27 +388,63 @@ public class Drive extends SubsystemBase {
     if (mt2 == null) {
       DriverStation.reportWarning(limelightName + " Disconnected!", false);
       Logger.recordOutput("Vision/" + limelightName + "/Connected", false);
+      Logger.recordOutput("Vision/" + limelightName + "/TagCount", 0);
+      Logger.recordOutput("Vision/" + limelightName + "/AvgTagDist", 0.0);
+      Logger.recordOutput("Vision/" + limelightName + "/AvgTagArea", 0.0);
+      Logger.recordOutput("Vision/" + limelightName + "/RawPose", new Pose2d());
+      Logger.recordOutput("Vision/" + limelightName + "/AcceptedPose", new Pose2d[] {});
+      Logger.recordOutput("Vision/" + limelightName + "/RejectedPose", new Pose2d[] {});
+      Logger.recordOutput("Vision/" + limelightName + "/GateOmegaOk", false);
+      Logger.recordOutput("Vision/" + limelightName + "/GateHasTag", false);
+      Logger.recordOutput("Vision/" + limelightName + "/GateDistOk", false);
+      Logger.recordOutput("Vision/" + limelightName + "/GateVelOk", false);
+      Logger.recordOutput("Vision/" + limelightName + "/Accepted", false);
       return null;
     }
 
+    // Raw measurement data — always logged regardless of acceptance
     Logger.recordOutput("Vision/" + limelightName + "/Connected", true);
     Logger.recordOutput("Vision/" + limelightName + "/TagCount", mt2.tagCount);
     Logger.recordOutput("Vision/" + limelightName + "/AvgTagDist", mt2.avgTagDist);
+    Logger.recordOutput("Vision/" + limelightName + "/AvgTagArea", mt2.avgTagArea);
     Logger.recordOutput("Vision/" + limelightName + "/RawPose", mt2.pose);
 
+    // Trigger a snapshot save on the Limelight whenever a tag is visible.
+    // Images are saved to the Limelight's internal storage and are viewable
+    // post-match at http://<limelight-ip>:5801 under the Snapshots tab.
+    // The entry is reset back to 0 in processLog() each loop so only one
+    // image is saved per rising edge rather than flooding storage.
+    if (mt2.tagCount > 0) {
+      NetworkTableEntry snapshotEntry =
+          limelightName.equals(RobotContainer.limelightLeft) ? llLeftSnapshot : llRightSnapshot;
+      snapshotEntry.setNumber(1);
+    }
+
+    // Individual acceptance gate results — use in AdvantageScope to diagnose
+    // which gate killed a measurement at any given timestamp
     ChassisSpeeds speeds = getChassisSpeeds();
     boolean omegaOk = Math.abs(speeds.omegaRadiansPerSecond) <= 4 * Math.PI;
     boolean hasTag = mt2.tagCount > 0;
-    boolean distOk = mt2.avgTagDist < 3.;
-    boolean velOk = Math.hypot(speeds.vxMetersPerSecond, speeds.vyMetersPerSecond) < 2;
+    boolean distOk = mt2.avgTagDist < 3.0;
+    boolean velOk = Math.hypot(speeds.vxMetersPerSecond, speeds.vyMetersPerSecond) < 2.0;
     boolean accepted = omegaOk && hasTag && distOk && velOk;
 
+    Logger.recordOutput("Vision/" + limelightName + "/GateOmegaOk", omegaOk);
+    Logger.recordOutput("Vision/" + limelightName + "/GateHasTag", hasTag);
+    Logger.recordOutput("Vision/" + limelightName + "/GateDistOk", distOk);
+    Logger.recordOutput("Vision/" + limelightName + "/GateVelOk", velOk);
     Logger.recordOutput("Vision/" + limelightName + "/Accepted", accepted);
 
+    // Log pose into separate accepted/rejected Pose2d arrays so AdvantageScope's
+    // 3D view can render accepted poses green and rejected poses red
     if (!accepted) {
+      Logger.recordOutput("Vision/" + limelightName + "/AcceptedPose", new Pose2d[] {});
+      Logger.recordOutput("Vision/" + limelightName + "/RejectedPose", new Pose2d[] {mt2.pose});
       return null;
     }
 
+    Logger.recordOutput("Vision/" + limelightName + "/AcceptedPose", new Pose2d[] {mt2.pose});
+    Logger.recordOutput("Vision/" + limelightName + "/RejectedPose", new Pose2d[] {});
     return mt2;
   }
 

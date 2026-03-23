@@ -560,20 +560,20 @@ public final class Constants {
     public static final double TurretSupplyCurrentLimit = 40.0;
 
     // Encoder 1
-    public static final double TurretEncoderOffsetDegrees = -0.118164 * 360.;
+    public static final double TurretEncoderOffsetDegrees = -40.078;
     public static final SensorDirectionValue TurretEncoderDirection =
         SensorDirectionValue.CounterClockwise_Positive;
 
     // Encoder 2
-    public static final double TurretEncoder2OffsetDegrees = -0.017090 * 360.;
+    public static final double TurretEncoder2OffsetDegrees = -96.416;
     public static final SensorDirectionValue TurretEncoder2Direction =
         SensorDirectionValue.CounterClockwise_Positive;
 
     // PID Gains
-    public static final double kP = 1000.;
+    public static final double kP = 1200.;
     public static final double kI = 0.0;
-    public static final double kD = 50;
-    public static final double kV = 0.0;
+    public static final double kD = 80.;
+    public static final double kV = 120.;
     public static final double kS = 0.35;
 
     // Motion Magic Gains
