@@ -172,8 +172,8 @@ public class HybridShootCommand extends Command {
         //   ω (rad/s) = tangentialVelocity / distance  →  deg/s = toDegrees(ω)
         double tangentialToVirtual = drive.getTurretTangentialVelocityToTarget(sol.virtualTarget());
         targetVelFFDegsPerSec =
-            sol.lookaheadDistance() > 1e-6
-                ? Math.toDegrees(Math.atan(tangentialToVirtual / sol.lookaheadDistance()))
+            distanceMeters > 1e-6
+                ? Math.toDegrees(Math.atan(tangentialToVirtual / distanceMeters))
                 : 0.0;
 
         Logger.recordOutput(

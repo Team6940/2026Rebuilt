@@ -234,7 +234,14 @@ public class RobotContainer {
     operatorController
         .povDown()
         .onTrue(superStructure.runOnce(() -> superStructure.toggleControlMode()));
-    // driverController.a().whileTrue(new RightOutpostCycle());
+    // driverController
+    //     .a()
+    //     .onTrue(new InstantCommand(() -> turret.setVelocity(300.)))
+    //     .onFalse(new InstantCommand(() -> turret.setVelocity(0.)));
+    // driverController
+    //     .y()
+    //     .onTrue(new InstantCommand(() -> turret.setVelocity(-300.)))
+    //     .onFalse(new InstantCommand(() -> turret.setVelocity(0.)));
     // driverController.x().whileTrue(new MidOutpost());
   }
 

@@ -116,7 +116,7 @@ public class TurretIOPhoenix6 implements TurretIO {
             .isOK();
 
     inputs.motorVoltageVolts = motor.getMotorVoltage().getValueAsDouble();
-    inputs.motorCurrentAmps = motor.getSupplyCurrent().getValueAsDouble();
+    inputs.motorStatorCurrentAmps = motor.getStatorCurrent().getValueAsDouble();
     inputs.motorVelocityDegsPerSec =
         Units.rotationsToDegrees(motor.getVelocity().getValueAsDouble());
     inputs.turretPositionDegrees = Units.rotationsToDegrees(motor.getPosition().getValueAsDouble());

@@ -336,7 +336,10 @@ public class TurretSubsystem extends SubsystemBase {
 
   private void handleVelocity() {
     // ── Step 1: position error ────────────────────────────────────────────────
-    double positionError = autoSetpointDegs - inputs.turretPositionDegrees;
+    rawSetpointDegs =
+        clamp(autoSetpointDegs + operatorInputScalar * TurretConstants.TurretHybridRangeDegs);
+    targetPositionDegs = rawSetpointDegs;
+    double positionError = targetPositionDegs - inputs.turretPositionDegrees;
     double pTerm = TurretConstants.kP_position * positionError;
 
     // ── Step 2: feedforward terms ─────────────────────────────────────────────
@@ -385,7 +388,7 @@ public class TurretSubsystem extends SubsystemBase {
     dbg_positionError = positionError;
     dbg_targetVelFF = targetVelFF;
     dbg_chassisFF = chassisFF;
-    io.setVelocity(velocityCmdDegsPerSec);
+    setVelocity(velocityCmdDegsPerSec);
   }
 
   // private void handleManualFieldRelative() {
