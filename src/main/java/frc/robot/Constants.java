@@ -207,7 +207,7 @@ public final class Constants {
       // Distance (meters) -> Flight time (seconds)
       DistanceToFlightTimeSecs.put(0.96, 0.9);
       DistanceToFlightTimeSecs.put(1.2, 1.0);
-      DistanceToFlightTimeSecs.put(3.,1.14);
+      DistanceToFlightTimeSecs.put(3., 1.14);
       DistanceToFlightTimeSecs.put(5., 1.23);
     }
   }
@@ -583,22 +583,39 @@ public final class Constants {
     // ── Velocity-based control gains (used when TurretMode.VELOCITY is active) ──
     //
     // Outer position loop (runs on RIO, produces commanded angular velocity):
-    //   ω_cmd = kP_position * angleError  +  ω_feedforward
+    //   ω_cmd = kP_position * positionError
+    //         + kFF_targetVel  * setpointDerivative  (tracks moving target)
+    //         + kFF_chassis    * (-chassisOmega_deg/s) (keeps field-relative aim)
     // Inner velocity loop (runs on motor controller):
     //   uses kP_velocity, kV_velocity, kS_velocity via VelocityTorqueCurrentFOC
     //
     // Tune order:
-    //   1. kV_velocity  — set so motor tracks a constant velocity command accurately
-    //   2. kP_velocity  — tighten velocity tracking
-    //   3. kP_position  — tune convergence speed of the outer loop (start low, ~2–5)
-    public static final double kP_position = 3.0; // deg/s per deg of error — tune
+    //   1. kV_velocity   — set so motor tracks a constant velocity command accurately
+    //   2. kP_velocity   — tighten velocity tracking
+    //   3. kP_position   — tune convergence speed of the outer loop (start low, ~2–5)
+    //   4. kFF_targetVel — scale the setpoint-rate FF (1.0 = full; lower if overshooting)
+    //   5. kFF_chassis   — scale the chassis-omega FF (1.0 = full; lower if oscillating)
+    public static final double kP_position = 3.0; // (deg/s) per deg of error
     public static final double kP_velocity = 2.0; // motor velocity kP — tune
     public static final double kV_velocity = 0.12; // motor velocity kV — tune
     public static final double kS_velocity = 0.35; // motor velocity kS (same as kS above)
 
-    // Maximum commanded turret angular velocity (degrees per second).
-    // Corresponds to roughly 8 rad/s (~460 deg/s). Tune as needed.
-    public static final double MaxVelocityDegsPerSec = 460.0;
+    // Feedforward scale for the setpoint-rate term (dimensionless, [0..1] typical).
+    // 1.0 means the outer loop fully compensates for a moving target.
+    // Start at 0.0 and increase until tracking lag disappears without overshoot.
+    // For now I leave it with 0.
+    // Note: The derivative method is not a good way which has signifacantly more noise and
+    // dampening the system, as i had seen in SIM mode.
+    public static final double kFF_targetVel = 1.0;
+
+    // Feedforward scale for the chassis-rotation compensation term (dimensionless, [0..1] typical).
+    // 1.0 means full cancellation of chassis yaw. Start at 0.5 and increase to 1.0 if the
+    // turret drifts in field-relative angle while the robot is spinning.
+    public static final double kFF_chassis = 1.0;
+
+    // Hard cap applied specifically during VELOCITY mode (deg/s).
+    // Set lower than MaxVelocityDegsPerSec while tuning, then raise once stable.
+    public static final double VelocityModeMaxDegsPerSec = 300.0;
 
     // Positions (Degrees)
     public static final double TurretPositionToleranceDegs = 10.0;

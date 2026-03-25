@@ -42,8 +42,13 @@ public class TurretSubsystem extends SubsystemBase {
   private Pose2d lastRobotPose = new Pose2d();
 
   private DoubleSupplier robotOmegaRadPerSecSupplier = () -> 0.0;
+  private DoubleSupplier targetVelFFDegsPerSecSupplier = () -> 0.0;
+
+  // Diagnostic log fields (written in handleVelocity, read in periodic)
   private double velocityCmdDegsPerSec = 0.0;
-  private double omegaFFDegsPerSec = 0.0;
+  private double dbg_positionError = 0.0;
+  private double dbg_targetVelFF = 0.0;
+  private double dbg_chassisFF = 0.0;
 
   public TurretSubsystem() {
     if (Robot.isReal()) {
@@ -69,6 +74,14 @@ public class TurretSubsystem extends SubsystemBase {
     io.setPosition(positionDegrees);
   }
 
+  public void setVelocity(double velocityDegsPerSec) {
+    io.setVelocity(
+        MathUtil.clamp(
+            velocityDegsPerSec,
+            -TurretConstants.VelocityModeMaxDegsPerSec,
+            TurretConstants.VelocityModeMaxDegsPerSec));
+  }
+
   public void setModeHybrid() {
     mode = TurretMode.HYBRID;
     autoSetpointDegs = clamp(autoSetpointDegs);
@@ -79,9 +92,18 @@ public class TurretSubsystem extends SubsystemBase {
     manualSetpointDegs = clamp(manualSetpointDegs);
   }
 
-  public void setModeVelocity(DoubleSupplier omegaRadPerSecSupplier) {
+  /**
+   * Enters VELOCITY mode.
+   *
+   * @param omegaRadPerSecSupplier chassis yaw rate (rad/s, CCW-positive) for field-relative FF
+   * @param targetVelFFDegsPerSecSupplier commanded angular velocity feedforward (deg/s) derived
+   *     externally from the target's tangential motion; pass {@code () -> 0.0} when not needed
+   */
+  public void setModeVelocity(
+      DoubleSupplier omegaRadPerSecSupplier, DoubleSupplier targetVelFFDegsPerSecSupplier) {
     mode = TurretMode.VELOCITY;
     robotOmegaRadPerSecSupplier = omegaRadPerSecSupplier;
+    this.targetVelFFDegsPerSecSupplier = targetVelFFDegsPerSecSupplier;
   }
 
   public TurretMode getMode() {
@@ -274,8 +296,10 @@ public class TurretSubsystem extends SubsystemBase {
     Logger.recordOutput("Turret/OperatorInputScalar", operatorInputScalar);
     Logger.recordOutput("Turret/EncoderCalculatedPositionDegs", encoderCalculatedPositionDegs);
     Logger.recordOutput("Turret/VelocityCmdDegsPerSec", velocityCmdDegsPerSec);
-    Logger.recordOutput("Turret/OmegaFFDegsPerSec", omegaFFDegsPerSec);
     Logger.recordOutput("Turret/MotorVelocityDegsPerSec", inputs.motorVelocityDegsPerSec);
+    Logger.recordOutput("Turret/Velocity/PositionError", dbg_positionError);
+    Logger.recordOutput("Turret/Velocity/TargetVelFF", dbg_targetVelFF);
+    Logger.recordOutput("Turret/Velocity/ChassisFF", dbg_chassisFF);
   }
 
   private void handleHybrid() {
@@ -306,50 +330,61 @@ public class TurretSubsystem extends SubsystemBase {
   // Deceleration zone: start ramping down velocity this many degrees before the hard limit
   private static final double LIMIT_DECEL_ZONE_DEGS = 10.0;
 
+  // Note: mapping of external setpoints into the turret's mechanical range is
+  // handled by findNearestEquivalentAngle(..). The previous wrapToValidRange
+  // helper was removed to avoid duplication.
+
   private void handleVelocity() {
-    double pos = inputs.turretPositionDegrees;
-    double angleError = autoSetpointDegs - pos;
-    omegaFFDegsPerSec = -Math.toDegrees(robotOmegaRadPerSecSupplier.getAsDouble());
+    // ── Step 1: position error ────────────────────────────────────────────────
+    double positionError = autoSetpointDegs - inputs.turretPositionDegrees;
+    double pTerm = TurretConstants.kP_position * positionError;
 
-    double rawCmd = TurretConstants.kP_position * angleError + omegaFFDegsPerSec;
+    // ── Step 2: feedforward terms ─────────────────────────────────────────────
+    // Target velocity FF — supplied externally by the command, which computes it as
+    //   tangentialVelocityToVirtualTarget / distanceToVirtualTarget  (rad/s → deg/s).
+    // Scaled by kFF_targetVel for independent gain tuning.
+    double targetVelFF =
+        TurretConstants.kFF_targetVel * targetVelFFDegsPerSecSupplier.getAsDouble();
 
-    // Magnitude clamp
+    // Chassis yaw FF — keeps the turret field-relative while the robot rotates.
+    // Robot CCW positive → turret must rotate CW → negative sign.
+    // Scaled by kFF_chassis so it can be dialled down independently.
+    double chassisFF =
+        TurretConstants.kFF_chassis * (-Math.toDegrees(robotOmegaRadPerSecSupplier.getAsDouble()));
+
+    // ── Step 3: sum and clamp ─────────────────────────────────────────────────
+    double rawCmd = pTerm + targetVelFF + chassisFF;
     rawCmd =
         MathUtil.clamp(
-            rawCmd, -TurretConstants.MaxVelocityDegsPerSec, TurretConstants.MaxVelocityDegsPerSec);
+            rawCmd,
+            -TurretConstants.VelocityModeMaxDegsPerSec,
+            TurretConstants.VelocityModeMaxDegsPerSec);
 
-    // Soft deceleration zone near limits: scale the command down linearly
-    // as the predicted next-tick position approaches the hard boundary.
-    // This handles both the P term and the omega FF spike simultaneously.
-    double predictedPos = pos + rawCmd * VELOCITY_LOOP_DT;
-
+    // ── Step 4: soft deceleration zone near mechanical limits ─────────────────
+    double pos = inputs.turretPositionDegrees;
     if (rawCmd > 0) {
-      // Moving toward MaxDegs
       double distToMax = TurretConstants.MaxDegs - pos;
       if (distToMax <= 0) {
-        rawCmd = 0; // already at or past limit
+        rawCmd = 0;
       } else if (distToMax < LIMIT_DECEL_ZONE_DEGS) {
-        // Ramp: full speed at zone edge, zero at limit
-        double scale = distToMax / LIMIT_DECEL_ZONE_DEGS;
-        rawCmd *= scale;
-        // Re-check predicted position after scaling; hard-zero if still overshooting
-        predictedPos = pos + rawCmd * VELOCITY_LOOP_DT;
-        if (predictedPos > TurretConstants.MaxDegs) rawCmd = 0;
+        rawCmd *= distToMax / LIMIT_DECEL_ZONE_DEGS;
+        if (pos + rawCmd * VELOCITY_LOOP_DT > TurretConstants.MaxDegs) rawCmd = 0;
       }
     } else if (rawCmd < 0) {
-      // Moving toward MinDegs
       double distToMin = pos - TurretConstants.MinDegs;
       if (distToMin <= 0) {
-        rawCmd = 0; // already at or past limit
+        rawCmd = 0;
       } else if (distToMin < LIMIT_DECEL_ZONE_DEGS) {
-        double scale = distToMin / LIMIT_DECEL_ZONE_DEGS;
-        rawCmd *= scale;
-        predictedPos = pos + rawCmd * VELOCITY_LOOP_DT;
-        if (predictedPos < TurretConstants.MinDegs) rawCmd = 0;
+        rawCmd *= distToMin / LIMIT_DECEL_ZONE_DEGS;
+        if (pos + rawCmd * VELOCITY_LOOP_DT < TurretConstants.MinDegs) rawCmd = 0;
       }
     }
 
+    // ── Step 5: apply ─────────────────────────────────────────────────────────
     velocityCmdDegsPerSec = rawCmd;
+    dbg_positionError = positionError;
+    dbg_targetVelFF = targetVelFF;
+    dbg_chassisFF = chassisFF;
     io.setVelocity(velocityCmdDegsPerSec);
   }
 

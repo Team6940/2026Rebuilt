@@ -38,7 +38,7 @@ public class ManualShootCommand extends Command {
   @Override
   public void initialize() {
     hood.setModeManual();
-    turret.setModeVelocity(drive::getRobotOmegaRadPerSec);
+    turret.setModeVelocity(drive::getRobotOmegaRadPerSec, () -> 0.0);
     hood.setOperatorInputScalar(0.0);
     turret.setOperatorInputScalar(0.0);
   }

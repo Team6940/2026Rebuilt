@@ -760,6 +760,25 @@ public class Drive extends SubsystemBase {
     return getTargetRelativeChassisSpeeds(hubCenter);
   }
 
+  /**
+   * Returns the tangential component of the turret's field velocity relative to an arbitrary
+   * target (m/s, CCW positive). Positive means the robot is moving in the counter-clockwise
+   * direction around the target.
+   *
+   * <p>Used to compute the turret angular velocity feedforward:
+   *
+   * <pre>
+   *   turretAngularFF (rad/s) = tangentialVelocity / distanceToTarget
+   *   turretAngularFF (deg/s) = Math.toDegrees(tangentialVelocity / distanceToTarget)
+   * </pre>
+   *
+   * @param target field-relative target position (e.g. virtual target from the lookahead solver)
+   * @return tangential velocity in m/s (CCW positive)
+   */
+  public double getTurretTangentialVelocityToTarget(Translation2d target) {
+    return getTargetRelativeChassisSpeeds(target).getY();
+  }
+
   /** Returns the distance from the robot to the alliance hub center (meters). */
   public double getDistanceToAllianceHub() {
     Translation2d hubCenter = getAllianceHubCenter();

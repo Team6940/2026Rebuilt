@@ -62,6 +62,13 @@ public class HybridShootCommand extends Command {
   /** Persistent RPS offset applied on top of the solver result. Adjusted via ABXY. */
   private double rpsOffset = 0.0;
 
+  /**
+   * Target angular velocity feedforward for the turret (deg/s). Computed each execute() cycle as:
+   * tangentialVelocityToVirtualTarget / lookaheadDistance. Passed into the turret subsystem via a
+   * DoubleSupplier so the velocity loop always reads the latest value.
+   */
+  private double targetVelFFDegsPerSec = 0.0;
+
   // private static final double LEAD_YAW_COMPENSATION_INDEX = 6.;
 
   /**
@@ -117,7 +124,7 @@ public class HybridShootCommand extends Command {
   @Override
   public void initialize() {
     hood.setModeHybrid();
-    turret.setModeHybrid();
+    turret.setModeVelocity(drive::getRobotOmegaRadPerSec, () -> targetVelFFDegsPerSec);
     hood.setOperatorInputScalar(0.0);
     turret.setOperatorInputScalar(0.0);
     rpsOffset = 0.0;
@@ -159,9 +166,21 @@ public class HybridShootCommand extends Command {
         targetRps = sol.shooterRps();
         hoodDegs = sol.hoodAngleDeg();
         fieldTargetAngle = sol.turretAimAngle();
+
+        // Target angular velocity FF: how fast the turret must rotate to keep tracking the
+        // virtual target as the robot moves.
+        //   ω (rad/s) = tangentialVelocity / distance  →  deg/s = toDegrees(ω)
+        double tangentialToVirtual = drive.getTurretTangentialVelocityToTarget(sol.virtualTarget());
+        targetVelFFDegsPerSec =
+            sol.lookaheadDistance() > 1e-6
+                ? Math.toDegrees(Math.atan(tangentialToVirtual / sol.lookaheadDistance()))
+                : 0.0;
+
         Logger.recordOutput(
             "Cmds/HybridShoot/VirtualTarget", new Pose2d(sol.virtualTarget(), new Rotation2d()));
         Logger.recordOutput("Cmds/HybridShoot/FlightTimeSecs", sol.flightTimeSecs());
+        Logger.recordOutput("Cmds/HybridShoot/TangentialToVirtualMPS", tangentialToVirtual);
+        Logger.recordOutput("Cmds/HybridShoot/TargetVelFFDegsPerSec", targetVelFFDegsPerSec);
       } else {
         // ── Method A: direct 2D map lookup ──────────────────────────────────
         distanceMeters = dist;
@@ -172,6 +191,8 @@ public class HybridShootCommand extends Command {
         double leadYawDegs =
             ProjectileCalculator.estimateLeadYawDegrees_Direct(distanceMeters, tangentialVelocity);
         fieldTargetAngle = straightToTarget.plus(Rotation2d.fromDegrees(leadYawDegs));
+        // Method A does not produce a virtual target, so no angular FF is available.
+        targetVelFFDegsPerSec = 0.0;
       }
     } else {
       // Pass mode: shoot to tower with static shooter settings
@@ -183,13 +204,13 @@ public class HybridShootCommand extends Command {
 
       targetRps = ShooterConstants.PassRps;
       hoodDegs = HoodConstants.PassHoodDegs;
-      // double leadYawDegs = LEAD_YAW_COMPENSATION_INDEX * tangentialVelocity;
-      // fieldTargetAngle = straightToTarget.plus(Rotation2d.fromDegrees(leadYawDegs));
       fieldTargetAngle =
           (DriverStation.getAlliance().isPresent()
                   && DriverStation.getAlliance().get() == Alliance.Blue)
               ? new Rotation2d(Math.PI)
               : new Rotation2d(0.);
+      // Pass mode uses a fixed field angle — no angular velocity FF.
+      targetVelFFDegsPerSec = 0.0;
     }
 
     hood.setAutoSetpoint(hoodDegs);
