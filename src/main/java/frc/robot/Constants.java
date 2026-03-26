@@ -703,8 +703,28 @@ public final class Constants {
     public static final double ManualRpsX = 55.;
     public static final double ManualRpsY = 70.;
 
-    // Passing mode constants (static values for tower passing)
-    public static final double PassRps = 60.;
+    // Passing mode constants (static values for bump passing)
+    public static final double PassRps = 55.;
+
+    /**
+     * Linear RPS correction slope for pass mode.
+     * RPS is adjusted by (distance - PassRpsNeutralDistanceMeters) * PassRpsPerMeter.
+     * Positive value → more RPS for farther shots, less for closer ones.
+     */
+    public static final double PassRpsPerMeter = 5.0;
+
+    /**
+     * Distance at which PassRps is used without correction.
+     * When the robot is exactly this far from the target bump, no RPS adjustment is applied.
+     */
+    public static final double PassRpsNeutralDistanceMeters = 2.5;
+
+    /**
+     * Lead time index for pass-mode yaw compensation (seconds).
+     * The turret is pre-rotated by tangentialVelocityToBump * PassLeadIndex degrees
+     * to compensate for chassis lateral motion during the ball's flight.
+     */
+    public static final double PassLeadIndex = 0.4;
   }
 
   public final class FeederConstants {

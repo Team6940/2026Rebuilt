@@ -213,7 +213,8 @@ public class RobotContainer {
                         () -> -driverController.getLeftY(),
                         () -> -driverController.getLeftX(),
                         () -> -driverController.getRightX(),
-                        2.)));
+                        2.,
+                        3.)));
     // driverController
     //     .leftBumper()
     //     .onTrue(superStructure.runOnce(() ->
@@ -253,7 +254,8 @@ public class RobotContainer {
                     () -> -driverController.getLeftY(),
                     () -> -driverController.getLeftX(),
                     () -> -driverController.getRightX(),
-                    2.)));
+                    2.,
+                    3.)));
     intake.setDefaultCommand(new IntakeDefaultCommand());
 
     // intake.setDefaultCommand(
