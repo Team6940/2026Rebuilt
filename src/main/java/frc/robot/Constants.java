@@ -595,10 +595,11 @@ public final class Constants {
     //   3. kP_position   — tune convergence speed of the outer loop (start low, ~2–5)
     //   4. kFF_targetVel — scale the setpoint-rate FF (1.0 = full; lower if overshooting)
     //   5. kFF_chassis   — scale the chassis-omega FF (1.0 = full; lower if oscillating)
-    public static final double kP_position = 10.0; // (deg/s) per deg of error
-    public static final double kP_velocity = 75.; // motor velocity kP — tune
+    public static final double kP_position = 9.0; // (deg/s) per deg of error
+    public static final double kP_velocity = 36.; // motor velocity kP — tune
     public static final double kV_velocity = 0.0127; // motor velocity kV — tune
     public static final double kS_velocity = 2.95; // motor velocity kS (same as kS above)
+    public static final double kA_velocity = 2.;
 
     // Feedforward scale for the setpoint-rate term (dimensionless, [0..1] typical).
     // 1.0 means the outer loop fully compensates for a moving target.
@@ -615,7 +616,7 @@ public final class Constants {
 
     // Hard cap applied specifically during VELOCITY mode (deg/s).
     // Set lower than MaxVelocityDegsPerSec while tuning, then raise once stable.
-    public static final double VelocityModeMaxDegsPerSec = 720.0;
+    public static final double VelocityModeMaxDegsPerSec = 960.0;
 
     // Positions (Degrees)
     public static final double TurretPositionToleranceDegs = 10.0;
