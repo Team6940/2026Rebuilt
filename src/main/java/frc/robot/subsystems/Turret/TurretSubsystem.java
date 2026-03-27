@@ -54,8 +54,7 @@ public class TurretSubsystem extends SubsystemBase {
     if (Robot.isReal()) {
       io = new TurretIOPhoenix6();
     } else {
-      // TODO: Implement simulation code here
-      io = new TurretIO() {};
+      io = new TurretIOSim();
     }
     io.updateInputs(inputs); // this is necessary to initialize the inputs
     encoderCalculatedPositionDegs =

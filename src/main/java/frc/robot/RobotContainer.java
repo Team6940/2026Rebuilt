@@ -67,7 +67,7 @@ public class RobotContainer {
   // Subsystems
   public static final String limelightLeft = "limelight-l";
   public static final String limelightRight = "limelight";
-  private final Drive drive;
+  public static Drive drive;
   private final FeederSubsystem feeder = FeederSubsystem.getInstance();
   private final HoodSubsystem hood = HoodSubsystem.getInstance();
   private final IntakeSubsystem intake = IntakeSubsystem.getInstance();

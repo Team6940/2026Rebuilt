@@ -24,15 +24,14 @@ public class HoodSubsystem extends SubsystemBase {
   private HoodMode mode = HoodMode.HYBRID;
   private double autoSetpointDegs = HoodConstants.IdlePosition;
   private double manualSetpointDegs = HoodConstants.IdlePosition;
-  private double targetPositionDegs = HoodConstants.IdlePosition;
+  private static double targetPositionDegs = HoodConstants.IdlePosition;
   private double operatorInputScalar = 0.0;
 
   public HoodSubsystem() {
     if (Robot.isReal()) {
       io = new HoodIOPhoenix6();
     } else {
-      // TODO: Implement simulation code here
-      io = new HoodIO() {};
+      io = new HoodIOSim();
     }
   }
 
@@ -78,6 +77,10 @@ public class HoodSubsystem extends SubsystemBase {
 
   public double getTargetPositionDegs() {
     return targetPositionDegs;
+  }
+
+  public double getCurrentPositionDegs() {
+    return inputs.hoodPositionDegrees;
   }
 
   public boolean isAtTargetPosition() {

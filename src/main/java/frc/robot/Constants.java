@@ -635,6 +635,9 @@ public final class Constants {
      */
     public static final Translation2d TURRET_OFFSET = new Translation2d(-0.05, 0.0);
 
+    // Turret pivot height above the floor (meters). Tune to your robot.
+    public static final double TurretHeightMeters = 0.5;
+
     public static final InterpolatingDoubleTreeMap DistanceToTurretTolerance =
         new InterpolatingDoubleTreeMap();
 
@@ -726,6 +729,9 @@ public final class Constants {
      * to compensate for chassis lateral motion during the ball's flight.
      */
     public static final double PassLeadIndex = 0.4;
+
+    // Shooter wheel radius in meters (used to convert RPS -> m/s).
+    public static final double ShooterWheelRadiusMeters = 0.0508;
   }
 
   public final class FeederConstants {

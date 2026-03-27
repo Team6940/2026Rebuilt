@@ -13,6 +13,7 @@ import frc.robot.Constants.FieldConstants;
 import frc.robot.Constants.HoodConstants;
 import frc.robot.Constants.ShooterConstants;
 import frc.robot.RobotContainer;
+import frc.robot.Constants;
 import frc.robot.subsystems.Drive.Drive;
 import frc.robot.subsystems.Feeder.FeederSubsystem;
 import frc.robot.subsystems.Hood.HoodSubsystem;
@@ -23,6 +24,7 @@ import frc.robot.subsystems.SuperStructure.ShootMode;
 import frc.robot.subsystems.Turret.TurretSubsystem;
 import frc.robot.util.ProjectileCalculator;
 import frc.robot.util.ProjectileCalculator.ShotSolution;
+import frc.robot.util.simulation.TrajectorySimulator;
 import org.littletonrobotics.junction.Logger;
 
 public class HybridShootCommand extends Command {
@@ -59,6 +61,8 @@ public class HybridShootCommand extends Command {
   private final ShootMode shootMode;
   private final MotionShotMode motionShotMode;
   private final boolean autoTriggerEnabled;
+  private final TrajectorySimulator trajectorySimulator = new TrajectorySimulator();
+  private boolean lastReadyToAutoFeed = false;
 
   /** Persistent RPS offset applied on top of the solver result. Adjusted via ABXY. */
   private double rpsOffset = 0.0;
@@ -287,6 +291,12 @@ public class HybridShootCommand extends Command {
     boolean distanceInScope = distanceMeters <= 5.3 && distanceMeters >= 1;
     boolean readyToAutoFeed = shooterAtTarget && turretAtTarget && hoodAtTarget && distanceInScope;
     boolean feedingEnabled = readyToAutoFeed || operatorController.getButton(Button.kRightBumper);
+
+    // Sim-only: emit a single trajectory when we become ready to auto-feed.
+    if (Constants.currentMode == Constants.Mode.SIM && readyToAutoFeed && !lastReadyToAutoFeed) {
+      trajectorySimulator.setTrajectory(drive.getPose());
+    }
+    lastReadyToAutoFeed = readyToAutoFeed;
 
     Logger.recordOutput("Cmds/HybridShoot/ShootMode", shootMode.toString());
     Logger.recordOutput("Cmds/HybridShoot/DistanceMeters", distanceMeters);
