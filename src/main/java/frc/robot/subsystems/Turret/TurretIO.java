@@ -23,7 +23,7 @@ public interface TurretIO {
     public boolean encoder2Connected = false;
 
     public double motorVoltageVolts;
-    public double motorCurrentAmps;
+    public double motorStatorCurrentAmps;
     public double motorVelocityDegsPerSec;
 
     public double encoderPositionDegrees;
