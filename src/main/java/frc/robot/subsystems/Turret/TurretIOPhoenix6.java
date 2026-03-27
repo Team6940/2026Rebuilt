@@ -5,7 +5,7 @@ import com.ctre.phoenix6.CANBus;
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.MotionMagicTorqueCurrentFOC;
-import com.ctre.phoenix6.controls.VelocityTorqueCurrentFOC;
+import com.ctre.phoenix6.controls.MotionMagicVelocityTorqueCurrentFOC;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
@@ -22,7 +22,7 @@ public class TurretIOPhoenix6 implements TurretIO {
       new CANcoder(MotorIDs.TurretEncoder2ID, new CANBus("canivore"));
   private static final MotionMagicTorqueCurrentFOC positionRequest =
       new MotionMagicTorqueCurrentFOC(0);
-  private static final VelocityTorqueCurrentFOC velocityRequest = new VelocityTorqueCurrentFOC(0.0);
+  private static final MotionMagicVelocityTorqueCurrentFOC velocityRequest = new MotionMagicVelocityTorqueCurrentFOC(0.0);
 
   public TurretIOPhoenix6() {
     encoderConfig();
@@ -62,6 +62,7 @@ public class TurretIOPhoenix6 implements TurretIO {
     config.Slot1.kP = TurretConstants.kP_velocity;
     config.Slot1.kV = TurretConstants.kV_velocity;
     config.Slot1.kS = TurretConstants.kS_velocity;
+    config.Slot1.kA = TurretConstants.kA_velocity;
 
     config.CurrentLimits.SupplyCurrentLimitEnable = true;
     config.CurrentLimits.SupplyCurrentLimit = TurretConstants.TurretSupplyCurrentLimit;
