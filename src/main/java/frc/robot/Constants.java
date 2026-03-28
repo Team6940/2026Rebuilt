@@ -635,7 +635,7 @@ public final class Constants {
      */
     public static final Translation2d TURRET_OFFSET = new Translation2d(-0.05, 0.0);
 
-    // Turret pivot height above the floor (meters). Tune to your robot.
+    // TODO: Turret pivot height above the floor (meters). Tune to your robot. For sim.
     public static final double TurretHeightMeters = 0.5;
 
     public static final InterpolatingDoubleTreeMap DistanceToTurretTolerance =
@@ -730,7 +730,7 @@ public final class Constants {
      */
     public static final double PassLeadIndex = 0.4;
 
-    // Shooter wheel radius in meters (used to convert RPS -> m/s).
+    // TODO: Shooter wheel radius in meters (used to convert RPS -> m/s). For sim.
     public static final double ShooterWheelRadiusMeters = 0.0508;
   }
 

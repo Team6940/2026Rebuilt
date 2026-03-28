@@ -294,7 +294,11 @@ public class HybridShootCommand extends Command {
 
     // Sim-only: emit a single trajectory when we become ready to auto-feed.
     if (Constants.currentMode == Constants.Mode.SIM && readyToAutoFeed && !lastReadyToAutoFeed) {
-      trajectorySimulator.setTrajectory(drive.getPose());
+      trajectorySimulator.setTrajectory(
+        drive.getPose(),
+        hood.getCurrentPositionDegs(),
+        shooter.getShooterRPS(),
+        turret.getCurrentPositionDegs());
     }
     lastReadyToAutoFeed = readyToAutoFeed;
 
