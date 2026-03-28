@@ -663,7 +663,7 @@ public final class Constants {
     public static final double Acceleration = 48.0; // Rotations per second squared
 
     // Positions (Rotations) — original degree values divided by 360
-    public static final double StretcherPositionToleranceRotations = 30. / 360.0;
+    public static final double StretcherPositionToleranceRotations = 0.8;
 
     public static final double MinRotations = 0.; // CCW Positive
     public static final double MaxRotations = 3.11;

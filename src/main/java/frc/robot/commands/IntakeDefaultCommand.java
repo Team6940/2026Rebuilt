@@ -15,6 +15,10 @@ public class IntakeDefaultCommand extends Command {
   private final Timer timer = new Timer();
   private double lastToggleTime = 0.0;
 
+  // Coast-hold state for INTAKE mode
+  private boolean stretcherCoasting = false;
+  private double outOfToleranceStartTime = -1.0;
+
   public IntakeDefaultCommand() {
     addRequirements(intake, stretcher);
   }
@@ -26,6 +30,8 @@ public class IntakeDefaultCommand extends Command {
     timer.start();
     lastToggleTime = timer.get();
     targetPosition = Constants.StretcherConstants.ExtendedPosition;
+    stretcherCoasting = false;
+    outOfToleranceStartTime = -1.0;
   }
 
   @Override
@@ -34,8 +40,28 @@ public class IntakeDefaultCommand extends Command {
 
     switch (intakeMode) {
       case INTAKE:
-        stretcher.setPosition(Constants.StretcherConstants.ExtendedPosition);
         intake.setRPS(Constants.IntakeConstants.IntakingRPS);
+        if (!stretcherCoasting) {
+          // Still driving to target — check if we've arrived
+          stretcher.setPosition(Constants.StretcherConstants.ExtendedPosition);
+          if (stretcher.isAtTargetPosition()) {
+            stretcher.setCoast();
+            stretcherCoasting = true;
+            outOfToleranceStartTime = -1.0;
+          }
+        } else {
+          // Coasting — watch for external disturbance pushing it out of tolerance
+          if (!stretcher.isAtTargetPosition()) {
+            if (outOfToleranceStartTime < 0.0) {
+              outOfToleranceStartTime = timer.get();
+            } else if (timer.get() - outOfToleranceStartTime > 1.0) {
+              stretcherCoasting = false;
+              outOfToleranceStartTime = -1.0;
+            }
+          } else {
+            outOfToleranceStartTime = -1.0;
+          }
+        }
         break;
 
       case SHAKE:
@@ -72,6 +98,8 @@ public class IntakeDefaultCommand extends Command {
     // ensure timer stopped and intake not left running
     timer.stop();
     intake.stop();
+    stretcherCoasting = false;
+    outOfToleranceStartTime = -1.0;
   }
 
   @Override

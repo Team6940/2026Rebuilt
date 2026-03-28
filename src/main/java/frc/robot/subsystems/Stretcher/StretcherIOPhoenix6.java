@@ -4,6 +4,7 @@ import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.CANBus;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
+import com.ctre.phoenix6.controls.NeutralOut;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import frc.robot.Constants.MotorIDs;
@@ -13,6 +14,7 @@ public class StretcherIOPhoenix6 implements StretcherIO {
   private static TalonFX motor = new TalonFX(MotorIDs.StretcherMotorID, CANBus.roboRIO());
 
   private static MotionMagicVoltage m_request = new MotionMagicVoltage(0.).withEnableFOC(true);
+  private static final NeutralOut m_neutral = new NeutralOut();
 
   public StretcherIOPhoenix6() {
     motorConfig();
@@ -23,7 +25,7 @@ public class StretcherIOPhoenix6 implements StretcherIO {
     config.MotorOutput.NeutralMode = NeutralModeValue.Coast;
     config.Feedback.SensorToMechanismRatio = StretcherConstants.StretcherRatio;
     config.Voltage.PeakForwardVoltage = 12.0;
-    config.Voltage.PeakReverseVoltage = -12.0;
+    config.Voltage.PeakReverseVoltage = -6.0;
     config.Slot0.kP = StretcherConstants.kP;
     config.Slot0.kI = StretcherConstants.kI;
     config.Slot0.kD = StretcherConstants.kD;
@@ -61,6 +63,11 @@ public class StretcherIOPhoenix6 implements StretcherIO {
   @Override
   public void resetPosition(double positionRotations) {
     motor.setPosition(positionRotations);
+  }
+
+  @Override
+  public void setCoast() {
+    motor.setControl(m_neutral);
   }
 
   @Override

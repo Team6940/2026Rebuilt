@@ -33,8 +33,8 @@ public class StretcherSubsystem extends SubsystemBase {
   /**
    * Commands the stretcher to a target position.
    *
-   * @param positionRotations Target arm position in rotations (clamped to
-   *     [MinRotations, MaxRotations]).
+   * @param positionRotations Target arm position in rotations (clamped to [MinRotations,
+   *     MaxRotations]).
    */
   public void setPosition(double positionRotations) {
     targetPositionRotations =
@@ -64,6 +64,10 @@ public class StretcherSubsystem extends SubsystemBase {
 
   public void setVoltage(double voltage) {
     io.setVoltage(voltage);
+  }
+
+  public void setCoast() {
+    io.setCoast();
   }
 
   /** Returns the current measured arm position in rotations. */
@@ -100,4 +104,3 @@ public class StretcherSubsystem extends SubsystemBase {
     Logger.recordOutput("Stretcher/MotorConnected", inputs.motorConnected);
   }
 }
-

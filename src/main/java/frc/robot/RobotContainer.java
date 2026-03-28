@@ -384,7 +384,7 @@ public class RobotContainer {
   public void resetSimulationField() {
     if (Constants.currentMode != Constants.Mode.SIM) return;
 
-    driveSimulation.setSimulationWorldPose(new Pose2d(3, 3, new Rotation2d()));
+    driveSimulation.setSimulationWorldPose(new Pose2d(0, 0, new Rotation2d()));
     SimulatedArena.getInstance().resetFieldForAuto();
   }
 
