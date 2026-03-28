@@ -174,7 +174,7 @@ public class HybridShootCommand extends Command {
         double tangentialToVirtual = drive.getTurretTangentialVelocityToTarget(sol.virtualTarget());
         targetVelFFDegsPerSec =
             distanceMeters > 1e-6
-                ? Math.toDegrees(Math.atan(tangentialToVirtual / distanceMeters))
+                ? Math.toDegrees(tangentialToVirtual / distanceMeters)
                 : 0.0;
 
         Logger.recordOutput(
@@ -252,7 +252,7 @@ public class HybridShootCommand extends Command {
       radialVelocity = drive.getTargetRelativeChassisSpeeds(bumpTarget).getX();
 
       // Pass mode does not use the turret angular velocity FF.
-      targetVelFFDegsPerSec = Math.toDegrees(Math.atan(tangentialToBump / distanceMeters));
+      targetVelFFDegsPerSec = Math.toDegrees(tangentialToBump / distanceMeters);
 
       Logger.recordOutput(
           "Cmds/HybridShoot/PassBumpTarget", new Pose2d(bumpTarget, new Rotation2d()));
