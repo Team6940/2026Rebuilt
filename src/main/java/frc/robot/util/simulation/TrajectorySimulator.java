@@ -18,10 +18,15 @@ import frc.robot.RobotContainer;
  * 2. In AScope, add a "Pose3d Array" data source with the key "shotsTrajectory"
  */
 public class TrajectorySimulator {
-    public void setTrajectory(Pose2d pose,double hoodDegs, double shooterRps, double turretDegs) {
+    public void setTrajectory(Pose2d pose,double hoodDegs, double shooterRps, Rotation2d turretRotation) {
+        // Record the incoming parameters so we can verify they're changing in SIM
+        Logger.recordOutput("FieldSimulation/ShotPose2d", pose);
+        Logger.recordOutput("FieldSimulation/ShotHoodDegs", hoodDegs);
+        Logger.recordOutput("FieldSimulation/ShotRPS", shooterRps);
+        Logger.recordOutput("FieldSimulation/ShotTurretRotationDegs", turretRotation.getDegrees());
 
         double launchSpeedMps = shooterRps * 2.0 * Math.PI * ShooterConstants.ShooterWheelRadiusMeters;
-        Rotation2d turretRotation = Rotation2d.fromDegrees(turretDegs);//TODO check if this is correct
+        // Rotation2d turretRotation = Rotation2d.fromDegrees(turretDegs);//TODO check if this is correct
 
         SimulatedArena.getInstance()
             .addGamePieceProjectile(new RebuiltFuelOnFly(
@@ -33,7 +38,7 @@ public class TrajectorySimulator {
                 Units.MetersPerSecond.of(launchSpeedMps),
                 Units.Degrees.of(hoodDegs))
             .withProjectileTrajectoryDisplayCallBack(
-                (poses) -> Logger.recordOutput("shotsTrajectory", poses.toArray(Pose3d[]::new)))
+                (poses) -> Logger.recordOutput("FieldSimulation/ShotsTrajectory", poses.toArray(Pose3d[]::new)))
             .enableBecomesGamePieceOnFieldAfterTouchGround());
     }
 }

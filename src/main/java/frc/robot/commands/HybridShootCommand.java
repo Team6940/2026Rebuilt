@@ -25,6 +25,8 @@ import frc.robot.subsystems.Turret.TurretSubsystem;
 import frc.robot.util.ProjectileCalculator;
 import frc.robot.util.ProjectileCalculator.ShotSolution;
 import frc.robot.util.simulation.TrajectorySimulator;
+
+import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
 import org.littletonrobotics.junction.Logger;
 
 public class HybridShootCommand extends Command {
@@ -62,7 +64,7 @@ public class HybridShootCommand extends Command {
   private final MotionShotMode motionShotMode;
   private final boolean autoTriggerEnabled;
   private final TrajectorySimulator trajectorySimulator = new TrajectorySimulator();
-  private boolean lastReadyToAutoFeed = false;
+  private final SwerveDriveSimulation driveSimulation = RobotContainer.driveSimulation;
 
   /** Persistent RPS offset applied on top of the solver result. Adjusted via ABXY. */
   private double rpsOffset = 0.0;
@@ -292,15 +294,15 @@ public class HybridShootCommand extends Command {
     boolean readyToAutoFeed = shooterAtTarget && turretAtTarget && hoodAtTarget && distanceInScope;
     boolean feedingEnabled = readyToAutoFeed || operatorController.getButton(Button.kRightBumper);
 
-    // Sim-only: emit a single trajectory when we become ready to auto-feed.
-    if (Constants.currentMode == Constants.Mode.SIM && readyToAutoFeed && !lastReadyToAutoFeed) {
-      trajectorySimulator.setTrajectory(
-        drive.getPose(),
-        hood.getCurrentPositionDegs(),
-        shooter.getShooterRPS(),
-        turret.getCurrentPositionDegs());
+    // Sim-only: emit trajectory every frame using calculated aim parameters.
+    // This shows where the shooter is aiming based on current distance/velocity calculations.
+    if (Constants.currentMode == Constants.Mode.SIM) {
+    // Log the simulated pose we will send to the trajectory viz, then emit trajectory.
+    Logger.recordOutput(
+      "Cmds/HybridShoot/SimPose", driveSimulation.getSimulatedDriveTrainPose());
+    trajectorySimulator.setTrajectory(
+      driveSimulation.getSimulatedDriveTrainPose(), hoodDegs, adjustedTargetRps, fieldTargetAngle);
     }
-    lastReadyToAutoFeed = readyToAutoFeed;
 
     Logger.recordOutput("Cmds/HybridShoot/ShootMode", shootMode.toString());
     Logger.recordOutput("Cmds/HybridShoot/DistanceMeters", distanceMeters);
