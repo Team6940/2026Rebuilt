@@ -163,10 +163,9 @@ public class RobotContainer {
    *    B：RESET GYRO 
    *    X: STOP WITH X 
    *    RB: INTAKE 
-   *    LB: TRIGGER SHOOT MODE 
-   *    PovDown:
-   *    TOGGLE SHOOT MODE MANUAL/HYBRID 
-   *    PovUp: TOGGLE CONTROL MODE PASS/SCORE
+   *    LB: TRIGGER SHOOT MODE
+   *    RT: SHAKE MODE (WHILE HELD) 
+   *    LT: DRIVE PRECISION MODE (WHILE HELD)
    *
    * <p>OPERATOR CONTROLLER: 
    *    RT: SHOOT 
@@ -224,17 +223,18 @@ public class RobotContainer {
         .onFalse(
             superStructure.runOnce(
                 () -> superStructure.setIntakeMode(SuperStructure.IntakeMode.INTAKE)));
-    driverController
-        .leftTrigger()
-        .whileTrue(
-            drive.run(
-                () ->
-                    drive.driveFieldCentricWithMaxSpeed(
-                        () -> -driverController.getLeftY(),
-                        () -> -driverController.getLeftX(),
-                        () -> -driverController.getRightX(),
-                        2.,
-                        3.)));
+    // driverController
+    //     .leftTrigger()
+    //     .whileTrue(
+    //         drive.run(
+    //             () ->
+    //                 drive.driveFieldCentricWithMaxSpeed(
+    //                     () -> -driverController.getLeftY(),
+    //                     () -> -driverController.getLeftX(),
+    //                     () -> -driverController.getRightX(),
+    //                     2.,
+    //                     3.)));
+
     // driverController
     //     .leftBumper()
     //     .onTrue(superStructure.runOnce(() ->
@@ -246,7 +246,7 @@ public class RobotContainer {
             Commands.defer(
                 () -> superStructure.getScoreCommand(Button.kRightTrigger, Button.kRightBumper),
                 Set.of(feeder, hood, shooter, turret)));
-    operatorController
+    driverController
         .leftTrigger()
         .whileTrue(
             Commands.defer(
