@@ -213,14 +213,14 @@ public class RobotContainer {
                         () -> -driverController.getLeftY(),
                         () -> -driverController.getLeftX(),
                         () -> -driverController.getRightX(),
-                        2.,
-                        3.)));
+                        1.5,
+                        2.5)));
     // driverController
     //     .leftBumper()
     //     .onTrue(superStructure.runOnce(() ->
     // superStructure.setIntakeMode(SuperStructure.IntakeMode.SHAKE)));
 
-    driverController
+    operatorController
         .leftBumper()
         .whileTrue(
             Commands.defer(

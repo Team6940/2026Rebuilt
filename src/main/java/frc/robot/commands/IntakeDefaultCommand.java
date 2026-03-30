@@ -18,6 +18,7 @@ public class IntakeDefaultCommand extends Command {
   // Coast-hold state for INTAKE mode
   private boolean stretcherCoasting = false;
   private double outOfToleranceStartTime = -1.0;
+  private SuperStructure.IntakeMode lastIntakeMode = null;
 
   public IntakeDefaultCommand() {
     addRequirements(intake, stretcher);
@@ -32,17 +33,25 @@ public class IntakeDefaultCommand extends Command {
     targetPosition = Constants.StretcherConstants.ExtendedPosition;
     stretcherCoasting = false;
     outOfToleranceStartTime = -1.0;
+    lastIntakeMode = null;
   }
 
   @Override
   public void execute() {
     SuperStructure.IntakeMode intakeMode = superStructure.getIntakeMode();
 
+    // Reset coast state whenever we freshly enter INTAKE mode from a different mode
+    if (intakeMode == SuperStructure.IntakeMode.INTAKE && lastIntakeMode != SuperStructure.IntakeMode.INTAKE) {
+      stretcherCoasting = false;
+      outOfToleranceStartTime = -1.0;
+    }
+    lastIntakeMode = intakeMode;
+
     switch (intakeMode) {
       case INTAKE:
         intake.setRPS(Constants.IntakeConstants.IntakingRPS);
         if (!stretcherCoasting) {
-          // Still driving to target — check if we've arrived
+          // Still driving to target - check if we've arrived
           stretcher.setPosition(Constants.StretcherConstants.ExtendedPosition);
           if (stretcher.isAtTargetPosition()) {
             stretcher.setCoast();
@@ -50,7 +59,7 @@ public class IntakeDefaultCommand extends Command {
             outOfToleranceStartTime = -1.0;
           }
         } else {
-          // Coasting — watch for external disturbance pushing it out of tolerance
+          // Coasting - watch for external disturbance pushing it out of tolerance
           if (!stretcher.isAtTargetPosition()) {
             if (outOfToleranceStartTime < 0.0) {
               outOfToleranceStartTime = timer.get();
