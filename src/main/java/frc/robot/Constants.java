@@ -578,7 +578,7 @@ public final class Constants {
 
     // Motion Magic Gains
     public static final double MaxVelocity = 40.0; // Rotations per second
-    public static final double Acceleration = 60.0; // Rotations per second squared
+    public static final double Acceleration = 15.0; // Rotations per second squared
 
     // Velocity-based control gains (used when TurretMode.VELOCITY is active)
     //
@@ -596,10 +596,10 @@ public final class Constants {
     //   4. kFF_targetVel - scale the setpoint-rate FF (1.0 = full; lower if overshooting)
     //   5. kFF_chassis   - scale the chassis-omega FF (1.0 = full; lower if oscillating)
     public static final double kP_position = 9.0; // (deg/s) per deg of error
-    public static final double kP_velocity = 36.; // motor velocity kP — tune
+    public static final double kP_velocity = 100.; // motor velocity kP — tune
     public static final double kV_velocity = 0.0127; // motor velocity kV — tune
     public static final double kS_velocity = 2.95; // motor velocity kS (same as kS above)
-    public static final double kA_velocity = 2.;
+    public static final double kA_velocity = 9.;
 
     // Feedforward scale for the setpoint-rate term (dimensionless, [0..1] typical).
     // 1.0 means the outer loop fully compensates for a moving target.
@@ -718,7 +718,7 @@ public final class Constants {
      * Distance at which PassRps is used without correction.
      * Tuned for a robot shooting from the far side of the field toward the hub lane (~6 m typical).
      */
-    public static final double PassRpsNeutralDistanceMeters = 8.0;
+    public static final double PassRpsNeutralDistanceMeters = 11.0;
 
     /**
      * Lead time index for pass-mode yaw compensation (seconds).

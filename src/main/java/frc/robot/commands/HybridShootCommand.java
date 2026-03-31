@@ -221,11 +221,11 @@ public class HybridShootCommand extends Command {
       double leftBumpCenterY =
           (FieldConstants.LinesHorizontal.leftBumpStart
                   + FieldConstants.LinesHorizontal.leftBumpEnd)
-              / 2.0;
+              / 2.0 + 1.0;
       double rightBumpCenterY =
           (FieldConstants.LinesHorizontal.rightBumpStart
                   + FieldConstants.LinesHorizontal.rightBumpEnd)
-              / 2.0;
+              / 2.0 - 1.0;
       double fieldCenterY = FieldConstants.fieldWidth / 2.0;
 
       Translation2d passTarget;
@@ -295,8 +295,8 @@ public class HybridShootCommand extends Command {
     boolean hoodAtTarget = hood.isAtTargetPosition();
     boolean turretAtTarget = turret.isAtTargetPosition(distanceMeters);
     boolean shooterAtTarget = shooterDebouncer.calculate(shooter.isAtTargetRps());
-    boolean distanceInScope = distanceMeters <= 5.3 && distanceMeters >= 1;
-    boolean readyToAutoFeed = shooterAtTarget && turretAtTarget && hoodAtTarget && distanceInScope;
+    // boolean distanceInScope = distanceMeters <= 5.3 && distanceMeters >= 1;
+    boolean readyToAutoFeed = shooterAtTarget && turretAtTarget && hoodAtTarget;
     boolean feedingEnabled = readyToAutoFeed || operatorController.getButton(Button.kRightBumper);
 
     Logger.recordOutput("Cmds/HybridShoot/ShootMode", shootMode.toString());
