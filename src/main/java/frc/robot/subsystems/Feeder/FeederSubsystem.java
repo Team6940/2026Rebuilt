@@ -43,7 +43,6 @@ public class FeederSubsystem extends SubsystemBase {
     if (Robot.isReal()) {
       io = new FeederIOPhoenix6();
     } else {
-      // TODO: Implement simulation code here
       io = new FeederIO() {};
     }
   }
@@ -180,7 +179,6 @@ public class FeederSubsystem extends SubsystemBase {
   }
 
   private void processDashboard() {
-    // TODO: Implement dashboard code here
   }
 
   private void processTurntableJamState() {

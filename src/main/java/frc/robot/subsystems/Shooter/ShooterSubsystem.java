@@ -35,7 +35,6 @@ public class ShooterSubsystem extends SubsystemBase {
     if (Robot.isReal()) {
       io = new ShooterIOPhoenix6();
     } else {
-      // TODO: Implement simulation code here
       io = new ShooterIOPhoenix6();
     }
   }

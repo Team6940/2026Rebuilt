@@ -207,8 +207,8 @@ public final class Constants {
       // Distance (meters) -> Flight time (seconds)
       DistanceToFlightTimeSecs.put(0.96, 0.9);
       DistanceToFlightTimeSecs.put(1.2, 1.0);
-      DistanceToFlightTimeSecs.put(3., 1.14);
-      DistanceToFlightTimeSecs.put(5., 1.23);
+      DistanceToFlightTimeSecs.put(3., 1.18);
+      DistanceToFlightTimeSecs.put(5., 1.28);
     }
   }
 
@@ -663,7 +663,7 @@ public final class Constants {
     public static final double Acceleration = 48.0; // Rotations per second squared
 
     // Positions (Rotations) — original degree values divided by 360
-    public static final double StretcherPositionToleranceRotations = 0.8;
+    public static final double StretcherPositionToleranceRotations = 0.01;
 
     public static final double MinRotations = 0.; // CCW Positive
     public static final double MaxRotations = 3.11;

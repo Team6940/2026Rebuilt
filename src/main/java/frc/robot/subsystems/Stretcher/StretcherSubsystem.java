@@ -23,7 +23,6 @@ public class StretcherSubsystem extends SubsystemBase {
     if (Robot.isReal()) {
       io = new StretcherIOPhoenix6();
     } else {
-      // TODO: Implement simulation code here
       io = new StretcherIO() {};
     }
   }
