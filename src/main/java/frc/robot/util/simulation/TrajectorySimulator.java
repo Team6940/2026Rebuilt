@@ -36,13 +36,11 @@ public class TrajectorySimulator {
         Logger.recordOutput("FieldSimulation/ShotRPS", shooterRps);
         Logger.recordOutput("FieldSimulation/ShotTurretRotationDegs", turretRotation.getDegrees());
 
-        //  Physical conversion: Flywheel speed → Ball speed
-        //  Using ShooterPhysicsConverter to consider the following factors:
-        //  1. Flywheel surface speed: v_contact = ω × r
-        //  2. Friction coefficient: the strength of friction between the ball and the
-        //  3. Slip loss: the velocity reduction due to slipping between the ball and the flywheel
-        //  4. Compression factor: the energy loss due to contact compression
-        double launchSpeedMps = ShooterPhysicsConverter.rpsToMps(shooterRps);
+        // Lookup ball speed from RPS using interpolation table (PRESET_1)
+        double launchSpeedMps = ShooterRpsToMpsInterpolationTable.PRESET_1.get(shooterRps);
+        
+        // Lookup launch angle from hood angle using interpolation table
+        double launchAngleDegrees = HoodAngleToLaunchAngleInterpolationTable.TABLE.get(hoodDegs);
 
         SimulatedArena.getInstance()
             .addGamePieceProjectile(new RebuiltFuelOnFly(
@@ -52,7 +50,7 @@ public class TrajectorySimulator {
                 turretRotation,
                 Meters.of(TurretConstants.TurretHeightMeters),
                 Units.MetersPerSecond.of(launchSpeedMps),
-                Units.Degrees.of(hoodDegs))
+                Units.Degrees.of(launchAngleDegrees))
             .withProjectileTrajectoryDisplayCallBack(
                 (poses) -> Logger.recordOutput("FieldSimulation/ShotsTrajectory", poses.toArray(Pose3d[]::new)))
             .enableBecomesGamePieceOnFieldAfterTouchGround());
