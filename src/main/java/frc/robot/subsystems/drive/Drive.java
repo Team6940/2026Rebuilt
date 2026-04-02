@@ -89,7 +89,7 @@ public class Drive extends SubsystemBase {
 
   // TunerConstants doesn't include these constants, so they are declared locally
   static final double ODOMETRY_FREQUENCY =
-      new CANBus(TunerConstants.DrivetrainConstants.CANBusName).isNetworkFD() ? 250.0 : 100.0;
+      new CANBus(TunerConstants.DrivetrainConstants.CANBusName).isNetworkFD() ? 250.0 : 180.0;
   public static final double DRIVE_BASE_RADIUS =
       Math.max(
           Math.max(

@@ -100,7 +100,7 @@ public final class Constants {
   }
 
   public final class DriveConstants {
-    public static final double DEADBAND = 0.02;
+    public static final double DEADBAND = 0.04;
     public static final double ANGLE_KP = 5.0;
     public static final double ANGLE_KD = 0.4;
     public static final double ANGLE_MAX_VELOCITY = 8.0;
