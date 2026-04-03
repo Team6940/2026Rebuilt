@@ -23,7 +23,6 @@ public class IntakeSubsystem extends SubsystemBase{
             io = new IntakeIOPhoenix6();
         }
         else{
-            //TODO: Implement simulation code here
             io = new IntakeIO(){};
         }
     }
@@ -60,7 +59,6 @@ public class IntakeSubsystem extends SubsystemBase{
     }
 
     private void processDashboard(){
-        //TODO: Implement dashboard code here
     }
 
 }

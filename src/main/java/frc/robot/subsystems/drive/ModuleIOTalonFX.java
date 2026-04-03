@@ -20,8 +20,8 @@ import com.ctre.phoenix6.CANBus;
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
-import com.ctre.phoenix6.controls.PositionTorqueCurrentFOC;
-import com.ctre.phoenix6.controls.PositionVoltage;
+import com.ctre.phoenix6.controls.MotionMagicTorqueCurrentFOC;
+import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.controls.TorqueCurrentFOC;
 import com.ctre.phoenix6.controls.VelocityTorqueCurrentFOC;
 import com.ctre.phoenix6.controls.VelocityVoltage;
@@ -62,13 +62,13 @@ public class ModuleIOTalonFX implements ModuleIO {
 
   // Voltage control requests
   private final VoltageOut voltageRequest = new VoltageOut(0).withEnableFOC(true);
-  private final PositionVoltage positionVoltageRequest = new PositionVoltage(0.0).withEnableFOC(true);
+  private final MotionMagicVoltage positionVoltageRequest = new MotionMagicVoltage(0.0).withEnableFOC(true);
   private final VelocityVoltage velocityVoltageRequest = new VelocityVoltage(0.0).withEnableFOC(true);
 
   // Torque-current control requests
   private final TorqueCurrentFOC torqueCurrentRequest = new TorqueCurrentFOC(0);
-  private final PositionTorqueCurrentFOC positionTorqueCurrentRequest =
-      new PositionTorqueCurrentFOC(0.0);
+  private final MotionMagicTorqueCurrentFOC positionTorqueCurrentRequest =
+      new MotionMagicTorqueCurrentFOC(0.0);
   private final VelocityTorqueCurrentFOC velocityTorqueCurrentRequest =
       new VelocityTorqueCurrentFOC(0.0);
 
@@ -134,9 +134,9 @@ public class ModuleIOTalonFX implements ModuleIO {
                   + "The 2025 release of Phoenix supports some swerve configurations which were not available during 2025 beta testing, preventing any development and support from the AdvantageKit developers.");
         };
     turnConfig.Feedback.RotorToSensorRatio = constants.SteerMotorGearRatio;
-    turnConfig.MotionMagic.MotionMagicCruiseVelocity = 100.0 / constants.SteerMotorGearRatio;
+    turnConfig.MotionMagic.MotionMagicCruiseVelocity = 110.0 / constants.SteerMotorGearRatio;
     turnConfig.MotionMagic.MotionMagicAcceleration =
-        turnConfig.MotionMagic.MotionMagicCruiseVelocity / 0.100;
+        turnConfig.MotionMagic.MotionMagicCruiseVelocity / 0.090;
     turnConfig.MotionMagic.MotionMagicExpo_kV = 0.12 * constants.SteerMotorGearRatio;
     turnConfig.MotionMagic.MotionMagicExpo_kA = 0.1;
     turnConfig.ClosedLoopGeneral.ContinuousWrap = true;

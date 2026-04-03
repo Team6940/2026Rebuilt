@@ -9,6 +9,7 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants.FeederConstants;
+import frc.robot.Constants.FieldConstants;
 import frc.robot.Constants.HoodConstants;
 import frc.robot.Constants.ShooterConstants;
 import frc.robot.RobotContainer;
@@ -30,10 +31,10 @@ public class HybridShootCommand extends Command {
    * Selects which motion-compensation algorithm is used when {@link ShootMode#SCORE} is active.
    *
    * <ul>
-   *   <li>{@code DIRECT} — Method A: looks up RPS/hood from the radial-velocity 2D map at the
+   *   <li>{@code DIRECT} - Method A: looks up RPS/hood from the radial-velocity 2D map at the
    *       <em>current</em> distance, then applies a simple trigonometric yaw lead. Fast and
    *       predictable, but does not account for where the robot will be at note landing.
-   *   <li>{@code LOOKAHEAD} — Method B: iterative solver that finds the "virtual target" the turret
+   *   <li>{@code LOOKAHEAD} - Method B: iterative solver that finds the "virtual target" the turret
    *       must aim at so the note reaches the real target after the robot has moved. RPS and hood
    *       are read from the static-shot map at the converged lookahead distance.
    * </ul>
@@ -61,6 +62,13 @@ public class HybridShootCommand extends Command {
 
   /** Persistent RPS offset applied on top of the solver result. Adjusted via ABXY. */
   private double rpsOffset = 0.0;
+
+  /**
+   * Target angular velocity feedforward for the turret (deg/s). Computed each execute() cycle as:
+   * tangentialVelocityToVirtualTarget / lookaheadDistance. Passed into the turret subsystem via a
+   * DoubleSupplier so the velocity loop always reads the latest value.
+   */
+  private double targetVelFFDegsPerSec = 0.0;
 
   // private static final double LEAD_YAW_COMPENSATION_INDEX = 6.;
 
@@ -117,7 +125,7 @@ public class HybridShootCommand extends Command {
   @Override
   public void initialize() {
     hood.setModeHybrid();
-    turret.setModeHybrid();
+    turret.setModeVelocity(drive::getRobotOmegaRadPerSec, () -> targetVelFFDegsPerSec);
     hood.setOperatorInputScalar(0.0);
     turret.setOperatorInputScalar(0.0);
     rpsOffset = 0.0;
@@ -153,17 +161,29 @@ public class HybridShootCommand extends Command {
       }
 
       if (motionShotMode == MotionShotMode.LOOKAHEAD) {
-        // ── Method B: iterative lookahead solver ────────────────────────────
+        // Method B: iterative lookahead solver
         ShotSolution sol = ProjectileCalculator.solve(turretPos, hubCenter, turretVel);
         distanceMeters = sol.lookaheadDistance();
         targetRps = sol.shooterRps();
         hoodDegs = sol.hoodAngleDeg();
         fieldTargetAngle = sol.turretAimAngle();
+
+        // Target angular velocity FF: how fast the turret must rotate to keep tracking the
+        // virtual target as the robot moves.
+        //   w (rad/s) = tangentialVelocity / distance  ->  deg/s = toDegrees(w)
+        double tangentialToVirtual = drive.getTurretTangentialVelocityToTarget(sol.virtualTarget());
+        targetVelFFDegsPerSec =
+            distanceMeters > 1e-6
+                ? Math.toDegrees(tangentialToVirtual / distanceMeters)
+                : 0.0;
+
         Logger.recordOutput(
             "Cmds/HybridShoot/VirtualTarget", new Pose2d(sol.virtualTarget(), new Rotation2d()));
         Logger.recordOutput("Cmds/HybridShoot/FlightTimeSecs", sol.flightTimeSecs());
+        Logger.recordOutput("Cmds/HybridShoot/TangentialToVirtualMPS", tangentialToVirtual);
+        Logger.recordOutput("Cmds/HybridShoot/TargetVelFFDegsPerSec", targetVelFFDegsPerSec);
       } else {
-        // ── Method A: direct 2D map lookup ──────────────────────────────────
+        // Method A: direct 2D map lookup
         distanceMeters = dist;
         targetRps =
             ProjectileCalculator.estimateMotionShotRps_Direct(distanceMeters, radialVelocity);
@@ -172,24 +192,82 @@ public class HybridShootCommand extends Command {
         double leadYawDegs =
             ProjectileCalculator.estimateLeadYawDegrees_Direct(distanceMeters, tangentialVelocity);
         fieldTargetAngle = straightToTarget.plus(Rotation2d.fromDegrees(leadYawDegs));
+        // Method A does not produce a virtual target, so no angular FF is available.
+        targetVelFFDegsPerSec = 0.0;
       }
     } else {
-      // Pass mode: shoot to tower with static shooter settings
-      distanceMeters = 3.; // This is just a 'smart' bypass data, do NOT believe it.
-      straightToTarget = drive.getRotationToAllianceTower();
-      Translation2d towerSpeeds = drive.getTowerRelativeChassisSpeeds();
-      radialVelocity = towerSpeeds.getX();
-      tangentialVelocity = towerSpeeds.getY();
+      // Pass mode: lob into the open lane beside the alliance hub.
+      //
+      // Target position:
+      //   X - near the far end of the alliance zone (close to the back wall),
+      //       so the turret aims deep where a partner robot waits.
+      //       Blue: X near 0 (alliance wall). Red: X near fieldLength.
+      //   Y - center of the chosen bump (midpoint of rightBumpStart/rightBumpEnd
+      //       or leftBumpStart/leftBumpEnd), which is in the open corridor
+      //       beside the hub.
+      //
+      // Lane selection: robot Y > fieldCenter -> left lane, else right lane.
 
-      targetRps = ShooterConstants.PassRps;
+      boolean isBlue =
+          DriverStation.getAlliance().isPresent()
+              && DriverStation.getAlliance().get() == Alliance.Blue;
+
+      // X: back wall of alliance zone
+      // Blue alliance wall is at X=0 side; use allianceZone (starting line X).
+      // Add a small inset so the target is just inside the field.
+      double passX = isBlue ? 0.5 : FieldConstants.fieldLength - 0.5;
+
+      // Bump center Y values (same geometry for both alliances - symmetric in Y)
+      double leftBumpCenterY =
+          (FieldConstants.LinesHorizontal.leftBumpStart
+                  + FieldConstants.LinesHorizontal.leftBumpEnd)
+              / 2.0 + 1.0;
+      double rightBumpCenterY =
+          (FieldConstants.LinesHorizontal.rightBumpStart
+                  + FieldConstants.LinesHorizontal.rightBumpEnd)
+              / 2.0 - 1.0;
+      double fieldCenterY = FieldConstants.fieldWidth / 2.0;
+
+      Translation2d passTarget;
+      if (drive.getTurretWorldPosition().getY() > fieldCenterY) {
+        // Robot on left side -> aim at left bump center Y
+        passTarget = new Translation2d(passX, leftBumpCenterY);
+      } else {
+        // Robot on right side -> aim at right bump center Y
+        passTarget = new Translation2d(passX, rightBumpCenterY);
+      }
+
+      // Distance from turret to the chosen pass target
+      distanceMeters = drive.getDistanceToTarget(passTarget);
+      straightToTarget = passTarget.minus(drive.getTurretWorldPosition()).getAngle();
+
+      // Linear RPS extrapolation around neutral distance:
+      //   RPS = PassRps + PassRpsPerMeter * (distance - neutralDistance)
+      targetRps =
+          ShooterConstants.PassRps
+              + ShooterConstants.PassRpsPerMeter
+                  * (distanceMeters - ShooterConstants.PassRpsNeutralDistanceMeters);
       hoodDegs = HoodConstants.PassHoodDegs;
-      // double leadYawDegs = LEAD_YAW_COMPENSATION_INDEX * tangentialVelocity;
-      // fieldTargetAngle = straightToTarget.plus(Rotation2d.fromDegrees(leadYawDegs));
-      fieldTargetAngle =
-          (DriverStation.getAlliance().isPresent()
-                  && DriverStation.getAlliance().get() == Alliance.Blue)
-              ? new Rotation2d(Math.PI)
-              : new Rotation2d(0.);
+
+      // Simple yaw lead to compensate for chassis lateral motion during flight:
+      //   leadRad = atan(tangentialVelocity * leadTime / distance)
+      double tangentialToPass = drive.getTurretTangentialVelocityToTarget(passTarget);
+      double leadRad =
+          distanceMeters > 1e-6
+              ? Math.atan(tangentialToPass * ShooterConstants.PassLeadIndex / distanceMeters)
+              : 0.0;
+      fieldTargetAngle = straightToTarget.plus(Rotation2d.fromRadians(leadRad));
+
+      tangentialVelocity = tangentialToPass;
+      radialVelocity = drive.getTargetRelativeChassisSpeeds(passTarget).getX();
+
+      // Turret angular velocity FF: track the pass target as the robot moves
+      targetVelFFDegsPerSec =
+          distanceMeters > 1e-6 ? Math.toDegrees(tangentialToPass / distanceMeters) : 0.0;
+
+      Logger.recordOutput(
+          "Cmds/HybridShoot/PassTarget", new Pose2d(passTarget, new Rotation2d()));
+      Logger.recordOutput("Cmds/HybridShoot/PassLeadDegs", Math.toDegrees(leadRad));
     }
 
     hood.setAutoSetpoint(hoodDegs);
@@ -217,8 +295,8 @@ public class HybridShootCommand extends Command {
     boolean hoodAtTarget = hood.isAtTargetPosition();
     boolean turretAtTarget = turret.isAtTargetPosition(distanceMeters);
     boolean shooterAtTarget = shooterDebouncer.calculate(shooter.isAtTargetRps());
-    boolean distanceInScope = distanceMeters <= 5.3 && distanceMeters >= 1;
-    boolean readyToAutoFeed = shooterAtTarget && turretAtTarget && hoodAtTarget && distanceInScope;
+    // boolean distanceInScope = distanceMeters <= 5.3 && distanceMeters >= 1;
+    boolean readyToAutoFeed = shooterAtTarget && turretAtTarget && hoodAtTarget;
     boolean feedingEnabled = readyToAutoFeed || operatorController.getButton(Button.kRightBumper);
 
     Logger.recordOutput("Cmds/HybridShoot/ShootMode", shootMode.toString());

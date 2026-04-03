@@ -51,6 +51,8 @@ import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.networktables.NetworkTableEntry;
+import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -72,8 +74,6 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
-import edu.wpi.first.networktables.NetworkTableEntry;
-import edu.wpi.first.networktables.NetworkTableInstance;
 import org.ironmaple.simulation.drivesims.COTS;
 import org.ironmaple.simulation.drivesims.configs.DriveTrainSimulationConfig;
 import org.ironmaple.simulation.drivesims.configs.SwerveModuleSimulationConfig;
@@ -89,7 +89,7 @@ public class Drive extends SubsystemBase {
 
   // TunerConstants doesn't include these constants, so they are declared locally
   static final double ODOMETRY_FREQUENCY =
-      new CANBus(TunerConstants.DrivetrainConstants.CANBusName).isNetworkFD() ? 250.0 : 100.0;
+      new CANBus(TunerConstants.DrivetrainConstants.CANBusName).isNetworkFD() ? 250.0 : 180.0;
   public static final double DRIVE_BASE_RADIUS =
       Math.max(
           Math.max(
@@ -163,9 +163,7 @@ public class Drive extends SubsystemBase {
   // the Limelight's internal storage, which is viewable post-match at
   // http://<limelight-ip>:5801 under the Snapshots tab.
   private final NetworkTableEntry llLeftSnapshot =
-      NetworkTableInstance.getDefault()
-          .getTable(RobotContainer.limelightLeft)
-          .getEntry("snapshot");
+      NetworkTableInstance.getDefault().getTable(RobotContainer.limelightLeft).getEntry("snapshot");
   private final NetworkTableEntry llRightSnapshot =
       NetworkTableInstance.getDefault()
           .getTable(RobotContainer.limelightRight)
@@ -534,7 +532,8 @@ public class Drive extends SubsystemBase {
       DoubleSupplier xSupplier,
       DoubleSupplier ySupplier,
       DoubleSupplier omegaSupplier,
-      double maxLinearSpeed) {
+      double maxLinearSpeed,
+      double maxAngularSpeed) {
     // Get linear velocity
     Translation2d linearVelocity =
         getLinearVelocityFromJoysticks(xSupplier.getAsDouble(), ySupplier.getAsDouble());
@@ -550,7 +549,7 @@ public class Drive extends SubsystemBase {
         new ChassisSpeeds(
             linearVelocity.getX() * maxLinearSpeed,
             linearVelocity.getY() * maxLinearSpeed,
-            omega * (maxLinearSpeed / DRIVE_BASE_RADIUS));
+            omega * maxAngularSpeed);
     boolean isFlipped =
         DriverStation.getAlliance().isPresent()
             && DriverStation.getAlliance().get() == Alliance.Red;
@@ -758,6 +757,25 @@ public class Drive extends SubsystemBase {
   public Translation2d getHubRelativeChassisSpeeds() {
     Translation2d hubCenter = getAllianceHubCenter();
     return getTargetRelativeChassisSpeeds(hubCenter);
+  }
+
+  /**
+   * Returns the tangential component of the turret's field velocity relative to an arbitrary target
+   * (m/s, CCW positive). Positive means the robot is moving in the counter-clockwise direction
+   * around the target.
+   *
+   * <p>Used to compute the turret angular velocity feedforward:
+   *
+   * <pre>
+   *   turretAngularFF (rad/s) = tangentialVelocity / distanceToTarget
+   *   turretAngularFF (deg/s) = Math.toDegrees(tangentialVelocity / distanceToTarget)
+   * </pre>
+   *
+   * @param target field-relative target position (e.g. virtual target from the lookahead solver)
+   * @return tangential velocity in m/s (CCW positive)
+   */
+  public double getTurretTangentialVelocityToTarget(Translation2d target) {
+    return getTargetRelativeChassisSpeeds(target).getY();
   }
 
   /** Returns the distance from the robot to the alliance hub center (meters). */

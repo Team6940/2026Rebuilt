@@ -13,27 +13,14 @@
 
 package frc.robot;
 
-import com.pathplanner.lib.auto.AutoBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
-import frc.robot.Constants.FeederConstants;
-import frc.robot.Constants.IntakeConstants;
-import frc.robot.Constants.StretcherConstants;
 import frc.robot.commands.Autos.LeftDepotCycle;
-import frc.robot.commands.Autos.MidLC;
 import frc.robot.commands.Autos.MidOutpost;
 import frc.robot.commands.Autos.RightOutpostCycle;
-import frc.robot.commands.DriveCommands;
-import frc.robot.commands.IntakeCommand;
-import frc.robot.commands.IntakeDefaultCommand;
-import frc.robot.commands.ManualShootCommand;
-import frc.robot.commands.ManualShootFieldRelativeCommand;
 import frc.robot.generated.TunerConstants;
-import frc.robot.subsystems.Climber.ClimberSubsystem;
 import frc.robot.subsystems.Drive.Drive;
 import frc.robot.subsystems.Drive.GyroIO;
 import frc.robot.subsystems.Drive.GyroIOPigeon2;
@@ -53,6 +40,7 @@ import frc.robot.subsystems.Turret.TurretSubsystem;
 import java.util.Set;
 import org.ironmaple.simulation.SimulatedArena;
 import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
+import org.ironmaple.simulation.seasonspecific.rebuilt2026.Arena2026Rebuilt;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
@@ -103,6 +91,7 @@ public class RobotContainer {
       case SIM:
         // Sim robot, instantiate physics sim IO implementations
 
+        SimulatedArena.overrideInstance(new Arena2026Rebuilt(false));
         driveSimulation =
             new SwerveDriveSimulation(Drive.mapleSimConfig, new Pose2d(3, 3, new Rotation2d()));
         SimulatedArena.getInstance().addDriveTrainSimulation(driveSimulation);
@@ -151,7 +140,6 @@ public class RobotContainer {
     autoChooser.addOption("RightOutpostCycle", new RightOutpostCycle());
 
     configureButtonBindings();
-    // testBindings();
   }
 
   /**
@@ -211,11 +199,8 @@ public class RobotContainer {
                         () -> -driverController.getLeftY(),
                         () -> -driverController.getLeftX(),
                         () -> -driverController.getRightX(),
-                        2.)));
-    // driverController
-    //     .leftBumper()
-    //     .onTrue(superStructure.runOnce(() ->
-    // superStructure.setIntakeMode(SuperStructure.IntakeMode.SHAKE)));
+                        1.2,
+                        3.2)));
 
     operatorController
         .leftBumper()
@@ -232,132 +217,14 @@ public class RobotContainer {
     operatorController
         .povDown()
         .onTrue(superStructure.runOnce(() -> superStructure.toggleControlMode()));
-    // driverController.a().whileTrue(new RightOutpostCycle());
-    // driverController.x().whileTrue(new MidOutpost());
-  }
-
-  private void testBindings() {
-    drive.setDefaultCommand(
-        drive.run(
-            () ->
-                drive.driveFieldCentricWithMaxSpeed(
-                    () -> -driverController.getLeftY(),
-                    () -> -driverController.getLeftX(),
-                    () -> -driverController.getRightX(),
-                    2.)));
-    intake.setDefaultCommand(new IntakeDefaultCommand());
-
-    // intake.setDefaultCommand(
-    //     Commands.defer(() -> superStructure.getIntakeCommand(), Set.of(intake, stretcher)));
-
     // driverController
     //     .a()
-    //     .onTrue(new InstantCommand(() -> feeder.setTurntableRPS(2.5)))
-    //     .onFalse(new InstantCommand(() -> feeder.setTurntableRPS(0.)));
-    // driverController
-    //     .a()
-    //     .onTrue(new InstantCommand(() -> feeder.setFeedRPS(FeederConstants.DefaultFeedRPS)))
-    //     .onFalse(new InstantCommand(() -> feeder.setFeedRPS(0.)));
-    // driverController
-    //     .a()
-    //     .onTrue(
-    //         new InstantCommand(() ->
-    // stretcher.setPosition(StretcherConstants.ExtendedPosition)));
-    // driverController
-    //     .b()
-    //     .onTrue(
-    //         new InstantCommand(() ->
-    // stretcher.setPosition(StretcherConstants.RetractedPosition)));
-    // driverController
-    //     .x()
-    //     .onTrue(new InstantCommand(() -> intake.setRPS(IntakeConstants.IntakingRPS)))
-    //     .onFalse(new InstantCommand(() -> intake.setRPS(0.)));
-
-    driverController
-        .rightBumper()
-        .onTrue(
-            superStructure.runOnce(
-                () -> superStructure.setIntakeMode(SuperStructure.IntakeMode.INTAKE)))
-        .onFalse(
-            superStructure.runOnce(
-                () -> superStructure.setIntakeMode(SuperStructure.IntakeMode.SHAKE)));
-
-    driverController
-        .leftBumper()
-        .onTrue(
-            superStructure.runOnce(
-                () -> superStructure.setIntakeMode(SuperStructure.IntakeMode.OFF)));
-
-    // driverController.rightBumper().toggleOnTrue(new IntakeCommand());
-
-    driverController
-        .b()
-        .onTrue(
-            Commands.runOnce(
-                    () ->
-                        drive.setPose(
-                            new Pose2d(drive.getPose().getTranslation(), new Rotation2d())),
-                    drive)
-                .ignoringDisable(true));
-
-    // driverController
-    //     .start()
-    //     .onTrue(Commands.defer(() -> superStructure.getClimbExtendCommand(), Set.of(climber)));
-
-    // driverController
-    //     .back()
-    //     .onTrue(Commands.defer(() -> superStructure.getClimbRetractCommand(), Set.of(climber)));
-    driverController.a().onTrue(Commands.run(() -> turret.setAutoSetpoint(0), turret));
-    driverController.a().onFalse(Commands.run(() -> turret.setAutoSetpoint(90), turret));
-
-    // driverController.a().whileTrue(drive.followPPPath("LeftNA-Left"));
-    // driverController.x().whileTrue(drive.followPPPath("Left-Depot"));
-    // driverController
-    //     .a()
-    //     .onTrue(new InstantCommand(() -> feeder.setFeedRPS(60)))
-    //     .onFalse(new InstantCommand(() -> feeder.setFeedRPS(0)));
+    //     .onTrue(new InstantCommand(() -> turret.setVelocity(300.)))
+    //     .onFalse(new InstantCommand(() -> turret.setVelocity(0.)));
     // driverController
     //     .y()
-    //     .onTrue(new InstantCommand(() -> feeder.setFeedRPS(120)))
-    //     .onFalse(new InstantCommand(() -> feeder.setFeedRPS(0)));
-    // driverController
-    //     .x()
-    //     .onTrue(new InstantCommand(() -> feeder.setFeedRPS(15)))
-    //     .onFalse(new InstantCommand(() -> feeder.setFeedRPS(0)));
-
-    // operatorController
-    //     .leftBumper()
-    //     .toggleOnTrue(
-    //         Commands.defer(
-    //             () -> superStructure.getShootCommand(Button.kRightTrigger, Button.kRightBumper),
-    //             Set.of(turret, shooter, hood, feeder)));
-    operatorController
-        .povDown()
-        .onTrue(superStructure.runOnce(() -> superStructure.toggleControlMode()));
-    operatorController
-        .povUp()
-        .onTrue(superStructure.runOnce(() -> superStructure.toggleShootMode()));
-    // operatorController
-    //     .leftBumper()
-    //     .whileTrue(new ManualShootCommand(Button.kRightTrigger, Button.kRightBumper));
-    // driverController.a().onTrue(new InstantCommand(()->hood.setPosition(44)));
-    // driverController.b().onTrue(new InstantCommand(()->hood.setPosition(0.)));
-    // driverController.a().onTrue(new InstantCommand(()->turret.setAutoSetpoint(-180.)));
-    // driverController.b().onTrue(new InstantCommand(()->turret.setAutoSetpoint(40.)));
-    // driverController.y().onTrue(new InstantCommand(()->turret.setAutoSetpoint(180.)));
-    // driverController
-    //     .a()
-    //     .onTrue(new InstantCommand(() -> shooter.setRPS(20.)))
-    //     .onFalse(new InstantCommand(() -> shooter.setRPS(0)));
-    // driverController
-    //     .y()
-    //     .onTrue(new InstantCommand(() -> shooter.setRPS(45.)))
-    //     .onFalse(new InstantCommand(() -> shooter.setRPS(0)));
-    // driverController
-    //     .x()
-    //     .onTrue(new InstantCommand(() -> shooter.setRPS(80.)))
-    //     .onFalse(new InstantCommand(() -> shooter.setRPS(0)));
-
+    //     .onTrue(new InstantCommand(() -> turret.setVelocity(-300.)))
+    //     .onFalse(new InstantCommand(() -> turret.setVelocity(0.)));
   }
 
   /**
@@ -373,7 +240,7 @@ public class RobotContainer {
   public void resetSimulationField() {
     if (Constants.currentMode != Constants.Mode.SIM) return;
 
-    driveSimulation.setSimulationWorldPose(new Pose2d(3, 3, new Rotation2d()));
+    driveSimulation.setSimulationWorldPose(new Pose2d(0, 0, new Rotation2d()));
     SimulatedArena.getInstance().resetFieldForAuto();
   }
 

@@ -31,7 +31,6 @@ public class HoodSubsystem extends SubsystemBase {
     if (Robot.isReal()) {
       io = new HoodIOPhoenix6();
     } else {
-      // TODO: Implement simulation code here
       io = new HoodIO() {};
     }
   }
