@@ -101,7 +101,7 @@ public class TurretIOPhoenix6 implements TurretIO {
     inputs.motorConnected =
         BaseStatusSignal.refreshAll(
                 motor.getMotorVoltage(),
-                motor.getSupplyCurrent(),
+                motor.getStatorCurrent(),
                 motor.getPosition(),
                 motor.getVelocity())
             .isOK();

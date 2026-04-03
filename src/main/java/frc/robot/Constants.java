@@ -604,7 +604,7 @@ public final class Constants {
     // Feedforward scale for the setpoint-rate term (dimensionless, [0..1] typical).
     // 1.0 means the outer loop fully compensates for a moving target.
     // Start at 0.0 and increase until tracking lag disappears without overshoot.
-    // For now I leave it with 0.
+    // For now it should be 1.0 because the formula is physically accurate.
     // Note: The derivative method is not a good way which has significantly more noise and
     // dampening the system, as i had seen in SIM mode.
     public static final double kFF_targetVel = 1.0;

@@ -46,9 +46,9 @@ public class TurretSubsystem extends SubsystemBase {
 
   // Diagnostic log fields (written in handleVelocity, read in periodic)
   private double velocityCmdDegsPerSec = 0.0;
-  private double dbg_positionError = 0.0;
-  private double dbg_targetVelFF = 0.0;
-  private double dbg_chassisFF = 0.0;
+  private double dbgPositionError = 0.0;
+  private double dbgTargetVelFF = 0.0;
+  private double dbgChassisFF = 0.0;
 
   public TurretSubsystem() {
     if (Robot.isReal()) {
@@ -296,9 +296,9 @@ public class TurretSubsystem extends SubsystemBase {
     Logger.recordOutput("Turret/EncoderCalculatedPositionDegs", encoderCalculatedPositionDegs);
     Logger.recordOutput("Turret/VelocityCmdDegsPerSec", velocityCmdDegsPerSec);
     Logger.recordOutput("Turret/MotorVelocityDegsPerSec", inputs.motorVelocityDegsPerSec);
-    Logger.recordOutput("Turret/Velocity/PositionError", dbg_positionError);
-    Logger.recordOutput("Turret/Velocity/TargetVelFF", dbg_targetVelFF);
-    Logger.recordOutput("Turret/Velocity/ChassisFF", dbg_chassisFF);
+    Logger.recordOutput("Turret/Velocity/PositionError", dbgPositionError);
+    Logger.recordOutput("Turret/Velocity/TargetVelFF", dbgTargetVelFF);
+    Logger.recordOutput("Turret/Velocity/ChassisFF", dbgChassisFF);
   }
 
   private void handleHybrid() {
@@ -384,9 +384,9 @@ public class TurretSubsystem extends SubsystemBase {
 
     // ── Step 5: apply ─────────────────────────────────────────────────────────
     velocityCmdDegsPerSec = rawCmd;
-    dbg_positionError = positionError;
-    dbg_targetVelFF = targetVelFF;
-    dbg_chassisFF = chassisFF;
+    dbgPositionError = positionError;
+    dbgTargetVelFF = targetVelFF;
+    dbgChassisFF = chassisFF;
     setVelocity(velocityCmdDegsPerSec);
   }
 
