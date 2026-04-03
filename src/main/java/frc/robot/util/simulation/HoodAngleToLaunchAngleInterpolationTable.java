@@ -16,19 +16,23 @@ public final class HoodAngleToLaunchAngleInterpolationTable {
     throw new AssertionError("Utility class; do not instantiate");
   }
 
-  /** <p>Hood Angle (degrees) → Launch Angle (degrees). Launch angle is slightly higher than hood angle.</p> */
+  /** <p>Hood Angle (degrees) → Launch Angle (degrees)</p> */
   public static final InterpolatingDoubleTreeMap TABLE =
       new InterpolatingDoubleTreeMap();
 
   static {
-    TABLE.put(10.0, 60.0);
-    TABLE.put(15.0, 62.0);
-    TABLE.put(18.0, 64.0);
-    TABLE.put(23.0, 67.0);
-    TABLE.put(27.0, 69.0);
-    TABLE.put(33.0, 70.0);
-    TABLE.put(38.0, 70.5);
-    TABLE.put(43.0, 70.5);
-    TABLE.put(50.0, 70.0);
+    TABLE.put(17.490, 22.0);
+    TABLE.put(25.049, 30.0);
+    TABLE.put(35.3, 43.0);
+    TABLE.put(42.100, 52.0);
+
+    // TABLE.put(15.0, 62.0);
+    // TABLE.put(18.0, 64.0);
+    // TABLE.put(23.0, 67.0);
+    // TABLE.put(27.0, 69.0);
+    // TABLE.put(33.0, 70.0);
+    // TABLE.put(38.0, 70.5);
+    // TABLE.put(43.0, 70.5);
+    // TABLE.put(50.0, 70.0);
   }
 }

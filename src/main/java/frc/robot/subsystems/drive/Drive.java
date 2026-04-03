@@ -727,7 +727,9 @@ public class Drive extends SubsystemBase {
    * frc.robot.util.ProjectileCalculator#solve}).
    */
   public Translation2d getTurretFieldVelocity() {
-    ChassisSpeeds robotSpeeds = getChassisSpeeds();
+    ChassisSpeeds robotSpeeds = Constants.currentMode == Constants.Mode.SIM
+              ? RobotContainer.driveSimulation.getDriveTrainSimulatedChassisSpeedsRobotRelative()
+              : getChassisSpeeds();
     ChassisSpeeds fieldSpeeds = ChassisSpeeds.fromRobotRelativeSpeeds(robotSpeeds, getRotation());
     Translation2d rotatedOffset = Constants.TurretConstants.TURRET_OFFSET.rotateBy(getRotation());
     double omega = robotSpeeds.omegaRadiansPerSecond;
@@ -742,7 +744,9 @@ public class Drive extends SubsystemBase {
    * offset is rotated by the current robot heading before being added to the chassis position.
    */
   public Translation2d getTurretWorldPosition() {
-    Pose2d pose = getPose();
+    Pose2d pose = Constants.currentMode == Constants.Mode.SIM
+              ? RobotContainer.driveSimulation.getSimulatedDriveTrainPose()
+              : getPose();
     Translation2d rotatedOffset =
         Constants.TurretConstants.TURRET_OFFSET.rotateBy(pose.getRotation());
     return pose.getTranslation().plus(rotatedOffset);

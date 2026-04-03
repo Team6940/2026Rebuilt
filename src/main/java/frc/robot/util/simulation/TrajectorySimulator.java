@@ -17,9 +17,7 @@ import frc.robot.RobotContainer;
  * 2. In AScope, add a "Pose3d Array" data source with the key "shotsTrajectory"
  */
 public class TrajectorySimulator {
-    // Trajectory emission rate control: 7 projectiles per second = ~143ms between shots
-    // At 50Hz loop rate: 50 loops/sec / 7 shots/sec = ~7 loops per shot
-    private static final int LOOPS_PER_SHOT = 7; // Emit every 7 loops (50Hz / 7 ≈ 7 shots/sec)
+    private static final int LOOPS_PER_SHOT = 1;
     private int loopCounter = 0;
 
     public void setTrajectory(Pose2d pose, double hoodDegs, double shooterRps, Rotation2d turretRotation) {
@@ -30,13 +28,7 @@ public class TrajectorySimulator {
         }
         loopCounter = 0; // Reset counter
 
-        // Record the incoming parameters so we can verify they're changing in SIM
-        Logger.recordOutput("FieldSimulation/ShotPose2d", pose);
-        Logger.recordOutput("FieldSimulation/ShotHoodDegs", hoodDegs);
-        Logger.recordOutput("FieldSimulation/ShotRPS", shooterRps);
-        Logger.recordOutput("FieldSimulation/ShotTurretRotationDegs", turretRotation.getDegrees());
-
-        // Lookup ball speed from RPS using interpolation table (PRESET_1)
+        // Lookup ball speed from RPS using interpolation table
         double launchSpeedMps = ShooterRpsToMpsInterpolationTable.PRESET_1.get(shooterRps);
         
         // Lookup launch angle from hood angle using interpolation table
@@ -54,5 +46,13 @@ public class TrajectorySimulator {
             .withProjectileTrajectoryDisplayCallBack(
                 (poses) -> Logger.recordOutput("FieldSimulation/ShotsTrajectory", poses.toArray(Pose3d[]::new)))
             .enableBecomesGamePieceOnFieldAfterTouchGround());
+
+        // Record the incoming parameters so we can verify they're changing in SIM
+        Logger.recordOutput("FieldSimulation/ShotPose2d", pose);
+        Logger.recordOutput("FieldSimulation/ShotHoodDegs", hoodDegs);
+        Logger.recordOutput("FieldSimulation/ShotLaunchAngleDegs", launchAngleDegrees);
+        Logger.recordOutput("FieldSimulation/ShotRPS", shooterRps);
+        Logger.recordOutput("FieldSimulation/ShotMPS", launchSpeedMps);
+        Logger.recordOutput("FieldSimulation/ShotTurretRotationDegs", turretRotation.getDegrees());
     }
 }

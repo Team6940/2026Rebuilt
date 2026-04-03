@@ -4,36 +4,44 @@ import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
 
 /**
  * <h3>Shooter RPS to Projectile MPS Interpolation Tables</h3>
- * <p>Provides three calibrated lookup tables for RPS input mapping to projectile velocity output (MPS).
- * Use for trajectory simulation by interpolating between defined data points.</p>
+ * <p>Provides three calibrated lookup tables for RPS input mapping to projectile velocity output (Meters per sec).
+ * <p>Use for trajectory simulation by interpolating between defined data points.</p>
  *
  * @see TrajectorySimulator
  */
 public final class ShooterRpsToMpsInterpolationTable {
 
   private ShooterRpsToMpsInterpolationTable() {
-    throw new AssertionError("Utility class; do not instantiate");
+    throw new AssertionError("Utility class; do not instsantiate");
   }
 
-  /** <p>Preset calibration 1: RPS → MPS mapping. Highest efficiency.</p> */
+  /** <p>Preset calibration 1: DEFAULT.</p> */
   public static final InterpolatingDoubleTreeMap PRESET_1 =
       new InterpolatingDoubleTreeMap();
 
   static {
-    PRESET_1.put(20.0, 3.484);
-    PRESET_1.put(30.0, 5.226);
-    PRESET_1.put(34.5, 6.019);
-    PRESET_1.put(39.84, 6.955);
-    PRESET_1.put(43.8, 7.644);
-    PRESET_1.put(48.7, 8.489);
-    PRESET_1.put(53.5, 9.334);
-    PRESET_1.put(54.5, 9.503);
-    PRESET_1.put(60.0, 10.465);
-    PRESET_1.put(100.0, 17.459);
-    PRESET_1.put(120.0, 20.943);
+    PRESET_1.put(20.0, 11.18);
+    PRESET_1.put(30.0, 11.18);
+    PRESET_1.put(40.0, 13.46);
+    PRESET_1.put(55.0, 17.8);
+    PRESET_1.put(60.0, 18.2);
+    PRESET_1.put(70.0, 21.36);
+
+    // PRESET_1.put(20.0, 3.484);
+    // PRESET_1.put(30.0, 5.226);
+    // PRESET_1.put(34.5, 6.019);
+    // PRESET_1.put(39.84, 6.955);
+    // PRESET_1.put(43.8, 7.644);
+    // PRESET_1.put(48.7, 8.489);
+    // PRESET_1.put(53.5, 9.334);
+    // PRESET_1.put(54.5, 9.503);
+    // PRESET_1.put(60.0, 10.465);
+    // PRESET_1.put(100.0, 17.459);
+    // PRESET_1.put(120.0, 20.943);
+    
   }
 
-  /** <p>Preset calibration 2: RPS → MPS mapping. Standard efficiency.</p> */
+  /** <p>Preset calibration 2</p> */
   public static final InterpolatingDoubleTreeMap PRESET_2 =
       new InterpolatingDoubleTreeMap();
 
@@ -51,7 +59,7 @@ public final class ShooterRpsToMpsInterpolationTable {
     PRESET_2.put(120.0, 19.994);
   }
 
-  /** <p>Preset calibration 3: RPS → MPS mapping. Lowest efficiency.</p> */
+  /** <p>Preset calibration 3.</p> */
   public static final InterpolatingDoubleTreeMap PRESET_3 =
       new InterpolatingDoubleTreeMap();
 
@@ -77,9 +85,9 @@ public final class ShooterRpsToMpsInterpolationTable {
    */
   public static InterpolatingDoubleTreeMap getPreset(int preset) {
     return switch (preset) {
-      case 1 -> PRESET_1;
+      case 2 -> PRESET_2;
       case 3 -> PRESET_3;
-      default -> PRESET_2;
+      default -> PRESET_1;
     };
   }
 }

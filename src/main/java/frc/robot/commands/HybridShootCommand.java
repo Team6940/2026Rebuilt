@@ -162,12 +162,7 @@ public class HybridShootCommand extends Command {
       // Get field-relative velocity based on mode:
       // - In SIM: use simulated chassis speeds (field-relative)
       // - In real: use measured turret field velocity
-      Translation2d turretVel =
-          Constants.currentMode == Constants.Mode.SIM
-              ? new Translation2d(
-                  driveSimulation.getDriveTrainSimulatedChassisSpeedsFieldRelative().vxMetersPerSecond,
-                  driveSimulation.getDriveTrainSimulatedChassisSpeedsFieldRelative().vyMetersPerSecond)
-              : drive.getTurretFieldVelocity();
+      Translation2d turretVel = drive.getTurretFieldVelocity();
       straightToTarget = drive.getRotationToAllianceHub();
 
       // Decompose field-frame velocity into hub-relative (radial, tangential) for logging
