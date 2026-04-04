@@ -20,12 +20,12 @@ public final class ShooterRpsToMpsInterpolationTable {
       new InterpolatingDoubleTreeMap();
 
   static {
-    PRESET_1.put(20.0, 11.18);
-    PRESET_1.put(30.0, 11.18);
-    PRESET_1.put(40.0, 13.46);
-    PRESET_1.put(55.0, 17.8);
-    PRESET_1.put(60.0, 18.2);
-    PRESET_1.put(70.0, 21.36);
+    PRESET_1.put(20.0, 2.79508);
+    // PRESET_1.put(30.0, 11.18);
+    // PRESET_1.put(40.0, 13.46);
+    PRESET_1.put(55.0, 8.27647);
+    // PRESET_1.put(60.0, 18.2);
+    PRESET_1.put(70.0, 11.85854);
 
     // PRESET_1.put(20.0, 3.484);
     // PRESET_1.put(30.0, 5.226);

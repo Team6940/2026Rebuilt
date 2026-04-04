@@ -636,7 +636,7 @@ public final class Constants {
     public static final Translation2d TURRET_OFFSET = new Translation2d(-0.05, 0.0);
 
     // TODO: Turret pivot height above the floor (meters). Tune to your robot. For sim.
-    public static final double TurretHeightMeters = 0.3;
+    public static final double TurretHeightMeters = 0.436 + 0.075;
 
     public static final InterpolatingDoubleTreeMap DistanceToTurretTolerance =
         new InterpolatingDoubleTreeMap();

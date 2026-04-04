@@ -21,10 +21,10 @@ public final class HoodAngleToLaunchAngleInterpolationTable {
       new InterpolatingDoubleTreeMap();
 
   static {
-    TABLE.put(17.490, 22.0);
-    TABLE.put(25.049, 30.0);
-    TABLE.put(35.3, 43.0);
-    TABLE.put(42.100, 52.0);
+    TABLE.put(17.490,78.);
+    TABLE.put(25.049, 63.);
+    TABLE.put(35.3, 56.);
+    TABLE.put(42.100, 38.);
 
     // TABLE.put(15.0, 62.0);
     // TABLE.put(18.0, 64.0);
