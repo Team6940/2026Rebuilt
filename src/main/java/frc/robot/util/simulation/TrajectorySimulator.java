@@ -17,7 +17,7 @@ import frc.robot.RobotContainer;
  * 2. In AScope, add a "Pose3d Array" data source with the key "shotsTrajectory"
  */
 public class TrajectorySimulator {
-    private static final int LOOPS_PER_SHOT = 1;
+    private static final int LOOPS_PER_SHOT = 10;
     private int loopCounter = 0;
 
     public void setTrajectory(Pose2d pose, double hoodDegs, double shooterRps, Rotation2d turretRotation) {
