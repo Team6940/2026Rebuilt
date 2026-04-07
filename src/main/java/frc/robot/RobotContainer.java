@@ -13,27 +13,14 @@
 
 package frc.robot;
 
-import com.pathplanner.lib.auto.AutoBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
-import frc.robot.Constants.FeederConstants;
-import frc.robot.Constants.IntakeConstants;
-import frc.robot.Constants.StretcherConstants;
 import frc.robot.commands.Autos.LeftDepotCycle;
-import frc.robot.commands.Autos.MidLC;
 import frc.robot.commands.Autos.MidOutpost;
 import frc.robot.commands.Autos.RightOutpostCycle;
-import frc.robot.commands.DriveCommands;
-import frc.robot.commands.IntakeCommand;
-import frc.robot.commands.IntakeDefaultCommand;
-import frc.robot.commands.ManualShootCommand;
-import frc.robot.commands.ManualShootFieldRelativeCommand;
 import frc.robot.generated.TunerConstants;
-import frc.robot.subsystems.Climber.ClimberSubsystem;
 import frc.robot.subsystems.Drive.Drive;
 import frc.robot.subsystems.Drive.GyroIO;
 import frc.robot.subsystems.Drive.GyroIOPigeon2;
@@ -153,7 +140,6 @@ public class RobotContainer {
     autoChooser.addOption("RightOutpostCycle", new RightOutpostCycle());
 
     configureButtonBindings();
-    // testBindings();
   }
 
   /**
@@ -223,24 +209,19 @@ public class RobotContainer {
         .onFalse(
             superStructure.runOnce(
                 () -> superStructure.setIntakeMode(SuperStructure.IntakeMode.INTAKE)));
-    // driverController
-    //     .leftTrigger()
-    //     .whileTrue(
-    //         drive.run(
-    //             () ->
-    //                 drive.driveFieldCentricWithMaxSpeed(
-    //                     () -> -driverController.getLeftY(),
-    //                     () -> -driverController.getLeftX(),
-    //                     () -> -driverController.getRightX(),
-    //                     2.,
-    //                     3.)));
-
-    // driverController
-    //     .leftBumper()
-    //     .onTrue(superStructure.runOnce(() ->
-    // superStructure.setIntakeMode(SuperStructure.IntakeMode.SHAKE)));
-
     driverController
+        .leftTrigger()
+        .whileTrue(
+            drive.run(
+                () ->
+                    drive.driveFieldCentricWithMaxSpeed(
+                        () -> -driverController.getLeftY(),
+                        () -> -driverController.getLeftX(),
+                        () -> -driverController.getRightX(),
+                        1.2,
+                        3.2)));
+
+    operatorController
         .leftBumper()
         .whileTrue(
             Commands.defer(
@@ -414,7 +395,7 @@ public class RobotContainer {
   public void resetSimulationField() {
     if (Constants.currentMode != Constants.Mode.SIM) return;
 
-    driveSimulation.setSimulationWorldPose(new Pose2d(3, 3, new Rotation2d()));
+    driveSimulation.setSimulationWorldPose(new Pose2d(0, 0, new Rotation2d()));
     SimulatedArena.getInstance().resetFieldForAuto();
   }
 

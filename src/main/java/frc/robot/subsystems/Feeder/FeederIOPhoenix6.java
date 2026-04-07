@@ -48,7 +48,7 @@ public class FeederIOPhoenix6 implements FeederIO {
     config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
     config.Feedback.SensorToMechanismRatio = FeederConstants.FeedRatio;
     config.TorqueCurrent.PeakForwardTorqueCurrent = 800.;
-    config.TorqueCurrent.PeakReverseTorqueCurrent = 0.;
+    config.TorqueCurrent.PeakReverseTorqueCurrent = -400.;
     config.Slot0.kP = FeederConstants.FeedkP;
     config.Slot0.kI = FeederConstants.FeedkI;
     config.Slot0.kD = FeederConstants.FeedkD;

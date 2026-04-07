@@ -100,7 +100,7 @@ public final class Constants {
   }
 
   public final class DriveConstants {
-    public static final double DEADBAND = 0.02;
+    public static final double DEADBAND = 0.04;
     public static final double ANGLE_KP = 5.0;
     public static final double ANGLE_KD = 0.4;
     public static final double ANGLE_MAX_VELOCITY = 8.0;
@@ -207,8 +207,8 @@ public final class Constants {
       // Distance (meters) -> Flight time (seconds)
       DistanceToFlightTimeSecs.put(0.96, 0.9);
       DistanceToFlightTimeSecs.put(1.2, 1.0);
-      DistanceToFlightTimeSecs.put(3., 1.14);
-      DistanceToFlightTimeSecs.put(5., 1.23);
+      DistanceToFlightTimeSecs.put(3., 1.18);
+      DistanceToFlightTimeSecs.put(5., 1.28);
     }
   }
 
@@ -560,12 +560,12 @@ public final class Constants {
     public static final double TurretSupplyCurrentLimit = 40.0;
 
     // Encoder 1
-    public static final double TurretEncoderOffsetDegrees = -40.078;
+    public static final double TurretEncoderOffsetDegrees = -41.836;
     public static final SensorDirectionValue TurretEncoderDirection =
         SensorDirectionValue.CounterClockwise_Positive;
 
     // Encoder 2
-    public static final double TurretEncoder2OffsetDegrees = -96.416;
+    public static final double TurretEncoder2OffsetDegrees = -273.779;
     public static final SensorDirectionValue TurretEncoder2Direction =
         SensorDirectionValue.CounterClockwise_Positive;
 
@@ -578,34 +578,34 @@ public final class Constants {
 
     // Motion Magic Gains
     public static final double MaxVelocity = 40.0; // Rotations per second
-    public static final double Acceleration = 60.0; // Rotations per second squared
+    public static final double Acceleration = 15.0; // Rotations per second squared
 
-    // ── Velocity-based control gains (used when TurretMode.VELOCITY is active) ──
+    // Velocity-based control gains (used when TurretMode.VELOCITY is active)
     //
     // Outer position loop (runs on RIO, produces commanded angular velocity):
-    //   ω_cmd = kP_position * positionError
+    //   w_cmd = kP_position * positionError
     //         + kFF_targetVel  * setpointDerivative  (tracks moving target)
     //         + kFF_chassis    * (-chassisOmega_deg/s) (keeps field-relative aim)
     // Inner velocity loop (runs on motor controller):
     //   uses kP_velocity, kV_velocity, kS_velocity via VelocityTorqueCurrentFOC
     //
     // Tune order:
-    //   1. kV_velocity   — set so motor tracks a constant velocity command accurately
-    //   2. kP_velocity   — tighten velocity tracking
-    //   3. kP_position   — tune convergence speed of the outer loop (start low, ~2–5)
-    //   4. kFF_targetVel — scale the setpoint-rate FF (1.0 = full; lower if overshooting)
-    //   5. kFF_chassis   — scale the chassis-omega FF (1.0 = full; lower if oscillating)
+    //   1. kV_velocity   - set so motor tracks a constant velocity command accurately
+    //   2. kP_velocity   - tighten velocity tracking
+    //   3. kP_position   - tune convergence speed of the outer loop (start low, ~2-5)
+    //   4. kFF_targetVel - scale the setpoint-rate FF (1.0 = full; lower if overshooting)
+    //   5. kFF_chassis   - scale the chassis-omega FF (1.0 = full; lower if oscillating)
     public static final double kP_position = 9.0; // (deg/s) per deg of error
-    public static final double kP_velocity = 36.; // motor velocity kP — tune
+    public static final double kP_velocity = 100.; // motor velocity kP — tune
     public static final double kV_velocity = 0.0127; // motor velocity kV — tune
     public static final double kS_velocity = 2.95; // motor velocity kS (same as kS above)
-    public static final double kA_velocity = 2.;
+    public static final double kA_velocity = 9.;
 
     // Feedforward scale for the setpoint-rate term (dimensionless, [0..1] typical).
     // 1.0 means the outer loop fully compensates for a moving target.
     // Start at 0.0 and increase until tracking lag disappears without overshoot.
-    // For now I leave it with 0.
-    // Note: The derivative method is not a good way which has signifacantly more noise and
+    // For now it should be 1.0 because the formula is physically accurate.
+    // Note: The derivative method is not a good way which has significantly more noise and
     // dampening the system, as i had seen in SIM mode.
     public static final double kFF_targetVel = 1.0;
 
@@ -666,7 +666,7 @@ public final class Constants {
     public static final double Acceleration = 48.0; // Rotations per second squared
 
     // Positions (Rotations) — original degree values divided by 360
-    public static final double StretcherPositionToleranceRotations = 30. / 360.0;
+    public static final double StretcherPositionToleranceRotations = 0.01;
 
     public static final double MinRotations = 0.; // CCW Positive
     public static final double MaxRotations = 3.11;
@@ -707,8 +707,8 @@ public final class Constants {
     public static final double ManualRpsX = 55.;
     public static final double ManualRpsY = 70.;
 
-    // Passing mode constants (static values for bump passing)
-    public static final double PassRps = 55.;
+    // Passing mode constants (static values for hub-lane passing)
+    public static final double PassRps = 60.;
 
     /**
      * Linear RPS correction slope for pass mode.
@@ -719,9 +719,9 @@ public final class Constants {
 
     /**
      * Distance at which PassRps is used without correction.
-     * When the robot is exactly this far from the target bump, no RPS adjustment is applied.
+     * Tuned for a robot shooting from the far side of the field toward the hub lane (~6 m typical).
      */
-    public static final double PassRpsNeutralDistanceMeters = 2.5;
+    public static final double PassRpsNeutralDistanceMeters = 11.0;
 
     /**
      * Lead time index for pass-mode yaw compensation (seconds).
