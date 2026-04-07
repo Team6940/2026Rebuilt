@@ -635,6 +635,9 @@ public final class Constants {
      */
     public static final Translation2d TURRET_OFFSET = new Translation2d(-0.05, 0.0);
 
+    // TODO: Turret pivot height above the floor (meters). Tune to your robot. For sim.
+    public static final double TurretHeightMeters = 0.436 + 0.075;
+
     public static final InterpolatingDoubleTreeMap DistanceToTurretTolerance =
         new InterpolatingDoubleTreeMap();
 
@@ -726,6 +729,53 @@ public final class Constants {
      * to compensate for chassis lateral motion during the ball's flight.
      */
     public static final double PassLeadIndex = 0.4;
+
+    // TODO: Shooter wheel radius in meters (used to convert RPS -> m/s). For sim.
+    public static final double ShooterWheelRadiusMeters = 0.0508;
+
+
+    // ════════════════════════════════════════════════════════════════════════════════════════════
+    // Shooter Simulation Physics Model Parameters
+    // ════════════════════════════════════════════════════════════════════════════════════════════
+    
+    /**
+     * <p><b>Coefficient of friction between wheel and ball.</b></p>
+     * 
+     * <p><b>Typical Range:</b> 0.5 ~ 1.0</p>
+     * <ul>
+     *   <li>0.5: Smooth surface with minimal friction</li>
+     *   <li>0.8: Typical rubber-on-rubber contact (shooter wheel to ball)</li>
+     *   <li>1.0: Ideal friction (perfect grip, no slip)</li>
+     * </ul>
+     * 
+     * <p><b>Tuning:</b> Start with 0.8 and adjust based on measured flight data.</p>
+     */
+    public static final double FRICTION_COEFFICIENT = 0.6;
+
+    /**
+     * <p><b>Slip loss factor — velocity reduction from ball slipping on flywheel.</b></p>
+     * <p>Represents the proportional speed loss when the ball slides relative to the flywheel surface.</p>
+     * <p><b>Typical Range:</b> 0.0 ~ 0.3</p>
+     * <ul>
+     *   <li>0.0: Perfect grip, no slipping (ideal case)</li>
+     *   <li>0.1: Typical sliding loss at normal operating speeds</li>
+     *   <li>0.3: Significant slipping at high speeds</li>
+     * </ul>
+     * <p><b>Note:</b> May vary with motor speed; this model uses a constant value for simplification.</p>
+     */
+    public static final double SLIP_LOSS_FACTOR = 0.10;
+
+    /**
+     * <p><b>Compression factor — energy loss from contact deformation.</b></p>
+     * <p>Accounts for the energy dissipation when the ball compresses against the flywheel surface.</p>
+     * <p><b>Typical Range:</b> 0.85 ~ 1.0</p>
+     * <ul>
+     *   <li>0.95: Soft balls (e.g., 2026 Coral) with noticeable compression</li>
+     *   <li>0.99+: Hard/stiff balls with minimal deformation</li>
+     *   <li>1.0: Ideal rigid-body contact (no compression loss)</li>
+     * </ul>
+     */
+    public static final double COMPRESSION_FACTOR = 0.97;
   }
 
   public final class FeederConstants {

@@ -13,6 +13,7 @@ import frc.robot.Constants.FieldConstants;
 import frc.robot.Constants.HoodConstants;
 import frc.robot.Constants.ShooterConstants;
 import frc.robot.RobotContainer;
+import frc.robot.Constants;
 import frc.robot.subsystems.Drive.Drive;
 import frc.robot.subsystems.Feeder.FeederSubsystem;
 import frc.robot.subsystems.Hood.HoodSubsystem;
@@ -23,6 +24,9 @@ import frc.robot.subsystems.SuperStructure.ShootMode;
 import frc.robot.subsystems.Turret.TurretSubsystem;
 import frc.robot.util.ProjectileCalculator;
 import frc.robot.util.ProjectileCalculator.ShotSolution;
+import frc.robot.util.simulation.TrajectorySimulator;
+
+import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
 import org.littletonrobotics.junction.Logger;
 
 public class HybridShootCommand extends Command {
@@ -59,6 +63,8 @@ public class HybridShootCommand extends Command {
   private final ShootMode shootMode;
   private final MotionShotMode motionShotMode;
   private final boolean autoTriggerEnabled;
+  private final TrajectorySimulator trajectorySimulator = new TrajectorySimulator();
+  private final SwerveDriveSimulation driveSimulation = RobotContainer.driveSimulation;
 
   /** Persistent RPS offset applied on top of the solver result. Adjusted via ABXY. */
   private double rpsOffset = 0.0;
@@ -133,6 +139,12 @@ public class HybridShootCommand extends Command {
 
   @Override
   public void execute() {
+    // Select robot pose based on mode: use simulated pose in SIM, real pose otherwise
+    Pose2d robotPose =
+        Constants.currentMode == Constants.Mode.SIM
+            ? driveSimulation.getSimulatedDriveTrainPose()
+            : drive.getPose();
+
     double distanceMeters = 0.0;
     double radialVelocity = 0.0;
     double tangentialVelocity = 0.0;
@@ -142,8 +154,14 @@ public class HybridShootCommand extends Command {
     double hoodDegs;
 
     if (shootMode == ShootMode.SCORE) {
-      Translation2d turretPos = drive.getTurretWorldPosition();
+      // Calculate turret position based on selected pose
+      Translation2d turretOffset = Constants.TurretConstants.TURRET_OFFSET.rotateBy(robotPose.getRotation());
+      Translation2d turretPos = robotPose.getTranslation().plus(turretOffset);
       Translation2d hubCenter = Drive.getAllianceHubCenter();
+      
+      // Get field-relative velocity based on mode:
+      // - In SIM: use simulated chassis speeds (field-relative)
+      // - In real: use measured turret field velocity
       Translation2d turretVel = drive.getTurretFieldVelocity();
       straightToTarget = drive.getRotationToAllianceHub();
 
@@ -271,7 +289,7 @@ public class HybridShootCommand extends Command {
     }
 
     hood.setAutoSetpoint(hoodDegs);
-    turret.setAutoSetpointFieldRelativeRotation2d(fieldTargetAngle, drive.getPose());
+    turret.setAutoSetpointFieldRelativeRotation2d(fieldTargetAngle, robotPose);
 
     hood.setOperatorInputScalar(
         ImprovedCommandXboxController.applyInputCurve(-operatorController.getLeftY()));
@@ -298,6 +316,12 @@ public class HybridShootCommand extends Command {
     // boolean distanceInScope = distanceMeters <= 5.3 && distanceMeters >= 1;
     boolean readyToAutoFeed = shooterAtTarget && turretAtTarget && hoodAtTarget;
     boolean feedingEnabled = readyToAutoFeed || operatorController.getButton(Button.kRightBumper);
+
+    // Sim-only: emit trajectory every frame using calculated aim parameters.
+    // robotPose was already selected based on mode (SIM or real), so trajectory is consistent.
+    if (Constants.currentMode == Constants.Mode.SIM) {
+      trajectorySimulator.setTrajectory(robotPose, hoodDegs, adjustedTargetRps, fieldTargetAngle);
+    }
 
     Logger.recordOutput("Cmds/HybridShoot/ShootMode", shootMode.toString());
     Logger.recordOutput("Cmds/HybridShoot/DistanceMeters", distanceMeters);

@@ -54,7 +54,7 @@ public class RobotContainer {
   // Subsystems
   public static final String limelightLeft = "limelight-l";
   public static final String limelightRight = "limelight";
-  private final Drive drive;
+  public static Drive drive;
   private final FeederSubsystem feeder = FeederSubsystem.getInstance();
   private final HoodSubsystem hood = HoodSubsystem.getInstance();
   private final IntakeSubsystem intake = IntakeSubsystem.getInstance();
@@ -63,7 +63,7 @@ public class RobotContainer {
   private final TurretSubsystem turret = TurretSubsystem.getInstance();
   private final SuperStructure superStructure = SuperStructure.getInstance();
   // Simulated subsystems
-  private SwerveDriveSimulation driveSimulation = null;
+  public static SwerveDriveSimulation driveSimulation = new SwerveDriveSimulation(Drive.mapleSimConfig, new Pose2d());
 
   // Controller
   public static final ImprovedCommandXboxController driverController =
@@ -145,15 +145,34 @@ public class RobotContainer {
   /**
    * ***** THE CONTROL LOGIC IS SUCH ******
    *
-   * <p>DRIVER CONROLLER: B：RESET GYRO X: STOP WITH X RB: INTAKE LB: TRIGGER SHOOT MODE PovDown:
-   * TOGGLE SHOOT MODE MANUAL/HYBRID PovUp: TOGGLE CONTROL MODE PASS/SCORE
+   * <p>DRIVER CONROLLER: 
+   *    B：RESET GYRO 
+   *    X: STOP WITH X 
+   *    RB: INTAKE 
+   *    LB: TRIGGER SHOOT MODE
+   *    RT: SHAKE MODE (WHILE HELD) 
+   *    LT: DRIVE PRECISION MODE (WHILE HELD)
    *
-   * <p>OPERATOR CONTROLLER: RT: SHOOT RB: RESET SCORING UNIT HYBRID SHOOTING: LEFT STICK Y: HOOD
-   * SCALAR RIGHT STICK X: TURRET SCALAR MANUAL SHOOTING (CURRENTLY UNUSED): LEFT STICK Y: HOOD
-   * SCALAR RIGHT STICK X: TURRET SCALAR A: SET RPS 30 B: SET RPS 35 X: SET RPS 40 Y: SET RPS 45
-   * MANUAL FIELD-RELATIVE SHOOTING: LEFT STICK: AIMING (TURRET SETPOINT IS CALCULATED BASED ON
-   * ROBOT HEADING AND STICK ANGLE) RIGHT STICK Y: HOOD SCALAR A: SET RPS 30 B: SET RPS 35 X: SET
-   * RPS 40 Y: SET RPS 45 LEFT BUMPER: INCREASE RPS BY 5 LEFT TRIGGER: DECREASE RPS BY 5
+   * <p>OPERATOR CONTROLLER: 
+   *    RT: SHOOT 
+   *    RB: RESET SCORING UNIT 
+   *    HYBRID SHOOTING: LEFT STICK 
+   *    Y: HOOD SCALAR 
+   *    RIGHT STICK X: TURRET SCALAR 
+   *    MANUAL SHOOTING (CURRENTLY UNUSED): LEFT STICK
+   *        Y: HOOD SCALAR 
+   *        RIGHT STICK X: TURRET SCALAR
+   *        A: SET RPS 30
+   *        B: SET RPS 35 
+   *        X: SET RPS 40 
+   *        Y: SET RPS 45
+   *    MANUAL FIELD-RELATIVE SHOOTING: 
+   *        LEFT STICK: AIMING (TURRET SETPOINT IS CALCULATED BASED ON ROBOT HEADING AND STICK ANGLE)
+   *        RIGHT STICK Y: HOOD SCALAR
+   *        A: SET RPS 30 
+   *        B: SET RPS 35 
+   *        X: SET RPS 40 
+   *        Y: SET RPS 45
    */
   private void configureButtonBindings() {
 
@@ -208,7 +227,7 @@ public class RobotContainer {
             Commands.defer(
                 () -> superStructure.getScoreCommand(Button.kRightTrigger, Button.kRightBumper),
                 Set.of(feeder, hood, shooter, turret)));
-    operatorController
+    driverController
         .leftTrigger()
         .whileTrue(
             Commands.defer(
@@ -225,7 +244,143 @@ public class RobotContainer {
     //     .y()
     //     .onTrue(new InstantCommand(() -> turret.setVelocity(-300.)))
     //     .onFalse(new InstantCommand(() -> turret.setVelocity(0.)));
+    // driverController.x().whileTrue(new MidOutpost());
   }
+
+/** ****************************************************************************************************************
+ *   TTTTTTT  EEEEEEE   SSSSSS  TTTTTTT      BBBBBB    IIIIIII  N   N   DDDD   IIIIIII   N   N    GGGGGG    SSSSSS
+ *     TTT    E        S          TTT        B     B     III    NN  N   D   D    III     NN  N   G         S
+ *     TTT    EEEEE     SSSSSS    TTT        BBBBBB      III    N N N   D   D    III     N N N   GGGGGGG    SSSSSS
+ *     TTT    E               S   TTT        B     B     III    N  NN   D   D    III     N  NN   G      G         S
+ *     TTT    EEEEEEE   SSSSSS    TTT        BBBBBB    IIIIIII  N   N   DDDD   IIIIIII   N   N    GGGGGG    SSSSSS
+ * 
+ ** ****************************************************************************************************************
+ */
+
+//   private void testBindings() {
+//     drive.setDefaultCommand(
+//         drive.run(
+//             () ->
+//                 drive.driveFieldCentricWithMaxSpeed(
+//                     () -> -driverController.getLeftY(),
+//                     () -> -driverController.getLeftX(),
+//                     () -> -driverController.getRightX(),
+//                     2.,
+//                     3.)));
+//     intake.setDefaultCommand(new IntakeDefaultCommand());
+
+//     // intake.setDefaultCommand(
+//     //     Commands.defer(() -> superStructure.getIntakeCommand(), Set.of(intake, stretcher)));
+
+//     // driverController
+//     //     .a()
+//     //     .onTrue(new InstantCommand(() -> feeder.setTurntableRPS(2.5)))
+//     //     .onFalse(new InstantCommand(() -> feeder.setTurntableRPS(0.)));
+//     // driverController
+//     //     .a()
+//     //     .onTrue(new InstantCommand(() -> feeder.setFeedRPS(FeederConstants.DefaultFeedRPS)))
+//     //     .onFalse(new InstantCommand(() -> feeder.setFeedRPS(0.)));
+//     // driverController
+//     //     .a()
+//     //     .onTrue(
+//     //         new InstantCommand(() ->
+//     // stretcher.setPosition(StretcherConstants.ExtendedPosition)));
+//     // driverController
+//     //     .b()
+//     //     .onTrue(
+//     //         new InstantCommand(() ->
+//     // stretcher.setPosition(StretcherConstants.RetractedPosition)));
+//     // driverController
+//     //     .x()
+//     //     .onTrue(new InstantCommand(() -> intake.setRPS(IntakeConstants.IntakingRPS)))
+//     //     .onFalse(new InstantCommand(() -> intake.setRPS(0.)));
+
+//     driverController
+//         .rightBumper()
+//         .onTrue(
+//             superStructure.runOnce(
+//                 () -> superStructure.setIntakeMode(SuperStructure.IntakeMode.INTAKE)))
+//         .onFalse(
+//             superStructure.runOnce(
+//                 () -> superStructure.setIntakeMode(SuperStructure.IntakeMode.SHAKE)));
+
+//     driverController
+//         .leftBumper()
+//         .onTrue(
+//             superStructure.runOnce(
+//                 () -> superStructure.setIntakeMode(SuperStructure.IntakeMode.OFF)));
+
+//     // driverController.rightBumper().toggleOnTrue(new IntakeCommand());
+
+//     driverController
+//         .b()
+//         .onTrue(
+//             Commands.runOnce(
+//                     () ->
+//                         drive.setPose(
+//                             new Pose2d(drive.getPose().getTranslation(), new Rotation2d())),
+//                     drive)
+//                 .ignoringDisable(true));
+
+//     // driverController
+//     //     .start()
+//     //     .onTrue(Commands.defer(() -> superStructure.getClimbExtendCommand(), Set.of(climber)));
+
+//     // driverController
+//     //     .back()
+//     //     .onTrue(Commands.defer(() -> superStructure.getClimbRetractCommand(), Set.of(climber)));
+//     driverController.a().onTrue(Commands.run(() -> turret.setAutoSetpoint(0), turret));
+//     driverController.a().onFalse(Commands.run(() -> turret.setAutoSetpoint(90), turret));
+
+//     // driverController.a().whileTrue(drive.followPPPath("LeftNA-Left"));
+//     // driverController.x().whileTrue(drive.followPPPath("Left-Depot"));
+//     // driverController
+//     //     .a()
+//     //     .onTrue(new InstantCommand(() -> feeder.setFeedRPS(60)))
+//     //     .onFalse(new InstantCommand(() -> feeder.setFeedRPS(0)));
+//     // driverController
+//     //     .y()
+//     //     .onTrue(new InstantCommand(() -> feeder.setFeedRPS(120)))
+//     //     .onFalse(new InstantCommand(() -> feeder.setFeedRPS(0)));
+//     // driverController
+//     //     .x()
+//     //     .onTrue(new InstantCommand(() -> feeder.setFeedRPS(15)))
+//     //     .onFalse(new InstantCommand(() -> feeder.setFeedRPS(0)));
+
+//     // operatorController
+//     //     .leftBumper()
+//     //     .toggleOnTrue(
+//     //         Commands.defer(
+//     //             () -> superStructure.getShootCommand(Button.kRightTrigger, Button.kRightBumper),
+//     //             Set.of(turret, shooter, hood, feeder)));
+//     operatorController
+//         .povDown()
+//         .onTrue(superStructure.runOnce(() -> superStructure.toggleControlMode()));
+//     operatorController
+//         .povUp()
+//         .onTrue(superStructure.runOnce(() -> superStructure.toggleShootMode()));
+//     // operatorController
+//     //     .leftBumper()
+//     //     .whileTrue(new ManualShootCommand(Button.kRightTrigger, Button.kRightBumper));
+//     // driverController.a().onTrue(new InstantCommand(()->hood.setPosition(44)));
+//     // driverController.b().onTrue(new InstantCommand(()->hood.setPosition(0.)));
+//     // driverController.a().onTrue(new InstantCommand(()->turret.setAutoSetpoint(-180.)));
+//     // driverController.b().onTrue(new InstantCommand(()->turret.setAutoSetpoint(40.)));
+//     // driverController.y().onTrue(new InstantCommand(()->turret.setAutoSetpoint(180.)));
+//     // driverController
+//     //     .a()
+//     //     .onTrue(new InstantCommand(() -> shooter.setRPS(20.)))
+//     //     .onFalse(new InstantCommand(() -> shooter.setRPS(0)));
+//     // driverController
+//     //     .y()
+//     //     .onTrue(new InstantCommand(() -> shooter.setRPS(45.)))
+//     //     .onFalse(new InstantCommand(() -> shooter.setRPS(0)));
+//     // driverController
+//     //     .x()
+//     //     .onTrue(new InstantCommand(() -> shooter.setRPS(80.)))
+//     //     .onFalse(new InstantCommand(() -> shooter.setRPS(0)));
+
+/* ***************************************************************************************************** */
 
   /**
    * Use this to pass the autonomous command to the main {@link Robot} class.
