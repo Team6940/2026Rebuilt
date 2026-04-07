@@ -28,14 +28,14 @@ public class ShooterSubsystem extends SubsystemBase {
           .withProperties(Map.of("min", 0.0, "max", MAX_DASH_RPS))
           .getEntry();
 
-  private static double targetRPS = 0;
+  private double targetRPS = 0;
   private double dashboardRps = 0.0;
 
   public ShooterSubsystem() {
     if (Robot.isReal()) {
       io = new ShooterIOPhoenix6();
     } else {
-      io = new ShooterIOSim();
+      io = new ShooterIOPhoenix6();
     }
   }
 
@@ -60,10 +60,6 @@ public class ShooterSubsystem extends SubsystemBase {
 
   public double getShooterRPS() {
     return inputs.shooterVelocityRPS;
-  }
-
-  public static double getTargetRPS() {
-    return targetRPS;
   }
 
   public void stop() {
