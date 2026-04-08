@@ -320,7 +320,10 @@ public class HybridShootCommand extends Command {
     // Sim-only: emit trajectory every frame using calculated aim parameters.
     // robotPose was already selected based on mode (SIM or real), so trajectory is consistent.
     if (Constants.currentMode == Constants.Mode.SIM) {
-      trajectorySimulator.setTrajectory(robotPose, hoodDegs, adjustedTargetRps, fieldTargetAngle);
+      trajectorySimulator.setTrajectory(robotPose,
+        hoodDegs,
+        adjustedTargetRps, 
+        fieldTargetAngle);
     }
 
     Logger.recordOutput("Cmds/HybridShoot/ShootMode", shootMode.toString());

@@ -7,6 +7,8 @@ import org.littletonrobotics.junction.Logger;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.units.Units;
 import frc.robot.Constants.TurretConstants;
 import frc.robot.RobotContainer;
@@ -54,5 +56,12 @@ public class TrajectorySimulator {
         Logger.recordOutput("FieldSimulation/ShotRPS", shooterRps);
         Logger.recordOutput("FieldSimulation/ShotMPS", launchSpeedMps);
         Logger.recordOutput("FieldSimulation/ShotTurretRotationDegs", turretRotation.getDegrees());
+        // Logger.recordOutput("FieldSimulation/TurretPose", new Pose3d(
+        //     new Translation3d(
+        //         pose.getTranslation().plus(TurretConstants.TURRET_OFFSET).getX(),
+        //         pose.getTranslation().plus(TurretConstants.TURRET_OFFSET).getY(),
+        //         TurretConstants.TurretHeightMeters),
+        //     launchAngleDegrees
+        // ));
     }
 }

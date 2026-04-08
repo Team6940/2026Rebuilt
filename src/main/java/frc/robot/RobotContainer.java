@@ -221,7 +221,8 @@ public class RobotContainer {
                         1.2,
                         3.2)));
 
-    operatorController
+    // operatorController
+    driverController
         .leftBumper()
         .whileTrue(
             Commands.defer(
@@ -395,7 +396,7 @@ public class RobotContainer {
   public void resetSimulationField() {
     if (Constants.currentMode != Constants.Mode.SIM) return;
 
-    driveSimulation.setSimulationWorldPose(new Pose2d(0, 0, new Rotation2d()));
+    driveSimulation.setSimulationWorldPose(new Pose2d(2, 2, new Rotation2d()));
     SimulatedArena.getInstance().resetFieldForAuto();
   }
 
