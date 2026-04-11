@@ -374,7 +374,7 @@ public class Drive extends SubsystemBase {
     LimelightHelpers.SetRobotOrientation(
         limelightName,
         getPose().getRotation().getDegrees(),
-        0,
+        Math.toDegrees(getChassisSpeeds().omegaRadiansPerSecond),
         gyroInputs.pitchPosition.getDegrees(),
         0,
         gyroInputs.rollPosition.getDegrees(),
