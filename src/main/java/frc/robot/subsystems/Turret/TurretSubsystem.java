@@ -62,6 +62,9 @@ public class TurretSubsystem extends SubsystemBase {
             inputs.encoderPositionDegrees, inputs.encoder2PositionDegrees);
     resetPosition(encoderCalculatedPositionDegs);
     // this is added to ensure the turret starts at the correct position
+    
+    // The resetPosition method is abandoned.
+    // resetPosition(TurretConstants.IdlePosition);
   }
 
   public void resetPosition(double positionDegrees) {
@@ -274,12 +277,12 @@ public class TurretSubsystem extends SubsystemBase {
               inputs.encoderPositionDegrees, inputs.encoder2PositionDegrees);
     }
 
-    switch (mode) {
-      case HYBRID -> handleHybrid();
-      case MANUAL -> handleManual();
-      case VELOCITY -> handleVelocity();
-        // case MANUAL -> handleManualFieldRelative();
-    }
+    // switch (mode) {
+    //   case HYBRID -> handleHybrid();
+    //   case MANUAL -> handleManual();
+    //   case VELOCITY -> handleVelocity();
+    //     // case MANUAL -> handleManualFieldRelative();
+    // }
 
     Logger.processInputs("Turret", inputs);
     Logger.recordOutput("Turret/Mode", mode.toString());
