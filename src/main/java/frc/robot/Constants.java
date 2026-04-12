@@ -279,7 +279,7 @@ public final class Constants {
       public static final Translation3d innerCenterPoint =
           new Translation3d(
               getTagPoseOrDefault(26).getX() + width / 2.0, fieldWidth / 2.0, innerHeight);
-      public static final Translation2d centerPoint = new Translation2d(4.621, 4.07);
+      public static final Translation2d centerPoint = new Translation2d(4.623, 4.030); // 4.621 4.07
 
       public static final Translation2d nearLeftCorner =
           new Translation2d(topCenterPoint.getX() - width / 2.0, fieldWidth / 2.0 + width / 2.0);
@@ -293,7 +293,7 @@ public final class Constants {
       // Relevant reference points on the opposite side
       public static final Translation3d oppTopCenterPoint =
           new Translation3d(getTagPoseOrDefault(4).getX() + width / 2.0, fieldWidth / 2.0, height);
-      public static final Translation2d oppCenterPoint = new Translation2d(11.9, 4.07);
+      public static final Translation2d oppCenterPoint = new Translation2d(11.917, 4.030); // 11.9 4.07
       public static final Translation2d oppNearLeftCorner =
           new Translation2d(oppTopCenterPoint.getX() - width / 2.0, fieldWidth / 2.0 + width / 2.0);
       public static final Translation2d oppNearRightCorner =
@@ -806,6 +806,8 @@ public final class Constants {
       tAtoDev.put(0.12, 0.20);
       tAtoDev.put(0.071, 0.35);
       tAtoDev.put(0.046, 0.4);
+      tAtoDev.put(0.03, 0.7);
+      tAtoDev.put(0.01, 1.0);
     }
   }
 }
