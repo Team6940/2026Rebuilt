@@ -140,8 +140,8 @@ public class RobotContainer {
     autoChooser.addOption("MidOutpost", new MidOutpost());
     autoChooser.addOption("RightOutpostCycle", new RightOutpostCycle());
 
-    // configureButtonBindings();
-    testBindings();
+    configureButtonBindings();
+    // testBindings();
   }
 
   private void testBindings() {
@@ -238,7 +238,7 @@ public class RobotContainer {
                         1.2,
                         3.2)));
 
-    operatorController
+    driverController
         .leftBumper()
         .whileTrue(
             Commands.defer(

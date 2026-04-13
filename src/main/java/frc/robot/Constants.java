@@ -100,7 +100,7 @@ public final class Constants {
   }
 
   public final class DriveConstants {
-    public static final double DEADBAND = 0.04;
+    public static final double DEADBAND = 0.05;
     public static final double ANGLE_KP = 5.0;
     public static final double ANGLE_KD = 0.4;
     public static final double ANGLE_MAX_VELOCITY = 8.0;
@@ -572,7 +572,7 @@ public final class Constants {
     // PID Gains
     public static final double kP = 600.;
     public static final double kI = 0.0;
-    public static final double kD = 100.;
+    public static final double kD = 60.;
     public static final double kV = 9.;
     public static final double kS = 13.;
 
@@ -620,9 +620,9 @@ public final class Constants {
 
     // Positions (Degrees)
     public static final double TurretPositionToleranceDegs = 10.0;
-    public static final double MinDegs = -220.0;
-    public static final double MaxDegs = 225.0;
-    public static final double IdlePosition = 20.; // -1.203424
+    public static final double MinDegs = -200.0;
+    public static final double MaxDegs = 198.0;
+    public static final double IdlePosition = -1.203424; // -1.203424
 
     // Manual control tuning
     public static final double TurretManualSensitivity = 5.0;
@@ -669,7 +669,7 @@ public final class Constants {
     public static final double MaxRotations = 3.11;
 
     public static final double ExtendedPosition = 2.65;
-    public static final double MidPosition = 2.3;
+    public static final double MidPosition = 1.9;
     public static final double RetractedPosition = 0.00;
 
     public static final double IdlePosition = 0.0;
