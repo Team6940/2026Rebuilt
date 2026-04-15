@@ -235,10 +235,10 @@ public class RobotContainer {
                         () -> -driverController.getLeftY(),
                         () -> -driverController.getLeftX(),
                         () -> -driverController.getRightX(),
-                        1.2,
-                        3.2)));
+                        1.6,
+                        5.4)));
 
-    driverController
+    operatorController
         .leftBumper()
         .whileTrue(
             Commands.defer(

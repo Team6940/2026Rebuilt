@@ -156,11 +156,11 @@ public final class Constants {
       shooterRpsZero.put(1.05, 34.5);
       shooterRpsZero.put(1.32, 38.61); // 36.61
       shooterRpsZero.put(1.88, 39.84); // 38.04
-      shooterRpsZero.put(2.6, 41.64);
-      shooterRpsZero.put(3.4, 43.8);
-      shooterRpsZero.put(4.1, 48.7);
-      shooterRpsZero.put(4.99, 53.5);
-      shooterRpsZero.put(5.2, 54.5);
+      shooterRpsZero.put(2.6, 42.3);
+      shooterRpsZero.put(3.4, 45.2);
+      shooterRpsZero.put(4.1, 51.4);
+      shooterRpsZero.put(4.99, 54.9);
+      shooterRpsZero.put(5.2, 57.5);
       // shooterRpsZero.put(0.98, 38.9);
       // shooterRpsZero.put(1.61, 41.1);
       // shooterRpsZero.put(1.98, 45.2);
@@ -639,8 +639,8 @@ public final class Constants {
         new InterpolatingDoubleTreeMap();
 
     static {
-      DistanceToTurretTolerance.put(3., 15.);
-      DistanceToTurretTolerance.put(5., 7.);
+      DistanceToTurretTolerance.put(3., 8.);
+      DistanceToTurretTolerance.put(5., 2.);
     }
   }
 
@@ -668,8 +668,8 @@ public final class Constants {
     public static final double MinRotations = 0.; // CCW Positive
     public static final double MaxRotations = 3.11;
 
-    public static final double ExtendedPosition = 2.65;
-    public static final double MidPosition = 1.9;
+    public static final double ExtendedPosition = 2.62;
+    public static final double MidPosition = 1.7;
     public static final double RetractedPosition = 0.00;
 
     public static final double IdlePosition = 0.0;
