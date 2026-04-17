@@ -60,11 +60,11 @@ public class TurretSubsystem extends SubsystemBase {
     encoderCalculatedPositionDegs =
         calculateTurretDegsFromEncoders(
             inputs.encoderPositionDegrees, inputs.encoder2PositionDegrees);
-    //resetPosition(encoderCalculatedPositionDegs);
+    resetPosition(encoderCalculatedPositionDegs);
     // this is added to ensure the turret starts at the correct position
     
     // The resetPosition method is abandoned.
-    resetPosition(TurretConstants.IdlePosition);
+    // resetPosition(TurretConstants.IdlePosition);
   }
 
   public void resetPosition(double positionDegrees) {

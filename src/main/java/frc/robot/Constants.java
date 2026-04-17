@@ -515,7 +515,7 @@ public final class Constants {
 
     public static final double IntakeVelocityToleranceRPS = 0.5;
 
-    public static final double IntakingRPS = 38.0;
+    public static final double IntakingRPS = 43.0;
     public static final double ReversingRPS = 0;
   }
 
@@ -622,7 +622,7 @@ public final class Constants {
     public static final double TurretPositionToleranceDegs = 10.0;
     public static final double MinDegs = -200.0;
     public static final double MaxDegs = 198.0;
-    public static final double IdlePosition = -1.203424; // -1.203424
+    public static final double IdlePosition = 20.; // -1.203424
 
     // Manual control tuning
     public static final double TurretManualSensitivity = 5.0;
@@ -687,6 +687,11 @@ public final class Constants {
     public static final double kD = 0.0;
     public static final double kV = 0.115;
     public static final double kS = 14.;
+    public static final double kA = 0.0;
+
+
+    // MotionMagic Gains
+    public static final double MotionMagicAcceleration = 120.;
 
     // Torque-current feedforward (Amps per RPS)
     public static final double kTorqueFFPerRPS = 0.0;
@@ -718,7 +723,7 @@ public final class Constants {
      * Distance at which PassRps is used without correction. Tuned for a robot shooting from the far
      * side of the field toward the hub lane (~6 m typical).
      */
-    public static final double PassRpsNeutralDistanceMeters = 11.0;
+    public static final double PassRpsNeutralDistanceMeters = 9.5;
 
     /**
      * Lead time index for pass-mode yaw compensation (seconds). The turret is pre-rotated by
@@ -730,19 +735,19 @@ public final class Constants {
 
   public final class FeederConstants {
     // Turntable Constants
-    public static final double TurntableRatio = 31.2; // Sensor rotations to mechanism rotations
+    public static final double TurntableRatio = 31.2 * 5. / 9.; // Sensor rotations to mechanism rotations
     public static final InvertedValue TurntableInverted = InvertedValue.CounterClockwise_Positive;
-    public static final double TurntableSupplyCurrentLimit = 40.0;
+    public static final double TurntableSupplyCurrentLimit = 60.0;
 
     // Turntable motor PID Gains
-    public static final double TurntablekP = 0.4;
+    public static final double TurntablekP = 0.5;
     public static final double TurntablekI = 0.0;
     public static final double TurntablekD = 0.0;
-    public static final double TurntablekV = 4.;
-    public static final double TurntablekS = 0.392;
+    public static final double TurntablekV = 2.15;
+    public static final double TurntablekS = 0.45;
 
     public static final double TurntableVelocityToleranceRPS = 0.5;
-    public static final double TurntableJamCurrentThresholdAmps = 50.0;
+    public static final double TurntableJamCurrentThresholdAmps = 60.0;
     public static final double TurntableJamDetectTimeSecs = 0.3;
     public static final double TurntableJamReverseRPS = -2.0;
     public static final double TurntableJamReverseTimeSecs = 0.25;
@@ -754,7 +759,7 @@ public final class Constants {
     public static final double FeedStatorCurrentLimit = 180.;
 
     // Feed motor PID Gains
-    public static final double FeedkP = 15.;
+    public static final double FeedkP = 20.;
     public static final double FeedkI = 0.0;
     public static final double FeedkD = 0.0;
     public static final double FeedkV = 0.05;
@@ -763,8 +768,8 @@ public final class Constants {
     public static final double FeedVelocityToleranceRPS = 0.5;
 
     // Default RPS values
-    public static final double DefaultTurntableRPS = 2.8;
-    public static final double DefaultFeedRPS = 90.0;
+    public static final double DefaultTurntableRPS = 4.2;
+    public static final double DefaultFeedRPS = 100.0;
 
     // Manual reverse (POV right) — both motors run backward to unjam or eject notes
     public static final double ReverseFeederRPS = -30.0;

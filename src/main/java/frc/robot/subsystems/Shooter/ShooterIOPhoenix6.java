@@ -30,6 +30,9 @@ public class ShooterIOPhoenix6 implements ShooterIO {
     config.Slot0.kD = ShooterConstants.kD;
     config.Slot0.kV = ShooterConstants.kV;
     config.Slot0.kS = ShooterConstants.kS;
+    config.Slot0.kA = ShooterConstants.kA;
+
+    config.MotionMagic.MotionMagicAcceleration = ShooterConstants.MotionMagicAcceleration;
 
     config.CurrentLimits.SupplyCurrentLimitEnable = true;
     config.CurrentLimits.SupplyCurrentLimit = ShooterConstants.ShooterSupplyCurrentLimit;

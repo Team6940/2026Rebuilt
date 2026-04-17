@@ -140,8 +140,8 @@ public class RobotContainer {
     autoChooser.addOption("MidOutpost", new MidOutpost());
     autoChooser.addOption("RightOutpostCycle", new RightOutpostCycle());
 
-    configureButtonBindings();
-    // testBindings();
+     configureButtonBindings();
+    //testBindings();
   }
 
   private void testBindings() {
@@ -160,22 +160,30 @@ public class RobotContainer {
     //     .y()
     //     .onTrue(new InstantCommand(() -> turret.setVelocity(-60.)))
     //     .onFalse(new InstantCommand(() -> turret.setVelocity(0.)));
-    driverController
-        .a()
-        .onTrue(new InstantCommand(() -> turret.setPosition(170.)))
-        .onFalse(new InstantCommand(() -> turret.setPosition(0.)));
-    driverController
-        .y()
-        .onTrue(new InstantCommand(() -> turret.setPosition(-20.)))
-        .onFalse(new InstantCommand(() -> turret.setPosition(0.)));
+    // driverController
+    //     .a()
+    //     .onTrue(new InstantCommand(() -> turret.setPosition(170.)))
+    //     .onFalse(new InstantCommand(() -> turret.setPosition(0.)));
+    // driverController
+    //     .y()
+    //     .onTrue(new InstantCommand(() -> turret.setPosition(-20.)))
+    //     .onFalse(new InstantCommand(() -> turret.setPosition(0.)));
+    // driverController
+    //     .x()
+    //     .onTrue(new InstantCommand(() -> feeder.setFeedRPS(90)))
+    //     .onFalse(new InstantCommand(() -> feeder.setFeedRPS(0)));
+    // driverController
+    //     .b()
+    //     .onTrue(new InstantCommand(() -> feeder.setFeedRPS(30)))
+    //     .onFalse(new InstantCommand(() -> feeder.setFeedRPS(0)));
     driverController
         .x()
-        .onTrue(new InstantCommand(() -> feeder.setFeedRPS(90)))
-        .onFalse(new InstantCommand(() -> feeder.setFeedRPS(0)));
+        .onTrue(new InstantCommand(() -> feeder.setTurntableRPS(4.)))
+        .onFalse(new InstantCommand(() -> feeder.setTurntableRPS(0)));
     driverController
         .b()
-        .onTrue(new InstantCommand(() -> feeder.setFeedRPS(30)))
-        .onFalse(new InstantCommand(() -> feeder.setFeedRPS(0)));
+        .onTrue(new InstantCommand(() -> feeder.setTurntableRPS(1.)))
+        .onFalse(new InstantCommand(() -> feeder.setTurntableRPS(0)));
   }
 
   /**
@@ -238,7 +246,7 @@ public class RobotContainer {
                         1.6,
                         5.4)));
 
-    operatorController
+    driverController
         .leftBumper()
         .whileTrue(
             Commands.defer(
