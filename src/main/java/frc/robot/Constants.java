@@ -157,7 +157,7 @@ public final class Constants {
       shooterRpsZero.put(1.32, 38.61); // 36.61
       shooterRpsZero.put(1.88, 39.84); // 38.04
       shooterRpsZero.put(2.6, 42.3);
-      shooterRpsZero.put(3.4, 45.2);
+      shooterRpsZero.put(3.4, 46.2);
       shooterRpsZero.put(4.1, 51.4);
       shooterRpsZero.put(4.99, 54.9);
       shooterRpsZero.put(5.2, 57.5);
@@ -649,6 +649,7 @@ public final class Constants {
         27. * 26. / 46.; // Sensor rotations to mechanism rotations
     public static final InvertedValue Inverted = InvertedValue.CounterClockwise_Positive;
     public static final double StretcherSupplyCurrentLimit = 40.0;
+    public static final double StretcherStatorCurrentLimit=10.;
 
     // PID Gains
     public static final double kP = 96.;
@@ -738,6 +739,8 @@ public final class Constants {
     public static final double TurntableRatio = 31.2 * 5. / 9.; // Sensor rotations to mechanism rotations
     public static final InvertedValue TurntableInverted = InvertedValue.CounterClockwise_Positive;
     public static final double TurntableSupplyCurrentLimit = 60.0;
+    public static final double TurntableStatorCurrentLimit =100;
+
 
     // Turntable motor PID Gains
     public static final double TurntablekP = 0.5;
@@ -748,9 +751,9 @@ public final class Constants {
 
     public static final double TurntableVelocityToleranceRPS = 0.5;
     public static final double TurntableJamCurrentThresholdAmps = 60.0;
-    public static final double TurntableJamDetectTimeSecs = 0.3;
+    public static final double TurntableJamDetectTimeSecs = 0.35;
     public static final double TurntableJamReverseRPS = -2.0;
-    public static final double TurntableJamReverseTimeSecs = 0.25;
+    public static final double TurntableJamReverseTimeSecs = 0.5;
 
     // Feed (upward feeding) Constants
     public static final double FeedRatio = 1.0 / 1.0; // Sensor rotations to mechanism rotations
@@ -768,7 +771,7 @@ public final class Constants {
     public static final double FeedVelocityToleranceRPS = 0.5;
 
     // Default RPS values
-    public static final double DefaultTurntableRPS = 4.2;
+    public static final double DefaultTurntableRPS = 6.2;
     public static final double DefaultFeedRPS = 100.0;
 
     // Manual reverse (POV right) — both motors run backward to unjam or eject notes

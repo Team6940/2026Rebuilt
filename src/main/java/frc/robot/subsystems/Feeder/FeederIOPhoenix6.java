@@ -38,7 +38,7 @@ public class FeederIOPhoenix6 implements FeederIO {
 
     config.CurrentLimits.SupplyCurrentLimitEnable = true;
     config.CurrentLimits.SupplyCurrentLimit = FeederConstants.TurntableSupplyCurrentLimit;
-
+    config.CurrentLimits.StatorCurrentLimit=FeederConstants.TurntableStatorCurrentLimit;
     config.MotorOutput.Inverted = FeederConstants.TurntableInverted;
     turntableMotor.getConfigurator().apply(config);
   }

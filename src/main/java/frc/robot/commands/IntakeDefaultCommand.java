@@ -91,9 +91,9 @@ public class IntakeDefaultCommand extends Command {
 
       case OFF:
         stretcher.setPosition(Constants.StretcherConstants.RetractedPosition);
-        if (stretcher.isAtTargetPosition()) {
+        // if (stretcher.isAtTargetPosition()) {
           intake.stop();
-        }
+        // }
         break;
       case STOPOUT:
         stretcher.setPosition(Constants.StretcherConstants.MidPosition);
