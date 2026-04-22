@@ -293,7 +293,8 @@ public final class Constants {
       // Relevant reference points on the opposite side
       public static final Translation3d oppTopCenterPoint =
           new Translation3d(getTagPoseOrDefault(4).getX() + width / 2.0, fieldWidth / 2.0, height);
-      public static final Translation2d oppCenterPoint = new Translation2d(11.917, 4.030); // 11.9 4.07
+      public static final Translation2d oppCenterPoint =
+          new Translation2d(11.917, 4.030); // 11.9 4.07
       public static final Translation2d oppNearLeftCorner =
           new Translation2d(oppTopCenterPoint.getX() - width / 2.0, fieldWidth / 2.0 + width / 2.0);
       public static final Translation2d oppNearRightCorner =
@@ -616,7 +617,7 @@ public final class Constants {
 
     // Hard cap applied specifically during VELOCITY mode (deg/s).
     // Set lower than MaxVelocityDegsPerSec while tuning, then raise once stable.
-    public static final double VelocityModeMaxDegsPerSec = 960.0;
+    public static final double VelocityModeMaxDegsPerSec = 1200.0;
 
     // Positions (Degrees)
     public static final double TurretPositionToleranceDegs = 10.0;
@@ -649,7 +650,7 @@ public final class Constants {
         27. * 26. / 46.; // Sensor rotations to mechanism rotations
     public static final InvertedValue Inverted = InvertedValue.CounterClockwise_Positive;
     public static final double StretcherSupplyCurrentLimit = 40.0;
-    public static final double StretcherStatorCurrentLimit=10.;
+    public static final double StretcherStatorCurrentLimit = 10.;
 
     // PID Gains
     public static final double kP = 96.;
@@ -689,7 +690,6 @@ public final class Constants {
     public static final double kV = 0.115;
     public static final double kS = 14.;
     public static final double kA = 0.0;
-
 
     // MotionMagic Gains
     public static final double MotionMagicAcceleration = 120.;
@@ -736,11 +736,11 @@ public final class Constants {
 
   public final class FeederConstants {
     // Turntable Constants
-    public static final double TurntableRatio = 31.2 * 5. / 9.; // Sensor rotations to mechanism rotations
+    public static final double TurntableRatio =
+        31.2 * 5. / 9.; // Sensor rotations to mechanism rotations
     public static final InvertedValue TurntableInverted = InvertedValue.CounterClockwise_Positive;
     public static final double TurntableSupplyCurrentLimit = 60.0;
-    public static final double TurntableStatorCurrentLimit =100;
-
+    public static final double TurntableStatorCurrentLimit = 100.;
 
     // Turntable motor PID Gains
     public static final double TurntablekP = 0.5;
@@ -752,8 +752,8 @@ public final class Constants {
     public static final double TurntableVelocityToleranceRPS = 0.5;
     public static final double TurntableJamCurrentThresholdAmps = 60.0;
     public static final double TurntableJamDetectTimeSecs = 0.35;
-    public static final double TurntableJamReverseRPS = -2.0;
-    public static final double TurntableJamReverseTimeSecs = 0.5;
+    public static final double TurntableJamReverseRPS = -6.2;
+    public static final double TurntableJamReverseTimeSecs = 0.6;
 
     // Feed (upward feeding) Constants
     public static final double FeedRatio = 1.0 / 1.0; // Sensor rotations to mechanism rotations
@@ -774,9 +774,9 @@ public final class Constants {
     public static final double DefaultTurntableRPS = 6.2;
     public static final double DefaultFeedRPS = 100.0;
 
-    // Manual reverse (POV right) — both motors run backward to unjam or eject notes
+    // Manual reverse (POV right) — both motors run backward to unjam or eject fuel
     public static final double ReverseFeederRPS = -30.0;
-    public static final double ReverseTurntableRPS = -2.0;
+    public static final double ReverseTurntableRPS = -6.2;
   }
 
   public final class ClimberConstants {
