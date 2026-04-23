@@ -46,9 +46,9 @@ public class TurretSubsystem extends SubsystemBase {
 
   // Diagnostic log fields (written in handleVelocity, read in periodic)
   private double velocityCmdDegsPerSec = 0.0;
-  private double dbg_positionError = 0.0;
-  private double dbg_targetVelFF = 0.0;
-  private double dbg_chassisFF = 0.0;
+  private double dbgPositionError = 0.0;
+  private double dbgTargetVelFF = 0.0;
+  private double dbgChassisFF = 0.0;
 
   public TurretSubsystem() {
     if (Robot.isReal()) {
@@ -58,10 +58,13 @@ public class TurretSubsystem extends SubsystemBase {
     }
     io.updateInputs(inputs); // this is necessary to initialize the inputs
     encoderCalculatedPositionDegs =
-        calculateTurretDegsFromEncoders(
+        calculateTurretDegsFromEncodersCRT(
             inputs.encoderPositionDegrees, inputs.encoder2PositionDegrees);
     resetPosition(encoderCalculatedPositionDegs);
     // this is added to ensure the turret starts at the correct position
+
+    // The resetPosition method is abandoned.
+    // resetPosition(TurretConstants.IdlePosition);
   }
 
   public void resetPosition(double positionDegrees) {
@@ -270,7 +273,7 @@ public class TurretSubsystem extends SubsystemBase {
 
     if (inputs.encoderConnected && inputs.encoder2Connected) {
       encoderCalculatedPositionDegs =
-          calculateTurretDegsFromEncoders(
+          calculateTurretDegsFromEncodersCRT(
               inputs.encoderPositionDegrees, inputs.encoder2PositionDegrees);
     }
 
@@ -296,9 +299,17 @@ public class TurretSubsystem extends SubsystemBase {
     Logger.recordOutput("Turret/EncoderCalculatedPositionDegs", encoderCalculatedPositionDegs);
     Logger.recordOutput("Turret/VelocityCmdDegsPerSec", velocityCmdDegsPerSec);
     Logger.recordOutput("Turret/MotorVelocityDegsPerSec", inputs.motorVelocityDegsPerSec);
-    Logger.recordOutput("Turret/Velocity/PositionError", dbg_positionError);
-    Logger.recordOutput("Turret/Velocity/TargetVelFF", dbg_targetVelFF);
-    Logger.recordOutput("Turret/Velocity/ChassisFF", dbg_chassisFF);
+    Logger.recordOutput("Turret/Velocity/PositionError", dbgPositionError);
+    Logger.recordOutput("Turret/Velocity/TargetVelFF", dbgTargetVelFF);
+    Logger.recordOutput("Turret/Velocity/ChassisFF", dbgChassisFF);
+    Logger.recordOutput(
+        "Turret/CrtCalculatedDegs",
+        calculateTurretDegsFromEncodersCRT(
+            inputs.encoderPositionDegrees, inputs.encoder2PositionDegrees));
+    Logger.recordOutput(
+        "SlopeCalculatedDegs",
+        calculateTurretDegsFromEncodersSlope(
+            inputs.encoderPositionDegrees, inputs.encoder2PositionDegrees));
   }
 
   private void handleHybrid() {
@@ -384,9 +395,9 @@ public class TurretSubsystem extends SubsystemBase {
 
     // ── Step 5: apply ─────────────────────────────────────────────────────────
     velocityCmdDegsPerSec = rawCmd;
-    dbg_positionError = positionError;
-    dbg_targetVelFF = targetVelFF;
-    dbg_chassisFF = chassisFF;
+    dbgPositionError = positionError;
+    dbgTargetVelFF = targetVelFF;
+    dbgChassisFF = chassisFF;
     setVelocity(velocityCmdDegsPerSec);
   }
 
@@ -399,7 +410,7 @@ public class TurretSubsystem extends SubsystemBase {
     return MathUtil.clamp(positionDegrees, TurretConstants.MinDegs, TurretConstants.MaxDegs);
   }
 
-  private double calculateTurretDegsFromEncoders(double encoder1Deg, double encoder2Deg) {
+  private double calculateTurretDegsFromEncodersSlope(double encoder1Deg, double encoder2Deg) {
     double difference = encoder2Deg - encoder1Deg;
     if (difference > 250.0) {
       difference -= 360.0;
@@ -427,5 +438,68 @@ public class TurretSubsystem extends SubsystemBase {
     }
 
     return turretAngle;
+  }
+
+  /**
+   * Calculates the absolute turret angle in degrees using the Chinese Remainder Theorem (CRT).
+   *
+   * <p>Each encoder reads the turret position through a different gear ratio, so each encoder
+   * "wraps around" at a different turret angle (its period). Given encoder 1's reading, there are
+   * several candidate turret angles — one for each complete rotation encoder 1 may have completed.
+   * Encoder 2 acts as the discriminator: the candidate whose implied encoder-2 angle best matches
+   * the actual encoder-2 reading is selected. This is the CRT insight — two congruences with
+   * coprime moduli yield a unique solution within the combined range.
+   *
+   * <p>Gear reduction ratios (encoder rotations per single turret revolution):
+   *
+   * <pre>
+   *   r1 = GEAR_TURRET / GEAR_1  ≈ 3.8
+   *   r2 = GEAR_TURRET / GEAR_2  ≈ 5.11
+   * </pre>
+   *
+   * @param encoder1Deg encoder 1 absolute angle, degrees [0, 360)
+   * @param encoder2Deg encoder 2 absolute angle, degrees [0, 360)
+   * @return estimated turret angle in degrees, within [MinDegs, MaxDegs]
+   */
+  private double calculateTurretDegsFromEncodersCRT(double encoder1Deg, double encoder2Deg) {
+    // Encoder rotations per one full turret revolution
+    final double r1 = TurretConstants.GEAR_TURRET / TurretConstants.GEAR_1; // ≈ 3.8
+    final double r2 = TurretConstants.GEAR_TURRET / TurretConstants.GEAR_2; // ≈ 5.11
+
+    // Enumerate every possible number of complete encoder-1 rotations (k1) that could
+    // have occurred within the allowed turret range.  For a ±200° range and r1 ≈ 3.8,
+    // this is only ~8 candidates, so the loop is negligibly cheap.
+    int k1Min = (int) Math.floor(TurretConstants.MinDegs * r1 / 360.0) - 1;
+    int k1Max = (int) Math.ceil(TurretConstants.MaxDegs * r1 / 360.0) + 1;
+
+    double bestAngle = 0.0;
+    double bestError = Double.MAX_VALUE;
+
+    for (int k1 = k1Min; k1 <= k1Max; k1++) {
+      // Candidate turret angle implied by this encoder-1 rotation count
+      double candidateAngle = (encoder1Deg + k1 * 360.0) / r1;
+
+      // Reject candidates outside the mechanical turret range
+      if (candidateAngle < TurretConstants.MinDegs - 10.0
+          || candidateAngle > TurretConstants.MaxDegs + 10.0) {
+        continue;
+      }
+
+      // Predict what encoder 2 would read for this candidate turret angle
+      double predictedEncoder2 = (candidateAngle * r2) % 360.0;
+      if (predictedEncoder2 < 0.0) predictedEncoder2 += 360.0;
+
+      // Circular angular error between predicted and actual encoder-2 reading
+      double error = predictedEncoder2 - encoder2Deg;
+      if (error > 180.0) error -= 360.0;
+      if (error < -180.0) error += 360.0;
+
+      if (Math.abs(error) < Math.abs(bestError)) {
+        bestError = error;
+        bestAngle = candidateAngle;
+      }
+    }
+
+    return bestAngle;
   }
 }

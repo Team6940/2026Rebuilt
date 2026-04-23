@@ -88,8 +88,8 @@ public final class Constants {
 
     /*   Turret   */
     public static final int TurretMotorID = 31;
-    public static final int TurretEncoderID = 36;
-    public static final int TurretEncoder2ID = 35;
+    public static final int TurretEncoderID = 35;
+    public static final int TurretEncoder2ID = 36;
 
     /*   Feeder   */
     public static final int FeederTurntableMotorID = 21;
@@ -100,7 +100,7 @@ public final class Constants {
   }
 
   public final class DriveConstants {
-    public static final double DEADBAND = 0.04;
+    public static final double DEADBAND = 0.05;
     public static final double ANGLE_KP = 5.0;
     public static final double ANGLE_KD = 0.4;
     public static final double ANGLE_MAX_VELOCITY = 8.0;
@@ -156,11 +156,11 @@ public final class Constants {
       shooterRpsZero.put(1.05, 34.5);
       shooterRpsZero.put(1.32, 38.61); // 36.61
       shooterRpsZero.put(1.88, 39.84); // 38.04
-      shooterRpsZero.put(2.6, 41.64);
-      shooterRpsZero.put(3.4, 43.8);
-      shooterRpsZero.put(4.1, 48.7);
-      shooterRpsZero.put(4.99, 53.5);
-      shooterRpsZero.put(5.2, 54.5);
+      shooterRpsZero.put(2.6, 42.3);
+      shooterRpsZero.put(3.4, 46.2);
+      shooterRpsZero.put(4.1, 51.4);
+      shooterRpsZero.put(4.99, 54.9);
+      shooterRpsZero.put(5.2, 57.5);
       // shooterRpsZero.put(0.98, 38.9);
       // shooterRpsZero.put(1.61, 41.1);
       // shooterRpsZero.put(1.98, 45.2);
@@ -279,7 +279,7 @@ public final class Constants {
       public static final Translation3d innerCenterPoint =
           new Translation3d(
               getTagPoseOrDefault(26).getX() + width / 2.0, fieldWidth / 2.0, innerHeight);
-      public static final Translation2d centerPoint = new Translation2d(4.621, 4.07);
+      public static final Translation2d centerPoint = new Translation2d(4.623, 4.030); // 4.621 4.07
 
       public static final Translation2d nearLeftCorner =
           new Translation2d(topCenterPoint.getX() - width / 2.0, fieldWidth / 2.0 + width / 2.0);
@@ -293,7 +293,8 @@ public final class Constants {
       // Relevant reference points on the opposite side
       public static final Translation3d oppTopCenterPoint =
           new Translation3d(getTagPoseOrDefault(4).getX() + width / 2.0, fieldWidth / 2.0, height);
-      public static final Translation2d oppCenterPoint = new Translation2d(11.9, 4.07);
+      public static final Translation2d oppCenterPoint =
+          new Translation2d(11.917, 4.030); // 11.9 4.07
       public static final Translation2d oppNearLeftCorner =
           new Translation2d(oppTopCenterPoint.getX() - width / 2.0, fieldWidth / 2.0 + width / 2.0);
       public static final Translation2d oppNearRightCorner =
@@ -515,7 +516,7 @@ public final class Constants {
 
     public static final double IntakeVelocityToleranceRPS = 0.5;
 
-    public static final double IntakingRPS = 38.0;
+    public static final double IntakingRPS = 43.0;
     public static final double ReversingRPS = 0;
   }
 
@@ -552,33 +553,33 @@ public final class Constants {
   public final class TurretConstants {
     // Gear tooth counts for dual-encoder absolute angle calculation
     public static final double GEAR_TURRET = 115.;
-    public static final double GEAR_1 = 23.;
-    public static final double GEAR_2 = 27.;
+    public static final double GEAR_1 = 23. * 50. / 38.;
+    public static final double GEAR_2 = 27. * 40. / 48.;
 
-    public static final double TurretRatio = 115. / 23. * 48. / 14.;
-    public static final InvertedValue Inverted = InvertedValue.CounterClockwise_Positive;
+    public static final double TurretRatio = 115. / 23. * 38. / 14.;
+    public static final InvertedValue Inverted = InvertedValue.Clockwise_Positive;
     public static final double TurretSupplyCurrentLimit = 40.0;
 
     // Encoder 1
-    public static final double TurretEncoderOffsetDegrees = -41.836;
+    public static final double TurretEncoderOffsetDegrees = -353.408;
     public static final SensorDirectionValue TurretEncoderDirection =
-        SensorDirectionValue.CounterClockwise_Positive;
+        SensorDirectionValue.Clockwise_Positive;
 
     // Encoder 2
-    public static final double TurretEncoder2OffsetDegrees = -273.779;
+    public static final double TurretEncoder2OffsetDegrees = -265.254;
     public static final SensorDirectionValue TurretEncoder2Direction =
-        SensorDirectionValue.CounterClockwise_Positive;
+        SensorDirectionValue.Clockwise_Positive;
 
     // PID Gains
-    public static final double kP = 1200.;
+    public static final double kP = 600.;
     public static final double kI = 0.0;
-    public static final double kD = 80.;
-    public static final double kV = 120.;
-    public static final double kS = 0.35;
+    public static final double kD = 60.;
+    public static final double kV = 9.;
+    public static final double kS = 13.;
 
     // Motion Magic Gains
     public static final double MaxVelocity = 40.0; // Rotations per second
-    public static final double Acceleration = 15.0; // Rotations per second squared
+    public static final double Acceleration = 20.0; // Rotations per second squared
 
     // Velocity-based control gains (used when TurretMode.VELOCITY is active)
     //
@@ -596,15 +597,15 @@ public final class Constants {
     //   4. kFF_targetVel - scale the setpoint-rate FF (1.0 = full; lower if overshooting)
     //   5. kFF_chassis   - scale the chassis-omega FF (1.0 = full; lower if oscillating)
     public static final double kP_position = 9.0; // (deg/s) per deg of error
-    public static final double kP_velocity = 100.; // motor velocity kP — tune
-    public static final double kV_velocity = 0.0127; // motor velocity kV — tune
-    public static final double kS_velocity = 2.95; // motor velocity kS (same as kS above)
-    public static final double kA_velocity = 9.;
+    public static final double kP_velocity = 5.0; // motor velocity kP — tune 4.8
+    public static final double kV_velocity = 1.32; // motor velocity kV — tune 1.61
+    public static final double kS_velocity = 0.4; // motor velocity kS (same as kS above) 1.21
+    public static final double kA_velocity = 0.12; // 0.35
 
     // Feedforward scale for the setpoint-rate term (dimensionless, [0..1] typical).
     // 1.0 means the outer loop fully compensates for a moving target.
     // Start at 0.0 and increase until tracking lag disappears without overshoot.
-    // For now I leave it with 0.
+    // For now it should be 1.0 because the formula is physically accurate.
     // Note: The derivative method is not a good way which has significantly more noise and
     // dampening the system, as i had seen in SIM mode.
     public static final double kFF_targetVel = 1.0;
@@ -616,13 +617,13 @@ public final class Constants {
 
     // Hard cap applied specifically during VELOCITY mode (deg/s).
     // Set lower than MaxVelocityDegsPerSec while tuning, then raise once stable.
-    public static final double VelocityModeMaxDegsPerSec = 960.0;
+    public static final double VelocityModeMaxDegsPerSec = 1200.0;
 
     // Positions (Degrees)
     public static final double TurretPositionToleranceDegs = 10.0;
-    public static final double MinDegs = -220.0;
-    public static final double MaxDegs = 225.0;
-    public static final double IdlePosition = 20.0;
+    public static final double MinDegs = -200.0;
+    public static final double MaxDegs = 198.0;
+    public static final double IdlePosition = 20.; // -1.203424
 
     // Manual control tuning
     public static final double TurretManualSensitivity = 5.0;
@@ -633,14 +634,14 @@ public final class Constants {
      * turret is mounted behind the chassis center, hence negative X. Tune the X value to the actual
      * measured distance (meters).
      */
-    public static final Translation2d TURRET_OFFSET = new Translation2d(-0.05, 0.0);
+    public static final Translation2d TURRET_OFFSET = new Translation2d(-0.07, 0.0);
 
     public static final InterpolatingDoubleTreeMap DistanceToTurretTolerance =
         new InterpolatingDoubleTreeMap();
 
     static {
-      DistanceToTurretTolerance.put(3., 15.);
-      DistanceToTurretTolerance.put(5., 7.);
+      DistanceToTurretTolerance.put(3., 8.);
+      DistanceToTurretTolerance.put(5., 2.);
     }
   }
 
@@ -649,6 +650,7 @@ public final class Constants {
         27. * 26. / 46.; // Sensor rotations to mechanism rotations
     public static final InvertedValue Inverted = InvertedValue.CounterClockwise_Positive;
     public static final double StretcherSupplyCurrentLimit = 40.0;
+    public static final double StretcherStatorCurrentLimit = 10.;
 
     // PID Gains
     public static final double kP = 96.;
@@ -668,8 +670,8 @@ public final class Constants {
     public static final double MinRotations = 0.; // CCW Positive
     public static final double MaxRotations = 3.11;
 
-    public static final double ExtendedPosition = 2.65;
-    public static final double MidPosition = 2.3;
+    public static final double ExtendedPosition = 2.62;
+    public static final double MidPosition = 1.7;
     public static final double RetractedPosition = 0.00;
 
     public static final double IdlePosition = 0.0;
@@ -687,6 +689,10 @@ public final class Constants {
     public static final double kD = 0.0;
     public static final double kV = 0.115;
     public static final double kS = 14.;
+    public static final double kA = 0.0;
+
+    // MotionMagic Gains
+    public static final double MotionMagicAcceleration = 120.;
 
     // Torque-current feedforward (Amps per RPS)
     public static final double kTorqueFFPerRPS = 0.0;
@@ -705,70 +711,72 @@ public final class Constants {
     public static final double ManualRpsY = 70.;
 
     // Passing mode constants (static values for hub-lane passing)
-    public static final double PassRps = 60.;
+    public static final double PassRps = 55.;
 
     /**
-     * Linear RPS correction slope for pass mode.
-     * RPS is adjusted by (distance - PassRpsNeutralDistanceMeters) * PassRpsPerMeter.
-     * Positive value → more RPS for farther shots, less for closer ones.
+     * Linear RPS correction slope for pass mode. RPS is adjusted by (distance -
+     * PassRpsNeutralDistanceMeters) * PassRpsPerMeter. Positive value → more RPS for farther shots,
+     * less for closer ones.
      */
     public static final double PassRpsPerMeter = 5.0;
 
     /**
-     * Distance at which PassRps is used without correction.
-     * Tuned for a robot shooting from the far side of the field toward the hub lane (~6 m typical).
+     * Distance at which PassRps is used without correction. Tuned for a robot shooting from the far
+     * side of the field toward the hub lane (~6 m typical).
      */
-    public static final double PassRpsNeutralDistanceMeters = 11.0;
+    public static final double PassRpsNeutralDistanceMeters = 7.0;
 
     /**
-     * Lead time index for pass-mode yaw compensation (seconds).
-     * The turret is pre-rotated by tangentialVelocityToBump * PassLeadIndex degrees
-     * to compensate for chassis lateral motion during the ball's flight.
+     * Lead time index for pass-mode yaw compensation (seconds). The turret is pre-rotated by
+     * tangentialVelocityToBump * PassLeadIndex degrees to compensate for chassis lateral motion
+     * during the ball's flight.
      */
     public static final double PassLeadIndex = 0.4;
   }
 
   public final class FeederConstants {
     // Turntable Constants
-    public static final double TurntableRatio = 31.2; // Sensor rotations to mechanism rotations
+    public static final double TurntableRatio =
+        31.2 * 5. / 9.; // Sensor rotations to mechanism rotations
     public static final InvertedValue TurntableInverted = InvertedValue.CounterClockwise_Positive;
-    public static final double TurntableSupplyCurrentLimit = 40.0;
+    public static final double TurntableSupplyCurrentLimit = 60.0;
+    public static final double TurntableStatorCurrentLimit = 100.;
 
     // Turntable motor PID Gains
-    public static final double TurntablekP = 0.4;
+    public static final double TurntablekP = 0.5;
     public static final double TurntablekI = 0.0;
     public static final double TurntablekD = 0.0;
-    public static final double TurntablekV = 4.;
-    public static final double TurntablekS = 0.392;
+    public static final double TurntablekV = 2.15;
+    public static final double TurntablekS = 0.45;
 
     public static final double TurntableVelocityToleranceRPS = 0.5;
-    public static final double TurntableJamCurrentThresholdAmps = 50.0;
+    public static final double TurntableJamCurrentThresholdAmps = 60.0;
     public static final double TurntableJamDetectTimeSecs = 0.3;
-    public static final double TurntableJamReverseRPS = -2.0;
-    public static final double TurntableJamReverseTimeSecs = 0.25;
+    public static final double TurntableJamReverseRPS = -6.2;
+    public static final double TurntableJamReverseTimeSecs = 0.5;
 
     // Feed (upward feeding) Constants
     public static final double FeedRatio = 1.0 / 1.0; // Sensor rotations to mechanism rotations
-    public static final InvertedValue FeedInverted = InvertedValue.CounterClockwise_Positive;
+    public static final InvertedValue FeedInverted = InvertedValue.Clockwise_Positive;
     public static final double FeedSupplyCurrentLimit = 90.0;
     public static final double FeedStatorCurrentLimit = 180.;
 
     // Feed motor PID Gains
-    public static final double FeedkP = 5.5;
+    public static final double FeedkP = 20.;
     public static final double FeedkI = 0.0;
     public static final double FeedkD = 0.0;
-    public static final double FeedkV = 0.145;
-    public static final double FeedkS = 4.8;
+    public static final double FeedkV = 0.05;
+    public static final double FeedkS = 10.;
 
     public static final double FeedVelocityToleranceRPS = 0.5;
 
     // Default RPS values
-    public static final double DefaultTurntableRPS = 2.5;
-    public static final double DefaultFeedRPS = 85.0;
+    public static final double DefaultTurntableRPS = 6.2;
+    public static final double DefaultFeedRPS = 100.0;
 
-    // Manual reverse (POV right) — both motors run backward to unjam or eject notes
+    // Manual reverse (POV right) — both motors run backward to unjam or eject fuel
     public static final double ReverseFeederRPS = -30.0;
-    public static final double ReverseTurntableRPS = -2.0;
+    public static final double ReverseTurntableRPS = -6.2;
   }
 
   public final class ClimberConstants {
@@ -806,6 +814,8 @@ public final class Constants {
       tAtoDev.put(0.12, 0.20);
       tAtoDev.put(0.071, 0.35);
       tAtoDev.put(0.046, 0.4);
+      tAtoDev.put(0.03, 0.7);
+      tAtoDev.put(0.01, 1.0);
     }
   }
 }

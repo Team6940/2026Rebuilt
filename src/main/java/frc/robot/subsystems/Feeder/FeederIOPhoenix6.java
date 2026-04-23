@@ -38,17 +38,17 @@ public class FeederIOPhoenix6 implements FeederIO {
 
     config.CurrentLimits.SupplyCurrentLimitEnable = true;
     config.CurrentLimits.SupplyCurrentLimit = FeederConstants.TurntableSupplyCurrentLimit;
-
+    config.CurrentLimits.StatorCurrentLimit=FeederConstants.TurntableStatorCurrentLimit;
     config.MotorOutput.Inverted = FeederConstants.TurntableInverted;
     turntableMotor.getConfigurator().apply(config);
   }
 
   private void feedMotorConfig() {
     TalonFXConfiguration config = new TalonFXConfiguration();
-    config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
+    config.MotorOutput.NeutralMode = NeutralModeValue.Coast;
     config.Feedback.SensorToMechanismRatio = FeederConstants.FeedRatio;
     config.TorqueCurrent.PeakForwardTorqueCurrent = 800.;
-    config.TorqueCurrent.PeakReverseTorqueCurrent = -400.;
+    config.TorqueCurrent.PeakReverseTorqueCurrent = -200.;
     config.Slot0.kP = FeederConstants.FeedkP;
     config.Slot0.kI = FeederConstants.FeedkI;
     config.Slot0.kD = FeederConstants.FeedkD;

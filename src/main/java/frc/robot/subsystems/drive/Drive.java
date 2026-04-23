@@ -70,6 +70,7 @@ import frc.robot.RobotContainer;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.Vision.LimelightHelpers;
 import frc.robot.util.LocalADStarAK;
+import java.util.Set;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.DoubleSupplier;
@@ -89,7 +90,7 @@ public class Drive extends SubsystemBase {
 
   // TunerConstants doesn't include these constants, so they are declared locally
   static final double ODOMETRY_FREQUENCY =
-      new CANBus(TunerConstants.DrivetrainConstants.CANBusName).isNetworkFD() ? 250.0 : 180.0;
+      new CANBus(TunerConstants.DrivetrainConstants.CANBusName).isNetworkFD() ? 250.0 : 200.0;
   public static final double DRIVE_BASE_RADIUS =
       Math.max(
           Math.max(
@@ -133,6 +134,11 @@ public class Drive extends SubsystemBase {
                   Meters.of(TunerConstants.FrontLeft.WheelRadius),
                   KilogramSquareMeters.of(TunerConstants.FrontLeft.SteerInertia),
                   WHEEL_COF));
+
+  // Hub tags: 8 around each alliance hub (16 total).
+  // These should be trusted for odometry updates even when average tag distance is large.
+  private static final Set<Integer> HUB_TAG_IDS =
+      Set.of(2, 3, 4, 5, 8, 9, 10, 11, 18, 19, 20, 21, 24, 25, 26, 27);
 
   // Simulation helper: you can generate simulation-friendly module constants
   // using PhoenixUtil.regulateModuleConstantForSimulation(TunerConstants.FrontLeft) etc.
@@ -348,8 +354,15 @@ public class Drive extends SubsystemBase {
     LimelightHelpers.PoseEstimate right =
         getAcceptedLimelightEstimate(RobotContainer.limelightRight);
 
+    boolean leftHasHubTag = hasHubTag(left);
+    boolean rightHasHubTag = hasHubTag(right);
+
     LimelightHelpers.PoseEstimate chosen = null;
-    if (left != null && right != null) {
+    if (leftHasHubTag && !rightHasHubTag) {
+      chosen = left;
+    } else if (rightHasHubTag && !leftHasHubTag) {
+      chosen = right;
+    } else if (left != null && right != null) {
       chosen = left.avgTagDist <= right.avgTagDist ? left : right;
     } else if (left != null) {
       chosen = left;
@@ -366,6 +379,19 @@ public class Drive extends SubsystemBase {
     }
   }
 
+  /** Returns true if this estimate contains any AprilTag mounted around either alliance hub. */
+  private boolean hasHubTag(LimelightHelpers.PoseEstimate estimate) {
+    if (estimate == null || estimate.rawFiducials == null) {
+      return false;
+    }
+    for (LimelightHelpers.RawFiducial fiducial : estimate.rawFiducials) {
+      if (HUB_TAG_IDS.contains(fiducial.id)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   /**
    * Sends gyro orientation to a single Limelight and fuses its MegaTag2 pose estimate into the pose
    * estimator if the estimate passes all quality gates.
@@ -374,7 +400,7 @@ public class Drive extends SubsystemBase {
     LimelightHelpers.SetRobotOrientation(
         limelightName,
         getPose().getRotation().getDegrees(),
-        0,
+        Math.toDegrees(getChassisSpeeds().omegaRadiansPerSecond),
         gyroInputs.pitchPosition.getDegrees(),
         0,
         gyroInputs.rollPosition.getDegrees(),
@@ -423,12 +449,14 @@ public class Drive extends SubsystemBase {
     ChassisSpeeds speeds = getChassisSpeeds();
     boolean omegaOk = Math.abs(speeds.omegaRadiansPerSecond) <= 4 * Math.PI;
     boolean hasTag = mt2.tagCount > 0;
-    boolean distOk = mt2.avgTagDist < 3.0;
-    boolean velOk = Math.hypot(speeds.vxMetersPerSecond, speeds.vyMetersPerSecond) < 2.0;
+    boolean hasHubTag = hasHubTag(mt2);
+    boolean distOk = hasHubTag || mt2.avgTagDist < 4.0;
+    boolean velOk = Math.hypot(speeds.vxMetersPerSecond, speeds.vyMetersPerSecond) < 2.5;
     boolean accepted = omegaOk && hasTag && distOk && velOk;
 
     Logger.recordOutput("Vision/" + limelightName + "/GateOmegaOk", omegaOk);
     Logger.recordOutput("Vision/" + limelightName + "/GateHasTag", hasTag);
+    Logger.recordOutput("Vision/" + limelightName + "/GateHasHubTag", hasHubTag);
     Logger.recordOutput("Vision/" + limelightName + "/GateDistOk", distOk);
     Logger.recordOutput("Vision/" + limelightName + "/GateVelOk", velOk);
     Logger.recordOutput("Vision/" + limelightName + "/Accepted", accepted);

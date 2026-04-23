@@ -5,7 +5,7 @@ import com.ctre.phoenix6.CANBus;
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.MotionMagicTorqueCurrentFOC;
-import com.ctre.phoenix6.controls.MotionMagicVelocityTorqueCurrentFOC;
+import com.ctre.phoenix6.controls.MotionMagicVelocityVoltage;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
@@ -22,7 +22,7 @@ public class TurretIOPhoenix6 implements TurretIO {
       new CANcoder(MotorIDs.TurretEncoder2ID, new CANBus("canivore"));
   private static final MotionMagicTorqueCurrentFOC positionRequest =
       new MotionMagicTorqueCurrentFOC(0);
-  private static final MotionMagicVelocityTorqueCurrentFOC velocityRequest = new MotionMagicVelocityTorqueCurrentFOC(0.0);
+  private static final MotionMagicVelocityVoltage velocityRequest = new MotionMagicVelocityVoltage(0.0);
 
   public TurretIOPhoenix6() {
     encoderConfig();
@@ -101,7 +101,7 @@ public class TurretIOPhoenix6 implements TurretIO {
     inputs.motorConnected =
         BaseStatusSignal.refreshAll(
                 motor.getMotorVoltage(),
-                motor.getSupplyCurrent(),
+                motor.getStatorCurrent(),
                 motor.getPosition(),
                 motor.getVelocity())
             .isOK();

@@ -76,7 +76,7 @@ public class IntakeDefaultCommand extends Command {
       case SHAKE:
         // Toggle between Extended and Mid every 0.7 seconds
         if (targetPosition == Constants.StretcherConstants.ExtendedPosition
-            && timer.get() - lastToggleTime >= 0.5) {
+            && timer.get() - lastToggleTime >= 0.25) {
           lastToggleTime = timer.get();
           targetPosition = Constants.StretcherConstants.MidPosition;
         } else if (targetPosition == Constants.StretcherConstants.MidPosition
@@ -91,9 +91,9 @@ public class IntakeDefaultCommand extends Command {
 
       case OFF:
         stretcher.setPosition(Constants.StretcherConstants.RetractedPosition);
-        if (stretcher.isAtTargetPosition()) {
+        // if (stretcher.isAtTargetPosition()) {
           intake.stop();
-        }
+        // }
         break;
       case STOPOUT:
         stretcher.setPosition(Constants.StretcherConstants.MidPosition);

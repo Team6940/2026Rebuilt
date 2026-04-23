@@ -17,6 +17,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import frc.robot.commands.Autos.LeftDepotCycle;
 import frc.robot.commands.Autos.MidOutpost;
 import frc.robot.commands.Autos.RightOutpostCycle;
@@ -139,7 +140,50 @@ public class RobotContainer {
     autoChooser.addOption("MidOutpost", new MidOutpost());
     autoChooser.addOption("RightOutpostCycle", new RightOutpostCycle());
 
-    configureButtonBindings();
+     configureButtonBindings();
+    //testBindings();
+  }
+
+  private void testBindings() {
+    // drive.setDefaultCommand(
+    //     drive.run(
+    //         () ->
+    //             drive.driveFieldCentric(
+    //                 () -> -driverController.getLeftY(),
+    //                 () -> -driverController.getLeftX(),
+    //                 () -> -driverController.getRightX())));
+    // driverController
+    //     .a()
+    //     .onTrue(new InstantCommand(() -> turret.setVelocity(720.)))
+    //     .onFalse(new InstantCommand(() -> turret.setVelocity(0.)));
+    // driverController
+    //     .y()
+    //     .onTrue(new InstantCommand(() -> turret.setVelocity(-60.)))
+    //     .onFalse(new InstantCommand(() -> turret.setVelocity(0.)));
+    // driverController
+    //     .a()
+    //     .onTrue(new InstantCommand(() -> turret.setPosition(170.)))
+    //     .onFalse(new InstantCommand(() -> turret.setPosition(0.)));
+    // driverController
+    //     .y()
+    //     .onTrue(new InstantCommand(() -> turret.setPosition(-20.)))
+    //     .onFalse(new InstantCommand(() -> turret.setPosition(0.)));
+    // driverController
+    //     .x()
+    //     .onTrue(new InstantCommand(() -> feeder.setFeedRPS(90)))
+    //     .onFalse(new InstantCommand(() -> feeder.setFeedRPS(0)));
+    // driverController
+    //     .b()
+    //     .onTrue(new InstantCommand(() -> feeder.setFeedRPS(30)))
+    //     .onFalse(new InstantCommand(() -> feeder.setFeedRPS(0)));
+    driverController
+        .x()
+        .onTrue(new InstantCommand(() -> feeder.setTurntableRPS(4.)))
+        .onFalse(new InstantCommand(() -> feeder.setTurntableRPS(0)));
+    driverController
+        .b()
+        .onTrue(new InstantCommand(() -> feeder.setTurntableRPS(1.)))
+        .onFalse(new InstantCommand(() -> feeder.setTurntableRPS(0)));
   }
 
   /**
@@ -199,8 +243,8 @@ public class RobotContainer {
                         () -> -driverController.getLeftY(),
                         () -> -driverController.getLeftX(),
                         () -> -driverController.getRightX(),
-                        1.2,
-                        3.2)));
+                        1.6,
+                        5.4)));
 
     operatorController
         .leftBumper()
@@ -217,14 +261,6 @@ public class RobotContainer {
     operatorController
         .povDown()
         .onTrue(superStructure.runOnce(() -> superStructure.toggleControlMode()));
-    // driverController
-    //     .a()
-    //     .onTrue(new InstantCommand(() -> turret.setVelocity(300.)))
-    //     .onFalse(new InstantCommand(() -> turret.setVelocity(0.)));
-    // driverController
-    //     .y()
-    //     .onTrue(new InstantCommand(() -> turret.setVelocity(-300.)))
-    //     .onFalse(new InstantCommand(() -> turret.setVelocity(0.)));
   }
 
   /**

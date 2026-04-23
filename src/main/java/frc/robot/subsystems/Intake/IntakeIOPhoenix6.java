@@ -32,7 +32,7 @@ public class IntakeIOPhoenix6 implements IntakeIO {
 
     config.CurrentLimits.SupplyCurrentLimitEnable = true;
     config.CurrentLimits.SupplyCurrentLimit = IntakeConstants.IntakeSupplyCurrentLimit;
-
+    
     config.MotorOutput.Inverted = IntakeConstants.IntakeInverted;
     motor.getConfigurator().apply(config);
   }

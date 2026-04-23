@@ -35,7 +35,8 @@ public class StretcherIOPhoenix6 implements StretcherIO {
 
     config.CurrentLimits.SupplyCurrentLimitEnable = true;
     config.CurrentLimits.SupplyCurrentLimit = StretcherConstants.StretcherSupplyCurrentLimit;
-
+    config.CurrentLimits.StatorCurrentLimit = StretcherConstants.StretcherStatorCurrentLimit;
+    
     config.MotorOutput.Inverted = StretcherConstants.Inverted;
 
     // config.Slot0.GravityType = GravityTypeValue.Arm_Cosine;
