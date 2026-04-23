@@ -711,7 +711,7 @@ public final class Constants {
     public static final double ManualRpsY = 70.;
 
     // Passing mode constants (static values for hub-lane passing)
-    public static final double PassRps = 60.;
+    public static final double PassRps = 55.;
 
     /**
      * Linear RPS correction slope for pass mode. RPS is adjusted by (distance -
@@ -724,7 +724,7 @@ public final class Constants {
      * Distance at which PassRps is used without correction. Tuned for a robot shooting from the far
      * side of the field toward the hub lane (~6 m typical).
      */
-    public static final double PassRpsNeutralDistanceMeters = 9.5;
+    public static final double PassRpsNeutralDistanceMeters = 7.0;
 
     /**
      * Lead time index for pass-mode yaw compensation (seconds). The turret is pre-rotated by
@@ -751,9 +751,9 @@ public final class Constants {
 
     public static final double TurntableVelocityToleranceRPS = 0.5;
     public static final double TurntableJamCurrentThresholdAmps = 60.0;
-    public static final double TurntableJamDetectTimeSecs = 0.35;
+    public static final double TurntableJamDetectTimeSecs = 0.3;
     public static final double TurntableJamReverseRPS = -6.2;
-    public static final double TurntableJamReverseTimeSecs = 0.6;
+    public static final double TurntableJamReverseTimeSecs = 0.5;
 
     // Feed (upward feeding) Constants
     public static final double FeedRatio = 1.0 / 1.0; // Sensor rotations to mechanism rotations

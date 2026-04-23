@@ -246,15 +246,15 @@ public class RobotContainer {
                         1.6,
                         5.4)));
 
-    driverController
+    operatorController
         .leftBumper()
-        .toggleOnTrue(
+        .whileTrue(
             Commands.defer(
                 () -> superStructure.getScoreCommand(Button.kRightTrigger, Button.kRightBumper),
                 Set.of(feeder, hood, shooter, turret)));
-    driverController
-        .povDown()
-        .toggleOnTrue(
+    operatorController
+        .leftTrigger()
+        .whileTrue(
             Commands.defer(
                 () -> superStructure.getPassCommand(Button.kRightTrigger, Button.kRightBumper),
                 Set.of(feeder, hood, shooter, turret)));
