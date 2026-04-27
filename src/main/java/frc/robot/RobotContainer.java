@@ -140,8 +140,8 @@ public class RobotContainer {
     autoChooser.addOption("MidOutpost", new MidOutpost());
     autoChooser.addOption("RightOutpostCycle", new RightOutpostCycle());
 
-     configureButtonBindings();
-    //testBindings();
+    // configureButtonBindings();
+    testBindings();
   }
 
   private void testBindings() {
@@ -176,14 +176,43 @@ public class RobotContainer {
     //     .b()
     //     .onTrue(new InstantCommand(() -> feeder.setFeedRPS(30)))
     //     .onFalse(new InstantCommand(() -> feeder.setFeedRPS(0)));
-    driverController
-        .x()
-        .onTrue(new InstantCommand(() -> feeder.setTurntableRPS(4.)))
-        .onFalse(new InstantCommand(() -> feeder.setTurntableRPS(0)));
-    driverController
-        .b()
-        .onTrue(new InstantCommand(() -> feeder.setTurntableRPS(1.)))
-        .onFalse(new InstantCommand(() -> feeder.setTurntableRPS(0)));
+    // driverController
+    //     .x()
+    //     .onTrue(new InstantCommand(() -> feeder.setTurntableRPS(4.)))
+    //     .onFalse(new InstantCommand(() -> feeder.setTurntableRPS(0)));
+    // driverController
+    //     .b()
+    //     .onTrue(new InstantCommand(() -> feeder.setTurntableRPS(1.)))
+    //     .onFalse(new InstantCommand(() -> feeder.setTurntableRPS(0)));
+    operatorController
+        .leftBumper()
+        .whileTrue(
+            Commands.defer(
+                () -> superStructure.getScoreCommand(Button.kRightTrigger, Button.kRightBumper),
+                Set.of(feeder, hood, shooter, turret)));
+    operatorController
+        .leftTrigger()
+        .whileTrue(
+            Commands.defer(
+                () -> superStructure.getPassCommand(Button.kRightTrigger, Button.kRightBumper),
+                Set.of(feeder, hood, shooter, turret)));
+    operatorController
+        .povDown()
+        .onTrue(superStructure.runOnce(() -> superStructure.toggleControlMode()));
+    intake.setDefaultCommand(
+        Commands.defer(() -> superStructure.getIntakeCommand(), Set.of(intake, stretcher)));
+
+    operatorController
+        .rightBumper()
+        .onTrue(superStructure.runOnce(() -> superStructure.toggleIntakeMode()));
+    operatorController
+        .rightTrigger()
+        .onTrue(
+            superStructure.runOnce(
+                () -> superStructure.setIntakeMode(SuperStructure.IntakeMode.SHAKE)))
+        .onFalse(
+            superStructure.runOnce(
+                () -> superStructure.setIntakeMode(SuperStructure.IntakeMode.INTAKE)));
   }
 
   /**

@@ -561,12 +561,12 @@ public final class Constants {
     public static final double TurretSupplyCurrentLimit = 40.0;
 
     // Encoder 1
-    public static final double TurretEncoderOffsetDegrees = -353.408;
+    public static final double TurretEncoderOffsetDegrees = -358.506;
     public static final SensorDirectionValue TurretEncoderDirection =
         SensorDirectionValue.Clockwise_Positive;
 
     // Encoder 2
-    public static final double TurretEncoder2OffsetDegrees = -265.254;
+    public static final double TurretEncoder2OffsetDegrees = -107.842;
     public static final SensorDirectionValue TurretEncoder2Direction =
         SensorDirectionValue.Clockwise_Positive;
 
@@ -622,7 +622,7 @@ public final class Constants {
     // Positions (Degrees)
     public static final double TurretPositionToleranceDegs = 10.0;
     public static final double MinDegs = -200.0;
-    public static final double MaxDegs = 198.0;
+    public static final double MaxDegs = 220.0;
     public static final double IdlePosition = 20.; // -1.203424
 
     // Manual control tuning
