@@ -37,6 +37,7 @@ import frc.robot.subsystems.Intake.IntakeSubsystem;
 import frc.robot.subsystems.Shooter.ShooterSubsystem;
 import frc.robot.subsystems.Stretcher.StretcherSubsystem;
 import frc.robot.subsystems.SuperStructure;
+import frc.robot.subsystems.SuperStructure.IntakeMode;
 import frc.robot.subsystems.Turret.TurretSubsystem;
 import java.util.Set;
 import org.ironmaple.simulation.SimulatedArena;
@@ -140,8 +141,8 @@ public class RobotContainer {
     autoChooser.addOption("MidOutpost", new MidOutpost());
     autoChooser.addOption("RightOutpostCycle", new RightOutpostCycle());
 
-    // configureButtonBindings();
-    testBindings();
+    configureButtonBindings();
+    // testBindings();
   }
 
   private void testBindings() {
@@ -254,15 +255,16 @@ public class RobotContainer {
 
     driverController
         .rightBumper()
-        .onTrue(superStructure.runOnce(() -> superStructure.toggleIntakeMode()));
+        .onTrue(superStructure.runOnce(() -> superStructure.setIntakeMode(IntakeMode.INTAKE)));
     driverController
         .rightTrigger()
-        .onTrue(
-            superStructure.runOnce(
-                () -> superStructure.setIntakeMode(SuperStructure.IntakeMode.SHAKE)))
-        .onFalse(
-            superStructure.runOnce(
-                () -> superStructure.setIntakeMode(SuperStructure.IntakeMode.INTAKE)));
+        .onTrue(superStructure.runOnce(() -> superStructure.setIntakeMode(IntakeMode.SHAKE)));
+    driverController
+        .povDown()
+        .onTrue(superStructure.runOnce(() -> superStructure.setIntakeMode(IntakeMode.OFF)));
+    driverController
+        .povLeft()
+        .onTrue(superStructure.runOnce(() -> superStructure.setIntakeMode(IntakeMode.REVERSE)));
     driverController
         .leftTrigger()
         .whileTrue(

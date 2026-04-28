@@ -38,7 +38,8 @@ public class SuperStructure extends SubsystemBase {
     INTAKE,
     SHAKE,
     OFF,
-    STOPOUT
+    STOPOUT,
+    REVERSE
   }
 
   private ControlMode controlMode = ControlMode.HYBRID;
