@@ -537,7 +537,7 @@ public final class Constants {
     public static final double Acceleration = 20.0; // Rotations per second squared
 
     // Positions (Degrees)
-    public static final double HoodPositionToleranceDegs = 1.8;
+    public static final double HoodPositionToleranceDegs = 3.;
     public static final double MinDegs = 17.842;
     public static final double MaxDegs = 43.5;
     public static final double IdlePosition = 17.842;
@@ -620,7 +620,7 @@ public final class Constants {
     public static final double VelocityModeMaxDegsPerSec = 1200.0;
 
     // Positions (Degrees)
-    public static final double TurretPositionToleranceDegs = 10.0;
+    public static final double TurretPositionToleranceDegs = 15.0;
     public static final double MinDegs = -200.0;
     public static final double MaxDegs = 220.0;
     public static final double IdlePosition = 20.; // -1.203424
@@ -731,7 +731,7 @@ public final class Constants {
      * tangentialVelocityToBump * PassLeadIndex degrees to compensate for chassis lateral motion
      * during the ball's flight.
      */
-    public static final double PassLeadIndex = 0.4;
+    public static final double PassLeadIndex = 0.9;
   }
 
   public final class FeederConstants {

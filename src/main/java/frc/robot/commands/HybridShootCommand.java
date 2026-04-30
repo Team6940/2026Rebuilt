@@ -173,9 +173,7 @@ public class HybridShootCommand extends Command {
         //   w (rad/s) = tangentialVelocity / distance  ->  deg/s = toDegrees(w)
         double tangentialToVirtual = drive.getTurretTangentialVelocityToTarget(sol.virtualTarget());
         targetVelFFDegsPerSec =
-            distanceMeters > 1e-6
-                ? Math.toDegrees(tangentialToVirtual / distanceMeters)
-                : 0.0;
+            distanceMeters > 1e-6 ? Math.toDegrees(tangentialToVirtual / distanceMeters) : 0.0;
 
         Logger.recordOutput(
             "Cmds/HybridShoot/VirtualTarget", new Pose2d(sol.virtualTarget(), new Rotation2d()));
@@ -220,12 +218,14 @@ public class HybridShootCommand extends Command {
       // Bump center Y values (same geometry for both alliances - symmetric in Y)
       double leftBumpCenterY =
           (FieldConstants.LinesHorizontal.leftBumpStart
-                  + FieldConstants.LinesHorizontal.leftBumpEnd)
-              / 2.0 + 1.0;
+                      + FieldConstants.LinesHorizontal.leftBumpEnd)
+                  / 2.0
+              + 1.0;
       double rightBumpCenterY =
           (FieldConstants.LinesHorizontal.rightBumpStart
-                  + FieldConstants.LinesHorizontal.rightBumpEnd)
-              / 2.0 - 1.0;
+                      + FieldConstants.LinesHorizontal.rightBumpEnd)
+                  / 2.0
+              - 1.0;
       double fieldCenterY = FieldConstants.fieldWidth / 2.0;
 
       Translation2d passTarget;
@@ -265,8 +265,7 @@ public class HybridShootCommand extends Command {
       targetVelFFDegsPerSec =
           distanceMeters > 1e-6 ? Math.toDegrees(tangentialToPass / distanceMeters) : 0.0;
 
-      Logger.recordOutput(
-          "Cmds/HybridShoot/PassTarget", new Pose2d(passTarget, new Rotation2d()));
+      Logger.recordOutput("Cmds/HybridShoot/PassTarget", new Pose2d(passTarget, new Rotation2d()));
       Logger.recordOutput("Cmds/HybridShoot/PassLeadDegs", Math.toDegrees(leadRad));
     }
 
@@ -293,7 +292,10 @@ public class HybridShootCommand extends Command {
     }
 
     boolean hoodAtTarget = hood.isAtTargetPosition();
-    boolean turretAtTarget = turret.isAtTargetPosition(distanceMeters);
+    boolean turretAtTarget =
+        shootMode == ShootMode.PASS
+            ? turret.isAtTargetPosition()
+            : turret.isAtTargetPosition(distanceMeters);
     boolean shooterAtTarget = shooterDebouncer.calculate(shooter.isAtTargetRps());
     // boolean distanceInScope = distanceMeters <= 5.3 && distanceMeters >= 1;
     boolean readyToAutoFeed = shooterAtTarget && turretAtTarget && hoodAtTarget;
