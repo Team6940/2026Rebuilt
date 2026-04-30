@@ -740,7 +740,7 @@ public final class Constants {
         31.2 * 5. / 9.; // Sensor rotations to mechanism rotations
     public static final InvertedValue TurntableInverted = InvertedValue.CounterClockwise_Positive;
     public static final double TurntableSupplyCurrentLimit = 60.0;
-    public static final double TurntableStatorCurrentLimit = 100.;
+    public static final double TurntableStatorCurrentLimit = 180.;
 
     // Turntable motor PID Gains
     public static final double TurntablekP = 0.5;
