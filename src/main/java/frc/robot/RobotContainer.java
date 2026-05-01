@@ -18,6 +18,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.commands.Autos.LeftDepotCycle;
+import frc.robot.commands.Autos.MidDepot;
 import frc.robot.commands.Autos.MidOutpost;
 import frc.robot.commands.Autos.RightOutpostCycle;
 import frc.robot.generated.TunerConstants;
@@ -139,6 +140,7 @@ public class RobotContainer {
     autoChooser.addOption("LeftDepotCycle", new LeftDepotCycle());
     autoChooser.addOption("MidOutpost", new MidOutpost());
     autoChooser.addOption("RightOutpostCycle", new RightOutpostCycle());
+    autoChooser.addOption("MidDepot", new MidDepot());
 
     configureButtonBindings();
     // testBindings();
