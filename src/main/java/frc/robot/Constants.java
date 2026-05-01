@@ -688,7 +688,7 @@ public final class Constants {
     public static final double kI = 0.0;
     public static final double kD = 0.0;
     public static final double kV = 0.115;
-    public static final double kS = 17.;
+    public static final double kS = 19.5;
     public static final double kA = 0.0;
 
     // MotionMagic Gains
@@ -724,14 +724,14 @@ public final class Constants {
      * Distance at which PassRps is used without correction. Tuned for a robot shooting from the far
      * side of the field toward the hub lane (~6 m typical).
      */
-    public static final double PassRpsNeutralDistanceMeters = 7.0;
+    public static final double PassRpsNeutralDistanceMeters = 6.5;
 
     /**
      * Lead time index for pass-mode yaw compensation (seconds). The turret is pre-rotated by
      * tangentialVelocityToBump * PassLeadIndex degrees to compensate for chassis lateral motion
      * during the ball's flight.
      */
-    public static final double PassLeadIndex = 0.9;
+    public static final double PassLeadIndex = 1.2;
   }
 
   public final class FeederConstants {

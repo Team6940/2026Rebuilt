@@ -4,6 +4,7 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
 import frc.robot.commands.HybridShootCommand;
 import frc.robot.subsystems.Drive.Drive;
 import frc.robot.subsystems.ImprovedCommandXboxController.Button;
@@ -56,6 +57,12 @@ public class LeftDepotCycle extends SequentialCommandGroup {
     addCommands(drive.followPPPath("LeftNA-Left"));
     addCommands(new HybridShootCommand(Button.kAutoButton, ShootMode.SCORE).withTimeout(4.));
     addCommands(drive.followPPPath("Left-Depot"));
-    addCommands(new HybridShootCommand(Button.kAutoButton, ShootMode.SCORE));
+    addCommands(
+        new HybridShootCommand(Button.kAutoButton, ShootMode.SCORE)
+            .alongWith(
+                new WaitCommand(1.5)
+                    .andThen(
+                        superStructure.runOnce(
+                            () -> superStructure.setIntakeMode(SuperStructure.IntakeMode.SHAKE)))));
   }
 }

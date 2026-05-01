@@ -275,13 +275,13 @@ public class HybridShootCommand extends Command {
     hood.setOperatorInputScalar(
         ImprovedCommandXboxController.applyInputCurve(-operatorController.getLeftY()));
     turret.setOperatorInputScalar(
-        ImprovedCommandXboxController.applyInputCurve(-operatorController.getRightX()));
+        ImprovedCommandXboxController.applyInputCurve(-operatorController.getLeftX()));
 
     // ABXY adjust the persistent RPS offset: B=-1, A=-0.5, X=+0.5, Y=+1
-    if (operatorController.getButtonPressed(Button.kB)) rpsOffset = -0.5;
-    if (operatorController.getButtonPressed(Button.kA)) rpsOffset = -1.0;
-    if (operatorController.getButtonPressed(Button.kX)) rpsOffset = 0.5;
-    if (operatorController.getButtonPressed(Button.kY)) rpsOffset = 1.0;
+    if (operatorController.getButtonPressed(Button.kB)) rpsOffset = -1.;
+    if (operatorController.getButtonPressed(Button.kA)) rpsOffset = -2.;
+    if (operatorController.getButtonPressed(Button.kX)) rpsOffset = 1.;
+    if (operatorController.getButtonPressed(Button.kY)) rpsOffset = 2.;
     double adjustedTargetRps = targetRps + rpsOffset;
 
     boolean shootingEnabled = autoTriggerEnabled || operatorController.getButton(shootButton);
