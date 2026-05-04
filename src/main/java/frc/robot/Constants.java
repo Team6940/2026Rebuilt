@@ -19,6 +19,8 @@ import com.ctre.phoenix6.signals.SensorDirectionValue;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
@@ -491,6 +493,11 @@ public final class Constants {
               });
     }
 
+    /** WPILib field layout for PhotonVision pose estimation and tag lookups. */
+    public static AprilTagFieldLayout getAprilTagFieldLayout() {
+      return LAYOUT;
+    }
+
     private static AprilTagFieldLayout loadAprilTagLayout() {
       try {
         return new AprilTagFieldLayout(LIBRARY_LAYOUT_PATH);
@@ -804,6 +811,39 @@ public final class Constants {
     // Preset positions (Rotations)
     public static final double RetractedPosition = 0.0;
     public static final double ExtendedPosition = 1.8; // 90 degrees = 0.25 rotations
+  }
+
+  /** Vision fusion: per-source noise models and shared rejection / yaw penalties. */
+  public static final class VisionFusion {
+    /**
+     * Limelight MegaTag2 horizontal uncertainty scale (meters * sqrt(fractional target area)). Tune
+     * on the field with AdvantageScope.
+     */
+    public static final double LIMELIGHT_XY_K = 0.08;
+
+    /** Photon single-tag (PnP distance trig) horizontal uncertainty scale. */
+    public static final double PHOTON_SINGLE_XY_K = 0.10;
+
+    /** Minimum divisor when penalizing large horizontal targeting angles via cos(yaw). */
+    public static final double MIN_COS_YAW = 0.05;
+
+    public static final double XY_STDDEV_MIN = 0.02;
+    public static final double XY_STDDEV_MAX = 1.5;
+
+    public static final double REJECT_MAX_AMBIGUITY = 0.3;
+    public static final double REJECT_MIN_TA = 0.01;
+    public static final double REJECT_MAX_POSE_ERROR_METERS = 2.0;
+    public static final double REJECT_STALE_SECONDS = 0.5;
+    public static final double REJECT_MAX_OMEGA_RAD_PER_SEC = 4.0 * Math.PI;
+    public static final boolean REJECT_ON_HIGH_OMEGA = true;
+
+    /**
+     * Robot origin → Photon camera (robot coordinates). Replace with measured CAD + calibration.
+     */
+    public static final Transform3d kRobotToCamera =
+        new Transform3d(
+            new Translation3d(Units.inchesToMeters(9.0), 0.0, Units.inchesToMeters(20.0)),
+            new Rotation3d(0.0, 0.0, 0.0));
   }
 
   public static final class PoseEstimatorConstants {

@@ -39,6 +39,7 @@ import frc.robot.subsystems.Stretcher.StretcherSubsystem;
 import frc.robot.subsystems.SuperStructure;
 import frc.robot.subsystems.SuperStructure.IntakeMode;
 import frc.robot.subsystems.Turret.TurretSubsystem;
+import frc.robot.subsystems.Vision.VisionSubsystem;
 import java.util.Set;
 import org.ironmaple.simulation.SimulatedArena;
 import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
@@ -56,7 +57,10 @@ public class RobotContainer {
   // Subsystems
   public static final String limelightLeft = "limelight-l";
   public static final String limelightRight = "limelight";
+  public static final String photonCameraName = "photonvision";
+
   private final Drive drive;
+  private final VisionSubsystem vision;
   private final FeederSubsystem feeder = FeederSubsystem.getInstance();
   private final HoodSubsystem hood = HoodSubsystem.getInstance();
   private final IntakeSubsystem intake = IntakeSubsystem.getInstance();
@@ -117,6 +121,8 @@ public class RobotContainer {
                 new ModuleIO() {});
         break;
     }
+
+    vision = new VisionSubsystem(drive);
 
     // Set up auto routines
     autoChooser = new LoggedDashboardChooser<>("Auto Choices");

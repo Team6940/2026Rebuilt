@@ -33,7 +33,6 @@ import edu.wpi.first.hal.FRCNetComm.tResourceType;
 import edu.wpi.first.hal.HAL;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.Matrix;
-import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
@@ -51,8 +50,6 @@ import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.networktables.NetworkTableEntry;
-import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -65,12 +62,9 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.Mode;
-import frc.robot.Constants.PoseEstimatorConstants;
-import frc.robot.RobotContainer;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.Vision.LimelightHelpers;
 import frc.robot.util.LocalADStarAK;
-import java.util.Set;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.DoubleSupplier;
@@ -135,11 +129,6 @@ public class Drive extends SubsystemBase {
                   KilogramSquareMeters.of(TunerConstants.FrontLeft.SteerInertia),
                   WHEEL_COF));
 
-  // Hub tags: 8 around each alliance hub (16 total).
-  // These should be trusted for odometry updates even when average tag distance is large.
-  private static final Set<Integer> HUB_TAG_IDS =
-      Set.of(2, 3, 4, 5, 8, 9, 10, 11, 18, 19, 20, 21, 24, 25, 26, 27);
-
   // Simulation helper: you can generate simulation-friendly module constants
   // using PhoenixUtil.regulateModuleConstantForSimulation(TunerConstants.FrontLeft) etc.
   static final Lock odometryLock = new ReentrantLock();
@@ -164,16 +153,6 @@ public class Drive extends SubsystemBase {
       new SwerveDrivePoseEstimator(kinematics, rawGyroRotation, lastModulePositions, new Pose2d());
 
   private final Field2d field2d = new Field2d();
-
-  // Limelight snapshot NT entries — writing 1 triggers a single image save to
-  // the Limelight's internal storage, which is viewable post-match at
-  // http://<limelight-ip>:5801 under the Snapshots tab.
-  private final NetworkTableEntry llLeftSnapshot =
-      NetworkTableInstance.getDefault().getTable(RobotContainer.limelightLeft).getEntry("snapshot");
-  private final NetworkTableEntry llRightSnapshot =
-      NetworkTableInstance.getDefault()
-          .getTable(RobotContainer.limelightRight)
-          .getEntry("snapshot");
 
   // PID Controllers for autoMoveToPose
   private final PIDController xController;
@@ -333,13 +312,9 @@ public class Drive extends SubsystemBase {
 
     // Logging data
     processLog();
-    updateOdometry();
   }
 
   public void processLog() {
-    // Reset snapshot triggers so each tag detection only saves one image
-    llLeftSnapshot.setNumber(0);
-    llRightSnapshot.setNumber(0);
     field2d.setRobotPose(getPose());
     Logger.recordOutput("Odometry/Robot", getPose());
     Logger.recordOutput("Drive/ChassisSpeeds", getChassisSpeeds());
@@ -349,54 +324,11 @@ public class Drive extends SubsystemBase {
     Logger.recordOutput("Drive/RotationToAllianceHub", getRotationToAllianceHub());
   }
 
-  public void updateOdometry() {
-    LimelightHelpers.PoseEstimate left = getAcceptedLimelightEstimate(RobotContainer.limelightLeft);
-    LimelightHelpers.PoseEstimate right =
-        getAcceptedLimelightEstimate(RobotContainer.limelightRight);
-
-    boolean leftHasHubTag = hasHubTag(left);
-    boolean rightHasHubTag = hasHubTag(right);
-
-    LimelightHelpers.PoseEstimate chosen = null;
-    if (leftHasHubTag && !rightHasHubTag) {
-      chosen = left;
-    } else if (rightHasHubTag && !leftHasHubTag) {
-      chosen = right;
-    } else if (left != null && right != null) {
-      chosen = left.avgTagDist <= right.avgTagDist ? left : right;
-    } else if (left != null) {
-      chosen = left;
-    } else if (right != null) {
-      chosen = right;
-    }
-
-    if (chosen != null) {
-      double stdDev = PoseEstimatorConstants.tAtoDev.get(chosen.avgTagArea);
-      addVisionMeasurement(
-          chosen.pose, chosen.timestampSeconds, VecBuilder.fill(stdDev, stdDev, 100000000));
-      // according to docs, 6328 template needs no fpgaToCurrentTime
-      // conversion
-    }
-  }
-
-  /** Returns true if this estimate contains any AprilTag mounted around either alliance hub. */
-  private boolean hasHubTag(LimelightHelpers.PoseEstimate estimate) {
-    if (estimate == null || estimate.rawFiducials == null) {
-      return false;
-    }
-    for (LimelightHelpers.RawFiducial fiducial : estimate.rawFiducials) {
-      if (HUB_TAG_IDS.contains(fiducial.id)) {
-        return true;
-      }
-    }
-    return false;
-  }
-
   /**
-   * Sends gyro orientation to a single Limelight and fuses its MegaTag2 pose estimate into the pose
-   * estimator if the estimate passes all quality gates.
+   * MegaTag2 requires fresh gyro orientation over NetworkTables before reading {@code botpose}.
+   * Called by {@link frc.robot.subsystems.Vision.VisionSubsystem} for each Limelight.
    */
-  private LimelightHelpers.PoseEstimate getAcceptedLimelightEstimate(String limelightName) {
+  public void applyLimelightGyroForMegaTag2(String limelightName) {
     LimelightHelpers.SetRobotOrientation(
         limelightName,
         getPose().getRotation().getDegrees(),
@@ -405,73 +337,6 @@ public class Drive extends SubsystemBase {
         0,
         gyroInputs.rollPosition.getDegrees(),
         0);
-
-    LimelightHelpers.PoseEstimate mt2 =
-        LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(limelightName);
-
-    if (mt2 == null) {
-      DriverStation.reportWarning(limelightName + " Disconnected!", false);
-      Logger.recordOutput("Vision/" + limelightName + "/Connected", false);
-      Logger.recordOutput("Vision/" + limelightName + "/TagCount", 0);
-      Logger.recordOutput("Vision/" + limelightName + "/AvgTagDist", 0.0);
-      Logger.recordOutput("Vision/" + limelightName + "/AvgTagArea", 0.0);
-      Logger.recordOutput("Vision/" + limelightName + "/RawPose", new Pose2d());
-      Logger.recordOutput("Vision/" + limelightName + "/AcceptedPose", new Pose2d[] {});
-      Logger.recordOutput("Vision/" + limelightName + "/RejectedPose", new Pose2d[] {});
-      Logger.recordOutput("Vision/" + limelightName + "/GateOmegaOk", false);
-      Logger.recordOutput("Vision/" + limelightName + "/GateHasTag", false);
-      Logger.recordOutput("Vision/" + limelightName + "/GateDistOk", false);
-      Logger.recordOutput("Vision/" + limelightName + "/GateVelOk", false);
-      Logger.recordOutput("Vision/" + limelightName + "/Accepted", false);
-      return null;
-    }
-
-    // Raw measurement data — always logged regardless of acceptance
-    Logger.recordOutput("Vision/" + limelightName + "/Connected", true);
-    Logger.recordOutput("Vision/" + limelightName + "/TagCount", mt2.tagCount);
-    Logger.recordOutput("Vision/" + limelightName + "/AvgTagDist", mt2.avgTagDist);
-    Logger.recordOutput("Vision/" + limelightName + "/AvgTagArea", mt2.avgTagArea);
-    Logger.recordOutput("Vision/" + limelightName + "/RawPose", mt2.pose);
-
-    // Trigger a snapshot save on the Limelight whenever a tag is visible.
-    // Images are saved to the Limelight's internal storage and are viewable
-    // post-match at http://<limelight-ip>:5801 under the Snapshots tab.
-    // The entry is reset back to 0 in processLog() each loop so only one
-    // image is saved per rising edge rather than flooding storage.
-    if (mt2.tagCount > 0) {
-      NetworkTableEntry snapshotEntry =
-          limelightName.equals(RobotContainer.limelightLeft) ? llLeftSnapshot : llRightSnapshot;
-      snapshotEntry.setNumber(1);
-    }
-
-    // Individual acceptance gate results — use in AdvantageScope to diagnose
-    // which gate killed a measurement at any given timestamp
-    ChassisSpeeds speeds = getChassisSpeeds();
-    boolean omegaOk = Math.abs(speeds.omegaRadiansPerSecond) <= 4 * Math.PI;
-    boolean hasTag = mt2.tagCount > 0;
-    boolean hasHubTag = hasHubTag(mt2);
-    boolean distOk = hasHubTag || mt2.avgTagDist < 4.0;
-    boolean velOk = Math.hypot(speeds.vxMetersPerSecond, speeds.vyMetersPerSecond) < 2.5;
-    boolean accepted = omegaOk && hasTag && distOk && velOk;
-
-    Logger.recordOutput("Vision/" + limelightName + "/GateOmegaOk", omegaOk);
-    Logger.recordOutput("Vision/" + limelightName + "/GateHasTag", hasTag);
-    Logger.recordOutput("Vision/" + limelightName + "/GateHasHubTag", hasHubTag);
-    Logger.recordOutput("Vision/" + limelightName + "/GateDistOk", distOk);
-    Logger.recordOutput("Vision/" + limelightName + "/GateVelOk", velOk);
-    Logger.recordOutput("Vision/" + limelightName + "/Accepted", accepted);
-
-    // Log pose into separate accepted/rejected Pose2d arrays so AdvantageScope's
-    // 3D view can render accepted poses green and rejected poses red
-    if (!accepted) {
-      Logger.recordOutput("Vision/" + limelightName + "/AcceptedPose", new Pose2d[] {});
-      Logger.recordOutput("Vision/" + limelightName + "/RejectedPose", new Pose2d[] {mt2.pose});
-      return null;
-    }
-
-    Logger.recordOutput("Vision/" + limelightName + "/AcceptedPose", new Pose2d[] {mt2.pose});
-    Logger.recordOutput("Vision/" + limelightName + "/RejectedPose", new Pose2d[] {});
-    return mt2;
   }
 
   public static Translation2d getLinearVelocityFromJoysticks(double x, double y) {
@@ -675,7 +540,7 @@ public class Drive extends SubsystemBase {
 
   /** Returns the measured chassis speeds of the robot. */
   @AutoLogOutput(key = "SwerveChassisSpeeds/Measured")
-  private ChassisSpeeds getChassisSpeeds() {
+  public ChassisSpeeds getChassisSpeeds() {
     return kinematics.toChassisSpeeds(getModuleStates());
   }
 
