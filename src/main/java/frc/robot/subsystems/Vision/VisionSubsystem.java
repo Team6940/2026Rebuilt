@@ -7,23 +7,19 @@
 package frc.robot.subsystems.Vision;
 
 import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
-import edu.wpi.first.math.numbers.N1;
-import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
+import frc.robot.Constants.PoseEstimatorConstants;
 import frc.robot.Constants.VisionFusion;
 import frc.robot.RobotContainer;
 import frc.robot.subsystems.Drive.Drive;
-import frc.robot.subsystems.Feeder.FeederSubsystem;
-
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
@@ -35,9 +31,9 @@ import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.targeting.PhotonTrackedTarget;
 
 /**
- * Collects Limelight MegaTag2 and PhotonVision (multi-tag with single-tag fallback) estimates and
- * feeds them independently into the drive pose estimator with dynamically computed standard
- * deviations.
+ * Collects Limelight MegaTag2 (σ from NT {@code stddevs}; see {@link #readMegaTag2StdDevs(String)})
+ * and PhotonVision estimates. Photon translation σ uses {@link PoseEstimatorConstants#tAtoDev} from
+ * mean target area fraction ({@code area}/100).
  */
 public class VisionSubsystem extends SubsystemBase {
 
@@ -68,19 +64,17 @@ public class VisionSubsystem extends SubsystemBase {
 
   @Override
   public void periodic() {
-    Pose2d refPose = drive.getPose();
     double fpgaNow = Timer.getFPGATimestamp();
 
     llLeftSnapshot.setNumber(0);
     llRightSnapshot.setNumber(0);
 
-    processLimelight(RobotContainer.limelightLeft, "Left", refPose, fpgaNow);
-    processLimelight(RobotContainer.limelightRight, "Right", refPose, fpgaNow);
-    processPhoton(refPose, fpgaNow);
+    processLimelight(RobotContainer.limelightLeft, "Left", fpgaNow);
+    processLimelight(RobotContainer.limelightRight, "Right", fpgaNow);
+    processPhoton(fpgaNow);
   }
 
-  private void processLimelight(
-      String limelightName, String logSide, Pose2d refPose, double fpgaNow) {
+  private void processLimelight(String limelightName, String logSide, double fpgaNow) {
     drive.applyLimelightGyroForMegaTag2(limelightName);
 
     LimelightHelpers.PoseEstimate mt2 =
@@ -101,32 +95,42 @@ public class VisionSubsystem extends SubsystemBase {
       snapshotEntry.setNumber(1);
     }
 
-    double maxAmb = maxLimelightAmbiguity(mt2);
-    double yawRad = maxAbsLimelightTxRad(mt2);
     ChassisSpeeds speeds = drive.getChassisSpeeds();
 
+    double tagDistRobotM = limelightTagDistanceToRobotMeters(mt2);
+
     if (shouldReject(
-        maxAmb,
         mt2.avgTagArea,
         mt2.tagCount,
-        mt2.pose,
         mt2.timestampSeconds,
-        refPose,
+        tagDistRobotM,
         fpgaNow,
         speeds)) {
       Logger.recordOutput("VisionFusion/Limelight/" + limelightName + "/Accepted", false);
       return;
     }
 
-    double xyStd = limelightMegaTag2XyStdDev(mt2, maxAmb);
-    double thetaStd = limelightMegaTag2ThetaStdDev(mt2.avgTagArea, maxAmb);
-    xyStd = applyGlobalYawPenaltiesAndClamp(xyStd, yawRad);
+    Optional<LlMegaTag2StdDevs> stdOpt = readMegaTag2StdDevs(limelightName);
+    if (stdOpt.isEmpty()) {
+      Logger.recordOutput("VisionFusion/Limelight/" + limelightName + "/StdDevsValid", false);
+      Logger.recordOutput("VisionFusion/Limelight/" + limelightName + "/Accepted", false);
+      return;
+    }
+    LlMegaTag2StdDevs std = stdOpt.get();
+    Logger.recordOutput("VisionFusion/Limelight/" + limelightName + "/StdDevsValid", true);
+    Logger.recordOutput("VisionFusion/Limelight/" + limelightName + "/StdDevX", std.sigmaXMeters());
+    Logger.recordOutput("VisionFusion/Limelight/" + limelightName + "/StdDevY", std.sigmaYMeters());
+    Logger.recordOutput(
+        "VisionFusion/Limelight/" + limelightName + "/StdDevYawRad", std.sigmaYawRadians());
 
-    drive.addVisionMeasurement(mt2.pose, mt2.timestampSeconds, buildStdDevs(xyStd, thetaStd));
+    drive.addVisionMeasurement(
+        mt2.pose,
+        mt2.timestampSeconds,
+        VecBuilder.fill(std.sigmaXMeters(), std.sigmaYMeters(), std.sigmaYawRadians()));
     Logger.recordOutput("VisionFusion/Limelight/" + limelightName + "/Accepted", true);
   }
 
-  private void processPhoton(Pose2d refPose, double fpgaNow) {
+  private void processPhoton(double fpgaNow) {
     photonPoseEstimator.addHeadingData(fpgaNow, drive.getPose().getRotation());
 
     List<PhotonPipelineResult> unread = photonCamera.getAllUnreadResults();
@@ -153,25 +157,26 @@ public class VisionSubsystem extends SubsystemBase {
       List<PhotonTrackedTarget> targets = est.targetsUsed;
       int tagCount = Math.max(1, targets.size());
       double yawRad = maxAbsPhotonYawRad(targets);
-      double maxAmb = maxPhotonAmbiguity(targets);
-      double minTaFrac = minPhotonAreaFraction(targets);
+      double taMean = photonAvgAreaFraction(targets);
+
+
+      double tagDistM = photonAvgCameraToTagDistanceMeters(targets);
 
       if (shouldReject(
-          maxAmb,
-          minTaFrac,
+          taMean,
           tagCount,
-          pose,
           est.timestampSeconds,
-          refPose,
+          tagDistM,
           fpgaNow,
           drive.getChassisSpeeds())) {
         return;
       }
 
-      double xyStd = photonMultiTagXyStdDev(tagCount);
-      double thetaStd = Units.degreesToRadians(5.0);
-      xyStd = applyGlobalYawPenaltiesAndClamp(xyStd, yawRad);
-      drive.addVisionMeasurement(pose, est.timestampSeconds, buildStdDevs(xyStd, thetaStd));
+      double xyStd = PoseEstimatorConstants.tAtoDev.get(taMean);
+      drive.addVisionMeasurement(
+          pose,
+          est.timestampSeconds,
+          VecBuilder.fill(xyStd, xyStd, VisionFusion.PHOTON_THETA_STDDEV_RADIANS));
       return;
     }
 
@@ -188,17 +193,24 @@ public class VisionSubsystem extends SubsystemBase {
 
     double taFrac = best.area / 100.0;
     double yawRad = Units.degreesToRadians(Math.abs(best.yaw));
-    double amb = best.poseAmbiguity >= 0 ? best.poseAmbiguity : 0.0;
+
+    double tagDistM = photonCameraToTagDistanceMeters(best);
 
     if (shouldReject(
-        amb, taFrac, 1, pose, est.timestampSeconds, refPose, fpgaNow, drive.getChassisSpeeds())) {
+        taFrac,
+        1,
+        est.timestampSeconds,
+        tagDistM,
+        fpgaNow,
+        drive.getChassisSpeeds())) {
       return;
     }
 
-    double xyStd = photonSingleTagXyStdDev(taFrac);
-    double thetaStd = Units.degreesToRadians(15.0);
-    xyStd = applyGlobalYawPenaltiesAndClamp(xyStd, yawRad);
-    drive.addVisionMeasurement(pose, est.timestampSeconds, buildStdDevs(xyStd, thetaStd));
+    double xyStd = PoseEstimatorConstants.tAtoDev.get(taFrac);
+    drive.addVisionMeasurement(
+        pose,
+        est.timestampSeconds,
+        VecBuilder.fill(xyStd, xyStd, VisionFusion.PHOTON_THETA_STDDEV_RADIANS));
   }
 
   /**
@@ -221,6 +233,52 @@ public class VisionSubsystem extends SubsystemBase {
     Logger.recordOutput(base + "/AvgTagArea", mt2.avgTagArea);
     Logger.recordOutput(base + "/MegaTag2", mt2.isMegaTag2);
   }
+
+  /**
+   * Limelight MegaTag2 σ published on NT {@code stddevs}: {@code [MT1…, MT2x, MT2y, MT2z, MT2roll,
+   * MT2pitch, MT2yaw]}.
+   *
+   * <p>Translation σ in meters; rotational σ in degrees — yaw converted to radians for WPILib
+   * fusion.
+   *
+   * @see <a href="https://docs.limelightvision.io/zh/docs/docs-limelight/apis/complete-networktables-api">Limelight
+   *     NetworkTables API</a>
+   */
+  private static Optional<LlMegaTag2StdDevs> readMegaTag2StdDevs(String limelightName) {
+    double[] arr =
+        NetworkTableInstance.getDefault()
+            .getTable(sanitizeLimelightNetworkTableName(limelightName))
+            .getEntry("stddevs")
+            .getDoubleArray(new double[0]);
+    final int mt2Base = 6;
+    if (arr.length < mt2Base + 6) {
+      return Optional.empty();
+    }
+    double sigmaX = arr[mt2Base];
+    double sigmaY = arr[mt2Base + 1];
+    double sigmaYawDeg = arr[mt2Base + 5];
+    if (!Double.isFinite(sigmaX)
+        || !Double.isFinite(sigmaY)
+        || !Double.isFinite(sigmaYawDeg)) {
+      return Optional.empty();
+    }
+    if (sigmaX <= 0.0 || sigmaY <= 0.0 || sigmaYawDeg <= 0.0) {
+      return Optional.empty();
+    }
+    return Optional.of(
+        new LlMegaTag2StdDevs(sigmaX, sigmaY, Units.degreesToRadians(sigmaYawDeg)));
+  }
+
+  /** Mirrors Limelight-generated {@code sanitizeName} for NetworkTable root. */
+  private static String sanitizeLimelightNetworkTableName(String name) {
+    if (name == null || name.isEmpty()) {
+      return "limelight";
+    }
+    return name;
+  }
+
+  private record LlMegaTag2StdDevs(
+      double sigmaXMeters, double sigmaYMeters, double sigmaYawRadians) {}
 
   /**
    * Logs Photon estimated pose (multi-tag preferred, else PNP distance trig) for AdvantageScope.
@@ -251,73 +309,40 @@ public class VisionSubsystem extends SubsystemBase {
     Logger.recordOutput(base + "/Strategy", "none");
   }
 
-  /** MegaTag2 horizontal standard deviation before global yaw scaling. */
-  static double limelightMegaTag2XyStdDev(LimelightHelpers.PoseEstimate mt2, double maxAmbiguity) {
-    double ta = Math.max(mt2.avgTagArea, 1e-6);
-    double xy = VisionFusion.LIMELIGHT_XY_K / Math.sqrt(ta);
-    xy *= (1.0 + 2.5 * maxAmbiguity);
-    if (mt2.tagCount == 1) {
-      xy *= 1.7;
+  private static double photonAvgAreaFraction(List<PhotonTrackedTarget> targets) {
+    if (targets.isEmpty()) {
+      return 0.0;
     }
-    return xy;
-  }
-
-  static double limelightMegaTag2ThetaStdDev(double avgTagArea, double maxAmbiguity) {
-    if (maxAmbiguity < 0.1 && avgTagArea > 0.05) {
-      return Units.degreesToRadians(8.0);
+    double sum = 0.0;
+    for (PhotonTrackedTarget t : targets) {
+      sum += t.area / 100.0;
     }
-    return Units.degreesToRadians(20.0);
-  }
-
-  static double photonMultiTagXyStdDev(int tagCount) {
-    int n = Math.max(1, tagCount);
-    return 0.05 / Math.sqrt(n);
-  }
-
-  static double photonSingleTagXyStdDev(double taFrac) {
-    double ta = Math.max(taFrac, 1e-6);
-    return VisionFusion.PHOTON_SINGLE_XY_K / Math.sqrt(ta);
-  }
-
-  /**
-   * Applies {@code xyStd /= cos(|yaw|)} with a minimum cosine divisor, then clamps to field {@link
-   * VisionFusion#XY_STDDEV_MIN} … {@link VisionFusion#XY_STDDEV_MAX}.
-   */
-  static double applyGlobalYawPenaltiesAndClamp(double xyStd, double yawRad) {
-    double denom = Math.max(Math.cos(Math.abs(yawRad)), VisionFusion.MIN_COS_YAW);
-    xyStd /= denom;
-    return MathUtil.clamp(xyStd, VisionFusion.XY_STDDEV_MIN, VisionFusion.XY_STDDEV_MAX);
-  }
-
-  static Matrix<N3, N1> buildStdDevs(double xyStd, double thetaStd) {
-    return VecBuilder.fill(xyStd, xyStd, thetaStd);
+    return sum / targets.size();
   }
 
   /**
    * Shared rejection gates for all vision sources. {@code ta} is Limelight-style fractional area
    * (0–1) or Photon fractional area ({@code area}/100).
+   *
+   * <p>{@code tagDistanceMeters}: Limelight uses mean {@link LimelightHelpers.RawFiducial#distToRobot}
+   * when fiducials exist; otherwise {@link LimelightHelpers.PoseEstimate#avgTagDist}. Photon uses mean
+   * camera–tag range from {@code getBestCameraToTarget()} (meters).
    */
   static boolean shouldReject(
-      double maxAmbiguity,
       double ta,
       int tagCount,
-      Pose2d visionPose,
       double measurementTimestampSeconds,
-      Pose2d currentEstimate,
+      double tagDistanceMeters,
       double fpgaNow,
       ChassisSpeeds chassisSpeeds) {
 
-    if (maxAmbiguity > VisionFusion.REJECT_MAX_AMBIGUITY) {
-      return true;
-    }
     if (ta < VisionFusion.REJECT_MIN_TA) {
       return true;
     }
     if (tagCount <= 0) {
       return true;
     }
-    double dist = visionPose.getTranslation().getDistance(currentEstimate.getTranslation());
-    if (dist > VisionFusion.REJECT_MAX_POSE_ERROR_METERS) {
+    if (tagDistanceMeters > VisionFusion.REJECT_MAX_DISTANCE_METERS) {
       return true;
     }
     if (fpgaNow - measurementTimestampSeconds > VisionFusion.REJECT_STALE_SECONDS) {
@@ -331,46 +356,37 @@ public class VisionSubsystem extends SubsystemBase {
     return false;
   }
 
-  private static double maxLimelightAmbiguity(LimelightHelpers.PoseEstimate estimate) {
-    if (estimate.rawFiducials == null || estimate.rawFiducials.length == 0) {
-      return 0.0;
-    }
-    double max = 0.0;
-    for (LimelightHelpers.RawFiducial f : estimate.rawFiducials) {
-      max = Math.max(max, f.ambiguity);
-    }
-    return max;
-  }
-
-  /** Horizontal angle magnitude (rad) for yaw penalty: largest |txnc| among detected tags. */
-  private static double maxAbsLimelightTxRad(LimelightHelpers.PoseEstimate estimate) {
-    if (estimate.rawFiducials == null || estimate.rawFiducials.length == 0) {
-      return 0.0;
-    }
-    double maxDeg = 0.0;
-    for (LimelightHelpers.RawFiducial f : estimate.rawFiducials) {
-      maxDeg = Math.max(maxDeg, Math.abs(f.txnc));
-    }
-    return Units.degreesToRadians(maxDeg);
-  }
-
-  private static double maxPhotonAmbiguity(List<PhotonTrackedTarget> targets) {
-    double max = 0.0;
-    for (PhotonTrackedTarget t : targets) {
-      if (t.poseAmbiguity >= 0 && !Double.isNaN(t.poseAmbiguity)) {
-        max = Math.max(max, t.poseAmbiguity);
+  /**
+   * Tag–robot distance from Limelight: arithmetic mean {@link LimelightHelpers.RawFiducial#distToRobot};
+   * if fiducials are missing uses {@link LimelightHelpers.PoseEstimate#avgTagDist} (meters).
+   */
+  private static double limelightTagDistanceToRobotMeters(LimelightHelpers.PoseEstimate mt2) {
+    if (mt2.rawFiducials != null && mt2.rawFiducials.length > 0) {
+      double sum = 0.0;
+      for (LimelightHelpers.RawFiducial f : mt2.rawFiducials) {
+        sum += f.distToRobot;
       }
+      return sum / mt2.rawFiducials.length;
     }
-    return max;
+    return mt2.avgTagDist;
   }
 
-  private static double minPhotonAreaFraction(List<PhotonTrackedTarget> targets) {
-    double min = 1.0;
-    for (PhotonTrackedTarget t : targets) {
-      min = Math.min(min, t.area / 100.0);
+  /** Mean camera–tag range (solve translation norm, meters) over visible targets. */
+  private static double photonAvgCameraToTagDistanceMeters(List<PhotonTrackedTarget> targets) {
+    if (targets.isEmpty()) {
+      return 0.0;
     }
-    return min;
+    double sum = 0.0;
+    for (PhotonTrackedTarget t : targets) {
+      sum += photonCameraToTagDistanceMeters(t);
+    }
+    return sum / targets.size();
   }
+
+  private static double photonCameraToTagDistanceMeters(PhotonTrackedTarget t) {
+    return t.getBestCameraToTarget().getTranslation().getNorm();
+  }
+
 
   private static double maxAbsPhotonYawRad(List<PhotonTrackedTarget> targets) {
     double maxDeg = 0.0;

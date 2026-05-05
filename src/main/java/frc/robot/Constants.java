@@ -813,26 +813,12 @@ public final class Constants {
     public static final double ExtendedPosition = 1.8; // 90 degrees = 0.25 rotations
   }
 
-  /** Vision fusion: per-source noise models and shared rejection / yaw penalties. */
+  /** Vision fusion: shared rejection gates, Photon yaw scaling, and Limelight-independent constants. */
   public static final class VisionFusion {
-    /**
-     * Limelight MegaTag2 horizontal uncertainty scale (meters * sqrt(fractional target area)). Tune
-     * on the field with AdvantageScope.
-     */
-    public static final double LIMELIGHT_XY_K = 0.08;
-
-    /** Photon single-tag (PnP distance trig) horizontal uncertainty scale. */
-    public static final double PHOTON_SINGLE_XY_K = 0.10;
-
     /** Minimum divisor when penalizing large horizontal targeting angles via cos(yaw). */
-    public static final double MIN_COS_YAW = 0.05;
-
-    public static final double XY_STDDEV_MIN = 0.02;
-    public static final double XY_STDDEV_MAX = 1.5;
-
-    public static final double REJECT_MAX_AMBIGUITY = 0.3;
     public static final double REJECT_MIN_TA = 0.01;
-    public static final double REJECT_MAX_POSE_ERROR_METERS = 2.0;
+    /** Reject when estimated tag distance to robot exceeds this (meters). Tune per camera mounting. */
+    public static final double REJECT_MAX_DISTANCE_METERS = 5.0;
     public static final double REJECT_STALE_SECONDS = 0.5;
     public static final double REJECT_MAX_OMEGA_RAD_PER_SEC = 4.0 * Math.PI;
     public static final boolean REJECT_ON_HIGH_OMEGA = true;
@@ -844,8 +830,18 @@ public final class Constants {
         new Transform3d(
             new Translation3d(Units.inchesToMeters(9.0), 0.0, Units.inchesToMeters(20.0)),
             new Rotation3d(0.0, 0.0, 0.0));
+
+    /**
+     * Pose θ standard deviation (rad) for Photon when xy σ comes from {@link PoseEstimatorConstants#tAtoDev}
+     * — very large so fusion weights gyro for heading.
+     */
+    public static final double PHOTON_THETA_STDDEV_RADIANS = 100_000_000.0;
   }
 
+  /**
+   * Interpolates vision translation σ (m) from target area fraction (0–1). Used by Photon; Limelight
+   * MegaTag2 uses hardware {@code stddevs} instead.
+   */
   public static final class PoseEstimatorConstants {
     public static final InterpolatingDoubleTreeMap tAtoDev = new InterpolatingDoubleTreeMap();
 
