@@ -81,6 +81,20 @@ Mechanical systems always take a small amount of time to reach a new target posi
 
 ---
 
+### Swerve Drivetrain, Odometry & Vision
+
+The robot uses a **swerve drivetrain** where each of the four wheels can steer and drive independently, letting the robot move in any direction without turning its body. A dedicated background thread reads the wheel encoders and gyro at high frequency (up to 250 Hz on CANivore) so the robot always has a very up-to-date picture of where it is on the field — this is called **wheel odometry**.
+
+Because wheel odometry slowly drifts over time (wheels slip, the gyro accumulates small errors), the robot also fuses **vision corrections** from two Limelight cameras. Each camera looks for AprilTag markers around the field, and when it spots tags it calculates where the robot must be standing on the field. That camera-based position estimate is blended into the odometry position, nudging the robot's best-known location toward the camera's reading. The robot is more trusting of vision readings that involve multiple well-known tags close to the robot, and less trusting of uncertain readings from a single tag far away. This combination of wheel odometry and vision keeps the robot's position estimate accurate throughout the match.
+
+---
+
+### PathPlanner Autonomous Paths
+
+During the autonomous period the robot follows pre-made **paths** created in PathPlanner, a graphical path-planning tool. Each path is a smooth curve across the field with target speeds baked in. The drivetrain has a built-in path-following controller that continuously steers all four swerve modules to track the path, correcting for any deviation using the fused odometry position described above. The robot also automatically mirrors paths from blue-alliance coordinates to red-alliance coordinates, so the same routine works on either side of the field without any code changes.
+
+---
+
 ### Autonomous Routines
 
 Autonomous modes are composed as `SequentialCommandGroup`s using PathPlanner paths combined with `HybridShootCommand` and intake commands. Available routines include:
@@ -101,12 +115,7 @@ PathPlanner paths are followed via `Drive.followPPPath()`. Alliance flipping is 
 
 ### Vision & Pose Estimation
 
-Two **Limelight** cameras provide AprilTag-based pose corrections fed into the `SwerveDrivePoseEstimator`:
-
-- `limelight-l` (left camera) — supplementary tag coverage.
-- `limelight` (right camera) — primary tag detection and pose updates.
-
-Hub AprilTag IDs (2–5, 8–11, 18–21, 24–27) receive higher trust for odometry updates even at large distances. Standard deviation scaling with tag distance and ambiguity is applied via `LimelightHelpers`.
+Two **Limelight** cameras (`limelight-l` left and `limelight` right) detect field AprilTags and feed pose corrections into the swerve drive's pose estimator. See *Swerve Drivetrain, Odometry & Vision* above for details.
 
 ---
 
