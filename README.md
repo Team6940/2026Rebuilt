@@ -247,12 +247,12 @@ Reusable library code sourced from other FRC teams (credited by package name):
 | WPILib GradleRIO | 2026.1.1 | Core FRC Java framework |
 | Phoenix 6 | 26.1.1 | CTRE TalonFX / CANcoder / Pigeon 2 motor control |
 | PathPlanner | 2026.1.2 | Autonomous path following & PathPlanner GUI integration |
-| ChoreoLib | 2026 | Choreo trajectory support |
-| AdvantageKit | (vendordep) | Structured logging, simulation replay, auto-logged IOs |
-| maple-sim | (vendordep) | High-fidelity swerve drive physics simulation |
-| URCL | (vendordep) | Universal Robot Characterization Logging |
-| Grapple FRC | 2026 | Additional utility library |
-| Studica | (vendordep) | NavX gyro support |
+| ChoreoLib | 2026.0.1 | Choreo trajectory support |
+| AdvantageKit | 26.0.0 | Structured logging, simulation replay, auto-logged IOs |
+| maple-sim | 0.4.0-beta | High-fidelity swerve drive physics simulation |
+| URCL | 2026.0.0 | Universal Robot Characterization Logging |
+| Grapple FRC | 2026.0.0 | Additional utility library |
+| Studica | 2026.0.0 | NavX gyro support |
 
 ---
 
