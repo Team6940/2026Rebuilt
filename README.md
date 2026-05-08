@@ -1,6 +1,6 @@
 # Team 6940 — 2026 Robot Code (Rebuilt)
 
-FRC Team 6940's robot code for the **2026 season (Rebuilt)**. Written in Java and built on top of WPILib's command-based framework. The codebase features shoot-on-the-move with an iterative lookahead solver, a velocity-mode turret controller with predictive feedforward, dual-encoder absolute position via the Chinese Remainder Theorem, and full AdvantageKit telemetry/replay support.
+FRC Team 6940's robot code for the **2026 season (Rebuilt)**. Written in Java and built on top of WPILib's command-based framework. The codebase features shoot-on-the-move, a predictive turret controller, dual-encoder absolute position sensing, and full AdvantageKit telemetry/replay support.
 
 > **All collaborators:** please work on your own branch. Submit a Pull Request when you want to merge into `master`.
 
@@ -41,73 +41,43 @@ FRC Team 6940's robot code for the **2026 season (Rebuilt)**. Written in Java an
 
 ### Shoot-on-the-Move (`HybridShootCommand`)
 
-The `HybridShootCommand` lets the robot score while driving by compensating for chassis velocity in two ways, selectable via `MotionShotMode`:
+The `HybridShootCommand` lets the robot score while driving by automatically compensating for the robot's movement. There are two selectable compensation methods:
 
-**Method A — `DIRECT` (fast 2D map lookup)**
-- Decomposes the turret's field-frame velocity into *radial* and *tangential* components relative to the hub.
-- Looks up shooter RPS and hood angle from a pre-calibrated 2D interpolation table keyed on `(radialVelocity, distance)`.
-- Applies a trigonometric yaw lead: `atan(tangentialVelocity × flightTime / distance)`.
-- Simple and deterministic; does not account for where the robot will be when the note lands.
+**Method A — `DIRECT`**
+Adjusts the shooter speed and turret angle based on how fast and in which direction the robot is currently moving relative to the target. It's quick and simple, but only looks at where the robot is right now rather than where it will be when the game piece lands.
 
-**Method B — `LOOKAHEAD` (iterative virtual-target solver, default)**
-- Runs 20 iterations to converge on a *virtual target*: the field position the turret must aim at so the note arrives at the real target after the robot has moved.
-  1. Look up flight time for the current effective distance.
-  2. Project the turret's future position: `pos + velocity × flightTime`.
-  3. Recompute the distance from that projected position to the real target.
-- RPS and hood angle are then read from the **static-shot** interpolation table at the converged lookahead distance — no separate radial-velocity map is needed.
-- Feeds a **turret angular-velocity feedforward** (deg/s) into the velocity-mode controller so the turret tracks the virtual target smoothly as the robot moves:
-  ```
-  targetVelFF = toDegrees(tangentialVelocityToVirtualTarget / lookaheadDistance)
-  ```
-- All intermediate values (virtual target, flight time, FF terms) are logged to AdvantageKit for post-match analysis.
+**Method B — `LOOKAHEAD` (default)**
+Before firing, the code figures out where the robot will be by the time the game piece reaches the target. The turret then aims at that future position rather than the current one, so the game piece arrives on target even though the robot has moved. Shooter speed and hood angle are then chosen based on that adjusted distance. All the calculation results are logged so drivers and programmers can review them after a match.
 
-The command also supports a `PASS` mode that lobs the game piece into an open alliance lane, using lane geometry, linear RPS extrapolation by distance, and a simple `atan` lead for lateral motion.
+The command also supports a `PASS` mode that lobs the game piece to a partner robot in an open lane beside the alliance hub, automatically picking the correct lane based on the robot's position on the field.
 
 ---
 
 ### Turret Predictive Velocity Controller (`TurretSubsystem` — `VELOCITY` mode)
 
-The turret operates in three modes (`HYBRID`, `MANUAL`, `VELOCITY`). When shoot-on-the-move is active it enters **VELOCITY** mode, which combines positional correction with two predictive feedforward terms into a single velocity command sent directly to the motor:
+The turret has three control modes: `HYBRID` (auto-aim with driver trim), `MANUAL` (joystick-aimed), and `VELOCITY` (used during shoot-on-the-move).
 
-```
-velocityCmd = kP_position × positionError
-            + kFF_targetVel × targetVelFFDegsPerSec   // tracks the moving virtual target
-            + kFF_chassis   × (−ωRobot_degs/s)        // counter-rotates with chassis yaw
-```
+In **VELOCITY** mode the turret is commanded by speed rather than a fixed angle target. Three things are combined to decide how fast the turret should spin each loop cycle:
 
-- **Position P-term** — corrects residual pointing error.
-- **Target velocity FF** — supplied every loop cycle by `HybridShootCommand` from the lookahead solver so the turret anticipates where the virtual target will be, rather than always chasing where it was.
-- **Chassis omega FF** — keeps the turret field-fixed while the drivetrain rotates. Robot CCW positive → turret CW → negative sign applied automatically.
-- **Soft deceleration zone** — within 10 ° of either mechanical limit the command is linearly ramped to zero, preventing hard stops.
+- **Pointing correction** — if the turret is slightly off target it adds a small speed push in the right direction.
+- **Target tracking** — the shoot-on-the-move solver tells the turret how fast the virtual aim point is moving, so the turret stays ahead of the target instead of always chasing it.
+- **Chassis counter-rotation** — when the whole robot spins, the turret automatically spins the opposite way at the same rate so the aim stays fixed on the field even while the drivetrain rotates.
 
-The combined velocity (deg/s) is clamped and sent to `TurretIO.setVelocity()`, where the motor's internal closed-loop PID receives it as a velocity setpoint with native feedforward support via Phoenix 6's `TorqueCurrentFOC`.
+Near the mechanical travel limits, the speed is gradually reduced to avoid slamming into the hard stops.
 
 ---
 
-### Dual-Encoder Absolute Turret Position (Chinese Remainder Theorem)
+### Dual-Encoder Absolute Turret Position
 
-The turret uses **two absolute encoders** on different gear ratios to resolve its absolute position across more than one full revolution without a multi-turn encoder. The CRT approach is implemented in `calculateTurretDegsFromEncodersCRT`:
+The turret can rotate more than one full turn, but a normal absolute encoder only reads angles within a single turn. To know the true position at startup without any manual zeroing, **two encoders** are mounted on different gear ratios. Because each encoder wraps around at a different turret angle, cross-referencing their readings produces a unique solution — the only turret angle that is consistent with both encoders at once. This gives the robot reliable absolute position information the moment it powers on.
 
-- Encoder 1 has gear ratio `r1 = GEAR_TURRET / GEAR_1 ≈ 3.8` turns per turret revolution.
-- Encoder 2 has gear ratio `r2 = GEAR_TURRET / GEAR_2 ≈ 5.11` turns per turret revolution.
-- For every plausible complete-rotation count of encoder 1 within the mechanical range, a candidate turret angle is computed: `candidate = (encoder1Deg + k × 360°) / r1`.
-- The candidate that best predicts encoder 2's reading (smallest circular error) is selected as the true turret angle.
-- This gives unambiguous absolute position at startup with no manual zeroing required.
-
-A slope-based fallback (`calculateTurretDegsFromEncodersSlope`) is also retained for cross-validation logging.
+A second calculation method is also run in parallel and logged for comparison and cross-checking.
 
 ---
 
 ### Setpoint Lead Compensator (`SetpointLeadCompensator`)
 
-Hardware mechanisms lag behind rapidly-moving setpoints. `SetpointLeadCompensator` counteracts this *"layback"* effect by:
-
-1. Computing a finite-difference derivative of the setpoint each loop cycle.
-2. Running the derivative through a two-stage low-pass filter (configurable α) to suppress noise amplification.
-3. Adding `derivative × leadIndex` to the raw setpoint, effectively commanding an over-shot target in the direction of motion.
-4. Applying lead only when the smoothed derivative exceeds a configurable threshold, avoiding dither at rest.
-
-The lead index (seconds) is tuned to match the hardware's closed-loop lag. The compensator is used on both the turret and hood subsystems.
+Mechanical systems always take a small amount of time to reach a new target position, which means they end up slightly behind a setpoint that is constantly moving. The `SetpointLeadCompensator` fixes this by watching how quickly the setpoint is changing and telling the mechanism to aim a little *ahead* of where it needs to be right now. The amount of lead is tunable so it can be matched to how much lag the hardware actually has. When the setpoint is barely moving, no lead is applied so the mechanism doesn't jitter at rest. This is used on both the turret and the hood.
 
 ---
 
