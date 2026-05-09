@@ -75,20 +75,6 @@ A second calculation method is also run in parallel and logged for comparison an
 
 ---
 
-### Setpoint Lead Compensator (`SetpointLeadCompensator`)
-
-Mechanical systems always take a small amount of time to reach a new target position, which means they end up slightly behind a setpoint that is constantly moving. The `SetpointLeadCompensator` fixes this by watching how quickly the setpoint is changing and telling the mechanism to aim a little *ahead* of where it needs to be right now. The amount of lead is tunable so it can be matched to how much lag the hardware actually has. When the setpoint is barely moving, no lead is applied so the mechanism doesn't jitter at rest. This is used on both the turret and the hood.
-
----
-
-### Swerve Drivetrain, Odometry & Vision
-
-The robot uses a **swerve drivetrain** where each of the four wheels can steer and drive independently, letting the robot move in any direction without turning its body. A dedicated background thread reads the wheel encoders and gyro at high frequency (up to 250 Hz on CANivore) so the robot always has a very up-to-date picture of where it is on the field — this is called **wheel odometry**.
-
-Because wheel odometry slowly drifts over time (wheels slip, the gyro accumulates small errors), the robot also fuses **vision corrections** from two Limelight cameras. Each camera looks for AprilTag markers around the field, and when it spots tags it calculates where the robot must be standing on the field. That camera-based position estimate is blended into the odometry position, nudging the robot's best-known location toward the camera's reading. The robot is more trusting of vision readings that involve multiple well-known tags close to the robot, and less trusting of uncertain readings from a single tag far away. This combination of wheel odometry and vision keeps the robot's position estimate accurate throughout the match.
-
----
-
 ### PathPlanner Autonomous Paths
 
 During the autonomous period the robot follows pre-made **paths** created in PathPlanner, a graphical path-planning tool. Each path is a smooth curve across the field with target speeds baked in. The drivetrain has a built-in path-following controller that continuously steers all four swerve modules to track the path, correcting for any deviation using the fused odometry position described above. The robot also automatically mirrors paths from blue-alliance coordinates to red-alliance coordinates, so the same routine works on either side of the field without any code changes.
@@ -103,10 +89,7 @@ Autonomous modes are composed as `SequentialCommandGroup`s using PathPlanner pat
 |---|---|
 | `MidOutpost` | Mid start → shoot preloaded → drive to outpost → intake + shoot cycle |
 | `MidDepot` | Mid start → shoot → intake from depot → shoot |
-| `MidLC` / `MidRC` | Mid start with left / right cycle strategies |
 | `LeftDepotCycle` | Left start depot cycling |
-| `Left_2Cycles` / `Right_2Cycles` | Two-cycle left / right routines |
-| `LeftNA` / `RightNA` | No-auto fallback for left / right starts |
 | `RightOutpostCycle` | Right start outpost cycling |
 
 PathPlanner paths are followed via `Drive.followPPPath()`. Alliance flipping is handled automatically using `DriverStation.getAlliance()`.
@@ -115,7 +98,7 @@ PathPlanner paths are followed via `Drive.followPPPath()`. Alliance flipping is 
 
 ### Vision & Pose Estimation
 
-Two **Limelight** cameras (`limelight-l` left and `limelight` right) detect field AprilTags and feed pose corrections into the swerve drive's pose estimator. See *Swerve Drivetrain, Odometry & Vision* above for details.
+Two **Limelight** cameras (`limelight-l` left and `limelight` right) detect field AprilTags and feed pose corrections into the swerve drive's `SwerveDrivePoseEstimator`. Hub AprilTag IDs are treated as **higher-value landmarks** — readings from these tags are trusted more (lower standard deviations) even at larger distances, giving the robot a more accurate position fix when the hub is visible. All other tags use standard deviation scaling that grows with tag distance and ambiguity to avoid polluting the estimate with unreliable data.
 
 ---
 
@@ -148,13 +131,13 @@ Full swerve drive implementation including:
 - `PhoenixOdometryThread` — high-frequency (250 Hz on CANivore) odometry reading thread.
 
 ### `frc.robot.subsystems.Turret`
-Multi-mode turret with CRT absolute position, velocity feedforward controller, and setpoint lead compensation. See *Code Highlights* above.
+Multi-mode turret with CRT absolute position and velocity feedforward controller. See *Code Highlights* above.
 
 ### `frc.robot.subsystems.Shooter`
 Flywheel shooter with closed-loop RPS control via Phoenix 6. Supports multiple preset RPS values for different shot types.
 
 ### `frc.robot.subsystems.Hood`
-Adjustable hood angle (position control) with HYBRID and MANUAL modes, operator nudge input, and the same `SetpointLeadCompensator` pattern as the turret.
+Adjustable hood angle (position control) with HYBRID and MANUAL modes and operator nudge input.
 
 ### `frc.robot.subsystems.Feeder`
 Turntable and feed rollers that stage game pieces and deliver them to the shooter on command.
@@ -181,7 +164,7 @@ Utility classes:
 |---|---|
 | `ProjectileCalculator` | Shoot-on-the-move solver (Method A direct lookup, Method B iterative lookahead) |
 | `Interpolating2DMap` | 2D bilinear interpolation/extrapolation over `(outerKey → (distance → value))` surfaces |
-| `SetpointLeadCompensator` | Derivative-based setpoint lead to eliminate hardware layback |
+| `SetpointLeadCompensator` | Derivative-based setpoint lead to eliminate hardware layback *(class exists but is not currently used)* |
 | `TurretVelocityCalculator` | Trapezoidal motion profile + chassis-omega compensation for turret velocity FF |
 | `SetpointDerivative` | Finite-difference derivative with low-pass filter |
 | `MathUtils` | General math helpers |
