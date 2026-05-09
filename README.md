@@ -1,8 +1,6 @@
 # Team 6940 — 2026 Robot Code (Rebuilt)
 
-FRC Team 6940's robot code for the **2026 season (Rebuilt)**. Written in Java and built on top of WPILib's command-based framework. The codebase features shoot-on-the-move, a predictive turret controller, dual-encoder absolute position sensing, and full AdvantageKit telemetry/replay support.
-
-> **All collaborators:** please work on your own branch. Submit a Pull Request when you want to merge into `master`.
+FRC Team 6940's robot code for the 2026 Robot, **Orion**.
 
 ---
 
@@ -98,7 +96,7 @@ PathPlanner paths are followed via `Drive.followPPPath()`. Alliance flipping is 
 
 ### Vision & Pose Estimation
 
-Two **Limelight** cameras (`limelight-l` left and `limelight` right) detect field AprilTags and feed pose corrections into the swerve drive's `SwerveDrivePoseEstimator`. Hub AprilTag IDs are treated as **higher-value landmarks** — readings from these tags are trusted more (lower standard deviations) even at larger distances, giving the robot a more accurate position fix when the hub is visible. All other tags use standard deviation scaling that grows with tag distance and ambiguity to avoid polluting the estimate with unreliable data.
+Two **Limelight** cameras (`limelight-l` left and `limelight` right) detect field AprilTags and feed pose corrections into the swerve drive's `SwerveDrivePoseEstimator`. Hub AprilTag IDs are treated as **higher-value landmarks** — readings from these tags are trusted more even at larger distances, giving the robot a more accurate position fix when the hub is visible. All other tags use standard deviation scaling that grows with tag distance and ambiguity to avoid polluting the estimate with unreliable data.
 
 ---
 
