@@ -2,6 +2,8 @@
 
 FRC Team 6940's robot code for the 2026 Robot, **Orion**.
 
+<img width="1254" height="1254" alt="03f84c3a-bcf4-4e3b-adf9-289b4d2ac683 (1)" src="https://github.com/user-attachments/assets/ca70c5aa-bb29-4ae7-9fdc-f0ef5ca08284" />
+
 ---
 
 ## Setup
