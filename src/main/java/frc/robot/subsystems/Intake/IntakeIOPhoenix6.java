@@ -60,5 +60,6 @@ public class IntakeIOPhoenix6 implements IntakeIO {
     inputs.motorVoltageVolts = motor.getMotorVoltage().getValueAsDouble();
     inputs.motorCurrentAmps = motor.getSupplyCurrent().getValueAsDouble();
     inputs.intakeVelocityRPS = motor.getVelocity().getValueAsDouble();
+    inputs.motorTempCelsius = motor.getDeviceTemp().getValueAsDouble();
   }
 }

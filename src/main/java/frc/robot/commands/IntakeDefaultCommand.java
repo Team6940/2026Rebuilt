@@ -41,7 +41,8 @@ public class IntakeDefaultCommand extends Command {
     SuperStructure.IntakeMode intakeMode = superStructure.getIntakeMode();
 
     // Reset coast state whenever we freshly enter INTAKE mode from a different mode
-    if (intakeMode == SuperStructure.IntakeMode.INTAKE && lastIntakeMode != SuperStructure.IntakeMode.INTAKE) {
+    if (intakeMode == SuperStructure.IntakeMode.INTAKE
+        && lastIntakeMode != SuperStructure.IntakeMode.INTAKE) {
       stretcherCoasting = false;
       outOfToleranceStartTime = -1.0;
     }
@@ -92,13 +93,18 @@ public class IntakeDefaultCommand extends Command {
       case OFF:
         stretcher.setPosition(Constants.StretcherConstants.RetractedPosition);
         // if (stretcher.isAtTargetPosition()) {
-          intake.stop();
+        intake.stop();
         // }
         break;
+
       case STOPOUT:
         stretcher.setPosition(Constants.StretcherConstants.MidPosition);
         intake.setRPS(Constants.IntakeConstants.IntakingRPS);
         break;
+
+      case REVERSE:
+        stretcher.setPosition(Constants.StretcherConstants.ExtendedPosition);
+        intake.setRPS(-Constants.IntakeConstants.IntakingRPS);
     }
   }
 

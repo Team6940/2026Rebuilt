@@ -17,8 +17,8 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
 import frc.robot.commands.Autos.LeftDepotCycle;
+import frc.robot.commands.Autos.MidDepot;
 import frc.robot.commands.Autos.MidOutpost;
 import frc.robot.commands.Autos.RightOutpostCycle;
 import frc.robot.generated.TunerConstants;
@@ -37,6 +37,7 @@ import frc.robot.subsystems.Intake.IntakeSubsystem;
 import frc.robot.subsystems.Shooter.ShooterSubsystem;
 import frc.robot.subsystems.Stretcher.StretcherSubsystem;
 import frc.robot.subsystems.SuperStructure;
+import frc.robot.subsystems.SuperStructure.IntakeMode;
 import frc.robot.subsystems.Turret.TurretSubsystem;
 import java.util.Set;
 import org.ironmaple.simulation.SimulatedArena;
@@ -139,51 +140,9 @@ public class RobotContainer {
     autoChooser.addOption("LeftDepotCycle", new LeftDepotCycle());
     autoChooser.addOption("MidOutpost", new MidOutpost());
     autoChooser.addOption("RightOutpostCycle", new RightOutpostCycle());
+    autoChooser.addOption("MidDepot", new MidDepot());
 
-     configureButtonBindings();
-    //testBindings();
-  }
-
-  private void testBindings() {
-    // drive.setDefaultCommand(
-    //     drive.run(
-    //         () ->
-    //             drive.driveFieldCentric(
-    //                 () -> -driverController.getLeftY(),
-    //                 () -> -driverController.getLeftX(),
-    //                 () -> -driverController.getRightX())));
-    // driverController
-    //     .a()
-    //     .onTrue(new InstantCommand(() -> turret.setVelocity(720.)))
-    //     .onFalse(new InstantCommand(() -> turret.setVelocity(0.)));
-    // driverController
-    //     .y()
-    //     .onTrue(new InstantCommand(() -> turret.setVelocity(-60.)))
-    //     .onFalse(new InstantCommand(() -> turret.setVelocity(0.)));
-    // driverController
-    //     .a()
-    //     .onTrue(new InstantCommand(() -> turret.setPosition(170.)))
-    //     .onFalse(new InstantCommand(() -> turret.setPosition(0.)));
-    // driverController
-    //     .y()
-    //     .onTrue(new InstantCommand(() -> turret.setPosition(-20.)))
-    //     .onFalse(new InstantCommand(() -> turret.setPosition(0.)));
-    // driverController
-    //     .x()
-    //     .onTrue(new InstantCommand(() -> feeder.setFeedRPS(90)))
-    //     .onFalse(new InstantCommand(() -> feeder.setFeedRPS(0)));
-    // driverController
-    //     .b()
-    //     .onTrue(new InstantCommand(() -> feeder.setFeedRPS(30)))
-    //     .onFalse(new InstantCommand(() -> feeder.setFeedRPS(0)));
-    driverController
-        .x()
-        .onTrue(new InstantCommand(() -> feeder.setTurntableRPS(4.)))
-        .onFalse(new InstantCommand(() -> feeder.setTurntableRPS(0)));
-    driverController
-        .b()
-        .onTrue(new InstantCommand(() -> feeder.setTurntableRPS(1.)))
-        .onFalse(new InstantCommand(() -> feeder.setTurntableRPS(0)));
+    configureButtonBindings();
   }
 
   /**
@@ -225,15 +184,16 @@ public class RobotContainer {
 
     driverController
         .rightBumper()
-        .onTrue(superStructure.runOnce(() -> superStructure.toggleIntakeMode()));
+        .onTrue(superStructure.runOnce(() -> superStructure.setIntakeMode(IntakeMode.INTAKE)));
     driverController
         .rightTrigger()
-        .onTrue(
-            superStructure.runOnce(
-                () -> superStructure.setIntakeMode(SuperStructure.IntakeMode.SHAKE)))
-        .onFalse(
-            superStructure.runOnce(
-                () -> superStructure.setIntakeMode(SuperStructure.IntakeMode.INTAKE)));
+        .onTrue(superStructure.runOnce(() -> superStructure.setIntakeMode(IntakeMode.SHAKE)));
+    driverController
+        .povDown()
+        .onTrue(superStructure.runOnce(() -> superStructure.setIntakeMode(IntakeMode.OFF)));
+    driverController
+        .povLeft()
+        .onTrue(superStructure.runOnce(() -> superStructure.setIntakeMode(IntakeMode.REVERSE)));
     driverController
         .leftTrigger()
         .whileTrue(

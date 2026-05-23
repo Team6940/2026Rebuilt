@@ -480,8 +480,8 @@ public class TurretSubsystem extends SubsystemBase {
       double candidateAngle = (encoder1Deg + k1 * 360.0) / r1;
 
       // Reject candidates outside the mechanical turret range
-      if (candidateAngle < TurretConstants.MinDegs - 10.0
-          || candidateAngle > TurretConstants.MaxDegs + 10.0) {
+      if (candidateAngle < TurretConstants.MinDegs - 15.0
+          || candidateAngle > TurretConstants.MaxDegs + 15.0) {
         continue;
       }
 

@@ -4,6 +4,7 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
 import frc.robot.commands.HybridShootCommand;
 import frc.robot.subsystems.Drive.Drive;
 import frc.robot.subsystems.ImprovedCommandXboxController.Button;
@@ -50,7 +51,13 @@ public class MidOutpost extends SequentialCommandGroup {
             .followPPPath("MidS-Outpost")
             .alongWith(
                 superStructure.runOnce(
-                    () -> superStructure.setIntakeMode(SuperStructure.IntakeMode.SHAKE))));
-    addCommands(new HybridShootCommand(Button.kAutoButton, ShootMode.SCORE, true));
+                    () -> superStructure.setIntakeMode(SuperStructure.IntakeMode.INTAKE))));
+    addCommands(
+        new HybridShootCommand(Button.kAutoButton, ShootMode.SCORE, true)
+            .alongWith(
+                new WaitCommand(1.5)
+                    .andThen(
+                        superStructure.runOnce(
+                            () -> superStructure.setIntakeMode(SuperStructure.IntakeMode.SHAKE)))));
   }
 }

@@ -4,6 +4,7 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
 import frc.robot.commands.HybridShootCommand;
 import frc.robot.subsystems.Drive.Drive;
 import frc.robot.subsystems.ImprovedCommandXboxController.Button;
@@ -56,13 +57,27 @@ public class RightOutpostCycle extends SequentialCommandGroup {
                 superStructure.runOnce(
                     () -> superStructure.setIntakeMode(SuperStructure.IntakeMode.INTAKE))));
     addCommands(drive.followPPPath("RightNA-Right"));
-    addCommands(new HybridShootCommand(Button.kAutoButton, ShootMode.SCORE, true).withTimeout(3.));
+    addCommands(
+        new HybridShootCommand(Button.kAutoButton, ShootMode.SCORE, true)
+            .withTimeout(3.)
+            .alongWith(
+                new WaitCommand(1.5)
+                    .andThen(
+                        superStructure.runOnce(
+                            () -> superStructure.setIntakeMode(SuperStructure.IntakeMode.SHAKE)))));
     addCommands(
         drive
             .followPPPath("Right-Outpost")
             .alongWith(
                 superStructure.runOnce(
-                    () -> superStructure.setIntakeMode(SuperStructure.IntakeMode.SHAKE)))
-            .alongWith(new HybridShootCommand(Button.kAutoButton, ShootMode.SCORE, true)));
+                    () -> superStructure.setIntakeMode(SuperStructure.IntakeMode.INTAKE)))
+            .alongWith(
+                new HybridShootCommand(Button.kAutoButton, ShootMode.SCORE, true)
+                    .alongWith(
+                        new WaitCommand(2.5)
+                            .andThen(
+                                () ->
+                                    superStructure.setIntakeMode(
+                                        SuperStructure.IntakeMode.SHAKE)))));
   }
 }

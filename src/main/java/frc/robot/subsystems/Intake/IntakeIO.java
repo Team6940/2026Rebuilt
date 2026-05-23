@@ -14,6 +14,7 @@ public interface IntakeIO {
         public double motorVoltageVolts;
         public double motorCurrentAmps;
         public double intakeVelocityRPS;
+        public double motorTempCelsius;
 
     }
     default public void updateInputs(IntakeIOInputs inputs){}
